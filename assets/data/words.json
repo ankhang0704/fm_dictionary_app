@@ -1,0 +1,74 @@
+[
+    {
+        "id": "fac_001",
+        "topic": "General Facilities Management",
+        "word": "Facility Operations",
+        "phonetic": "/fəˈsɪl.ə.ti ˌɒp.əˈreɪ.ʃənz/",
+        "meaning": "Vận hành cơ sở vật chất",
+        "example": "Facility Operations include all activities required to keep a building functioning.",
+        "audio": "facility_operations.mp3"
+    },
+    {
+        "id": "fac_002",
+        "topic": "General Facilities Management",
+        "word": "Service Optimization",
+        "phonetic": "/ˈsɜː.vɪs ˌɒp.tɪ.maɪˈzeɪ.ʃən/",
+        "meaning": "Tối ưu hóa dịch vụ",
+        "example": "We focus on Service Optimization to improve efficiency and reduce operational costs.",
+        "audio": "service_optimization.mp3"
+    },
+    {
+        "id": "fac_003",
+        "topic": "General Facilities Management",
+        "word": "Facility Performance",
+        "phonetic": "/fəˈsɪl.ə.ti pəˈfɔː.məns/",
+        "meaning": "Hiệu suất cơ sở vật chất",
+        "example": "Monitoring Facility Performance helps in planning long-term maintenance strategies.",
+        "audio": "facility_performance.mp3"
+    },
+    {
+        "id": "fac_004",
+        "topic": "General Facilities Management",
+        "word": "Organizational Alignment",
+        "phonetic": "/ˌɔː.ɡən.aɪˈzeɪ.ʃən.əl əˈlaɪn.mənt/",
+        "meaning": "Định hướng tổ chức",
+        "example": "Organizational Alignment ensures that facilities services support the core business goals.",
+        "audio": "organizational_alignment.mp3"
+    },
+    {
+        "id": "fac_005",
+        "topic": "General Facilities Management",
+        "word": "Service Integration",
+        "phonetic": "/ˈsɜː.vɪs ˌɪn.tɪˈɡreɪ.ʃən/",
+        "meaning": "Tích hợp dịch vụ",
+        "example": "Service Integration combines multiple service providers into a single management system.",
+        "audio": "service_integration.mp3"
+    },
+    {
+        "id": "fac_006",
+        "topic": "General Facilities Management",
+        "word": "Facilities Service Catalog",
+        "phonetic": "/fəˈsɪl.ə.tiz ˈsɜː.vɪs ˈkæt.əl.ɒɡ/",
+        "meaning": "Danh mục dịch vụ cơ sở vật chất",
+        "example": "The Facilities Service Catalog provides a clear list of all available infrastructure services.",
+        "audio": "facilities_service_catalog.mp3"
+    },
+    {
+        "id": "hard_001",
+        "topic": "Hard Services",
+        "word": "Preventive Maintenance",
+        "phonetic": "/prɪˈven.tɪv ˈmeɪn.tən.əns/",
+        "meaning": "Bảo trì phòng ngừa",
+        "example": "Preventive maintenance reduces the risk of sudden equipment failure.",
+        "audio": "preventive_maintenance.mp3"
+    },
+    {
+        "id": "hsse_001",
+        "topic": "HSSE",
+        "word": "Hazard Identification",
+        "phonetic": "/ˈhæz.əd aɪˌden.tɪ.fɪˈkeɪ.ʃən/",
+        "meaning": "Nhận diện mối nguy",
+        "example": "Hazard identification is the first step in our safety risk assessment process.",
+        "audio": "hazard_identification.mp3"
+    }
+]
