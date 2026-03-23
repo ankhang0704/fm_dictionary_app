@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/models/app_settings.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../models/word_model.dart';
-import '../services/database_service.dart';
+import '../../models/word_model.dart';
+import '../../services/database_service.dart';
+import '../../services/theme_manager.dart';
+import '../../utils/constants.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -90,51 +93,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           'SETTINGS',
-          style: TextStyle(
-            fontSize: 14,
-            letterSpacing: 2,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppConstants.subHeadingStyle,
         ),
         centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppConstants.defaultPadding),
         children: [
           const Text(
             'PROFILE',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-              letterSpacing: 1.5,
-            ),
+            style: AppConstants.subHeadingStyle,
           ),
+          const SizedBox(height: 8),
           ListTile(
             leading: const Icon(Icons.person_outline),
             title: const Text('User Name'),
             trailing: Text(
               _settings.userName,
               style: const TextStyle(
-                color: Colors.blue,
+                color: AppConstants.accentColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
             onTap: _showNameDialog,
             contentPadding: EdgeInsets.zero,
           ),
-          const SizedBox(height: 32),
+          const Divider(height: 48),
           const Text(
-            'AUDIO',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-              letterSpacing: 1.5,
-            ),
+            'APPEARANCE',
+            style: AppConstants.subHeadingStyle,
           ),
           const SizedBox(height: 8),
+          SwitchListTile(
+            secondary: const Icon(Icons.dark_mode_outlined),
+            title: const Text('Dark Mode'),
+            value: _settings.themeMode == 'dark',
+            activeThumbColor: AppConstants.accentColor,
+            contentPadding: EdgeInsets.zero,
+            onChanged: (bool value) {
+              _settings.themeMode = value ? 'dark' : 'light';
+              ThemeManager.updateTheme(_settings.themeMode);
+              _updateSettings();
+            },
+          ),
+          const Divider(height: 48),
+          const Text(
+            'AUDIO',
+            style: AppConstants.subHeadingStyle,
+          ),
+          const SizedBox(height: 16),
           Row(
             children: [
               const Icon(Icons.speed_rounded, size: 20),
@@ -143,7 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const Spacer(),
               Text(
                 '${_settings.ttsSpeed.toStringAsFixed(1)}x',
-                style: const TextStyle(color: Colors.grey),
+                style: const TextStyle(color: AppConstants.textSecondary),
               ),
             ],
           ),
@@ -151,7 +164,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             value: _settings.ttsSpeed,
             min: 0.5,
             max: 1.5,
-            activeColor: Colors.black,
+            activeColor: AppConstants.primaryColor,
             onChanged: (val) {
               _settings.ttsSpeed = val;
               _updateSettings();
@@ -161,11 +174,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: const Icon(
               Icons.delete_forever_rounded,
-              color: Colors.red,
+              color: AppConstants.errorColor,
             ),
             title: const Text(
               'Reset Progress',
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(color: AppConstants.errorColor),
             ),
             subtitle: const Text('Clear all learning history'),
             onTap: _resetProgress,

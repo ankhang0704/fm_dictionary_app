@@ -1,0 +1,273 @@
+import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../../models/word_model.dart';
+import '../../services/quiz_service.dart';
+import '../../services/database_service.dart';
+import '../../utils/constants.dart';
+
+class QuizScreen extends StatefulWidget {
+  final List<Word> words;
+  const QuizScreen({super.key, required this.words});
+
+  @override
+  State<QuizScreen> createState() => _QuizScreenState();
+}
+
+class _QuizScreenState extends State<QuizScreen> {
+  late List<Map<String, dynamic>> quizData;
+  int currentIndex = 0;
+  String? selectedAnswer;
+  int score = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    final allWords = Hive.box<Word>(DatabaseService.wordBoxName).values.toList();
+    quizData = QuizService.generateQuiz(
+      widget.words,
+      allWords,
+      widget.words.length < 10 ? widget.words.length : 10,
+    );
+  }
+
+  void _checkAnswer(String option) {
+    if (selectedAnswer != null) return;
+
+    bool correct = option == quizData[currentIndex]['correctAnswer'];
+    setState(() {
+      selectedAnswer = option;
+      if (correct) score++;
+    });
+
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+      if (currentIndex < quizData.length - 1) {
+        setState(() {
+          currentIndex++;
+          selectedAnswer = null;
+        });
+      } else {
+        _showResult();
+      }
+    });
+  }
+
+  void _showResult() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _ResultDialog(
+        score: score,
+        total: quizData.length,
+        onClose: () {
+          Navigator.pop(context); // Close dialog
+          Navigator.pop(context); // Return to dashboard
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (quizData.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Quiz")),
+        body: const Center(child: Text("Not enough words to start a quiz.")),
+      );
+    }
+
+    final currentQuestion = quizData[currentIndex];
+    // final Word word = currentQuestion['wordObj'] as Word;
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: Text("Question ${currentIndex + 1}/${quizData.length}",
+            style: AppConstants.subHeadingStyle),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppConstants.defaultPadding),
+          child: Column(
+            children: [
+              _buildProgressBar(),
+              const SizedBox(height: 30),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildQuestionSection(currentQuestion['question']),
+                      const SizedBox(height: 40),
+                      _buildOptionsSection(currentQuestion),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressBar() {
+    return LinearProgressIndicator(
+      value: (currentIndex + 1) / quizData.length,
+      backgroundColor: Colors.grey.withValues(alpha:0.1),
+      valueColor: const AlwaysStoppedAnimation<Color>(AppConstants.accentColor),
+      borderRadius: BorderRadius.circular(10),
+      minHeight: 8,
+    );
+  }
+
+  Widget _buildQuestionSection(String question) {
+    return Column(
+      children: [
+        const Text(
+          "Which word means:",
+          style: TextStyle(color: AppConstants.textSecondary, fontSize: 16),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          question,
+          style: AppConstants.headingStyle.copyWith(fontSize: 28),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOptionsSection(Map<String, dynamic> currentQuestion) {
+    final List<String> options = List<String>.from(currentQuestion['options']);
+    return Column(
+      children: options.map((option) {
+        return _QuizOption(
+          option: option,
+          correctAnswer: currentQuestion['correctAnswer'],
+          selectedAnswer: selectedAnswer,
+          onTap: () => _checkAnswer(option),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _QuizOption extends StatelessWidget {
+  final String option;
+  final String correctAnswer;
+  final String? selectedAnswer;
+  final VoidCallback onTap;
+
+  const _QuizOption({
+    required this.option,
+    required this.correctAnswer,
+    this.selectedAnswer,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Color bgColor = Theme.of(context).cardColor;
+    Color textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
+    Color borderColor = Colors.grey.withValues(alpha: 0.1);
+
+    if (selectedAnswer != null) {
+      if (option == correctAnswer) {
+        bgColor = AppConstants.successColor.withValues(alpha: 0.2);
+        borderColor = AppConstants.successColor;
+        textColor = AppConstants.successColor;
+      } else if (option == selectedAnswer) {
+        bgColor = AppConstants.errorColor.withValues(alpha: 0.2);
+        borderColor = AppConstants.errorColor;
+        textColor = AppConstants.errorColor;
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor, width: selectedAnswer != null && (option == correctAnswer || option == selectedAnswer) ? 2 : 1),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                option,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: textColor),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ResultDialog extends StatelessWidget {
+  final int score;
+  final int total;
+  final VoidCallback onClose;
+
+  const _ResultDialog({
+    required this.score,
+    required this.total,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      title: const Text('Quiz Completed!',
+          textAlign: TextAlign.center, style: AppConstants.headingStyle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.emoji_events_rounded, size: 80, color: Colors.amber),
+          const SizedBox(height: 16),
+          Text(
+            'Your Score: $score / $total',
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            score >= total * 0.8 ? 'Excellent work!' : 'Keep practicing!',
+            style: const TextStyle(color: AppConstants.textSecondary),
+          ),
+        ],
+      ),
+      actions: [
+        Center(
+          child: ElevatedButton(
+            onPressed: onClose,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppConstants.accentColor,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+            ),
+            child: const Text('BACK TO HOME',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+}
