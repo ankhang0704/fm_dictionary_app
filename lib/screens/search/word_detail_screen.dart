@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../models/word_model.dart';
 import '../../services/tts_service.dart';
@@ -43,14 +44,14 @@ class WordDetailScreen extends StatelessWidget {
             const Divider(height: 40),
 
             // Meaning
-            const Text("MEANING", style: TextStyle(color: Colors.grey, letterSpacing: 1.5, fontSize: 12)),
+             Text('word.meaning'.tr(), style: TextStyle(color: Colors.grey, letterSpacing: 1.5, fontSize: 12)),
             const SizedBox(height: 8),
             Text(word.meaning, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
             
             const SizedBox(height: 32),
 
             // Example
-            const Text("EXAMPLE", style: TextStyle(color: Colors.grey, letterSpacing: 1.5, fontSize: 12)),
+             Text('word.example'.tr(), style: TextStyle(color: Colors.grey, letterSpacing: 1.5, fontSize: 12)),
             const SizedBox(height: 8),
             Container(
               width: double.infinity, // Đảm bảo full chiều ngang

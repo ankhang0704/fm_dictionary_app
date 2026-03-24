@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../screens/search/search_screen.dart';
 
@@ -28,12 +29,12 @@ class HomeSearchBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
         ),
-        child: const Row(
+        child:  Row(
           children: [
             Icon(Icons.search, color: Colors.grey),
             SizedBox(width: 12),
             Text(
-              'Search 1,500 words...',
+              'widget.search_placeholder'.tr(),
               style: TextStyle(color: Colors.grey, fontSize: 16),
             ),
           ],

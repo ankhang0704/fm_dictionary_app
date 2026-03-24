@@ -10,22 +10,102 @@
     "dashboard": {
         "good_morning": "Chào buổi sáng,",
         "search_hint": "Tìm kiếm 1.500 từ...",
-        "review_mistakes": "Ôn tập lỗi sai"
+        "quick_action": "HÀNH ĐỘNG NHANH",
+        "continue_title": "Tiếp tục học",
+        "continue_subtitle": "Tiếp tục từ nơi bạn đã dừng lại",
+        "review_mistakes": "Ôn tập lỗi sai",
+        "review_mistakes_subtitle": "Ôn tập những từ bạn gặp khó khăn",
+        "review_mistakes_anouncement": "Không có từ nào để ôn tập",
+        "review_mistakes_message": "Hiện tại bạn không có từ nào để ôn tập. Hãy tiếp tục học những từ mới!",
+        "btn_close": "Đóng",
+        "daily_test": "Bài kiểm tra",
+        "daily_test_subtitle": "Bài kiểm tra nhanh hàng ngày",
+        "daily_test_message": "Không đủ từ để tạo bài Quiz!"
+    },
+    "quiz": {
+        "title": "Bài Quiz",
+        "noData": "Không đủ từ để bắt đầu một bài quiz.",
+        "question": "Câu hỏi",
+        "instruction": "Từ nào có nghĩa là:",
+        "completed": "Hoàn thành Quiz!",
+        "score": "Điểm của bạn:",
+        "excellent": "Làm tốt lắm!",
+        "keepPracticing": "Hãy tiếp tục luyện tập!",
+        "backToHome": "QUAY VỀ TRANG CHỦ"
+    },
+    "review": {
+        "title": "ÔN TẬP LỖI SAI",
+        "no_words": "Không có từ nào để ôn tập",
+        "no_words_desc": "Hiện tại bạn không có từ nào cần ôn tập. Hãy tiếp tục học những từ mới!",
+        "quiz_test": "Bài kiểm tra Quiz",
+        "start_review": "Bắt đầu ôn tập",
+        "empty_state_title": "Tất cả đã ổn!",
+        "empty_state_message": "Hiện tại không có từ nào cần chú ý."
+    },
+    "study": {
+        "title": "Học",
+        "known_btn": "Tôi biết từ này",
+        "unknown_btn": "Tôi không biết từ này",
+        "notification_known": "Hiểu rồi! +1",
+        "notification_unknown": "Cần ôn tập!",
+        "meaning": "NGHĨA",
+        "example": "VÍ DỤ"
+    },
+    "categories": {
+        "title": "Danh mục",
+        "explore_title": "KHÁM PHÁ CÁC CHỦ ĐỀ FM",
+        "words_learned": "từ đã học"
+    },
+    "topic": {
+        "words_learned": "từ đã học",
+        "search_words": "Tìm kiếm từ trong chủ đề này...",
+        "study": "LUYỆN TẬP FLASHCARDS",
+        "take_quiz": "LÀM BÀI KIỂM TRA",
+        "not_enough_words": "Không đủ từ để bắt đầu một bài quiz. Bạn chỉ có ${0} từ trong chủ đề này."
+    },
+        "search": {
+        "search_placeholder": "Tìm kiếm 1,500 từ...",
+        "no_results": "Không tìm thấy kết quả",
+        "history": "Lịch sử tìm kiếm"
+    },
+    "word_detail": {
+        "meaning": "NGHĨA",
+        "example": "VÍ DỤ"
+    },
+    "navigation": {
+        "nav_home": "Trang chủ",
+        "nav_categories": "Danh mục",
+        "nav_review": "Ôn tập",
+        "nav_settings": "Cài đặt"
     },
     "settings": {
         "title": "CÀI ĐẶT",
-        "title_profile": "HỒ SƠ",
+        "profile": "HỒ SƠ",
+        "appearance": "GIAO DIỆN",
+        "audio": "ÂM THANH",
         "profile_name": "Tên người dùng",
-        "language": "NGÔN NGỮ",
+        "edit_name": "Chỉnh sửa tên",
+        "language": "Ngôn ngữ",
         "title_theme": "GIAO DIỆN",
         "dark_mode": "Giao diện tối",
-        "audio": "ÂM THANH",
         "reset":"ĐẶT LẠI TIẾN TRÌNH",
         "reset_desc": "Xóa tất cả lịch sử học tập",
         "reset_btn": "Đặt lại tất cả tiến trình?",
         "reset_confirm": "Điều này sẽ xóa tất cả lịch sử học tập của bạn và không thể hoàn tác. Bạn có chắc chắn muốn tiếp tục không?",
         "reset_btn_cancel": "HỦY BỎ",
         "reset_btn_confirm": "ĐẶT LẠI",
-        "reset_success": "Tất cả tiến trình đã được đặt lại thành công!"
+        "reset_success": "Tất cả tiến trình đã được đặt lại thành công!",
+        "reset_cancelled": "Đặt lại tiến trình đã bị hủy.",
+        "cancel": "Hủy",
+        "confirm": "Xác nhận",
+        "save": "Lưu",
+        "tts_speed": "Tốc độ đọc văn bản"
+    },
+    "widget":
+    {
+        "search_placeholder": "Tìm kiếm 1,500 từ...",
+        "progress_title": "Tổng quan tiến độ",
+        "words": "từ",
+        "words_available": "từ có sẵn"
     }
 }

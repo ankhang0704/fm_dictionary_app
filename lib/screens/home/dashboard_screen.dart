@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/word_model.dart';
@@ -32,7 +33,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         builder: (context, box, _) {
           final learnedCount = box.values.where((w) => w.isLearned).length;
           final totalCount = box.length;
-          final reviewCount = _wordService.getWordsToReview().length;
+          // final reviewCount = _wordService.getWordsToReview().length;
 
           return SafeArea(
             child: SingleChildScrollView(
@@ -40,7 +41,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Good Morning,', style: AppConstants.subHeadingStyle),
+                  Text('dashboard.good_morning'.tr(), style: AppConstants.subHeadingStyle),
                   Text(settings.userName, style: AppConstants.headingStyle),
                   const SizedBox(height: 24),
 
@@ -51,13 +52,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ProgressCard(learnedCount: learnedCount, totalCount: totalCount),
                   
                   const SizedBox(height: 32),
-                  const Text('QUICK ACTIONS', style: AppConstants.subHeadingStyle),
+                  Text('dashboard.quick_action'.tr(), 
+                    style: AppConstants.subHeadingStyle),
                   const SizedBox(height: 16),
 
                   SmartActionButton(
                     icon: Icons.play_circle_fill_rounded,
-                    title: 'Continue Learning',
-                    subtitle: 'Pick up where you left off',
+                    title: 'dashboard.continue_title'.tr(),
+                    subtitle: 'dashboard.continue_subtitle'.tr(),
                     color: isDark ? const Color(0xFF1A3B5C) : const Color(0xFFE3F2FD),
                     iconColor: Colors.blue,
                     onTap: () {
@@ -79,8 +81,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(height: 12),
                   SmartActionButton(
                     icon: Icons.error_outline_rounded,
-                    title: 'Review Mistakes',
-                    subtitle: '$reviewCount words need attention',
+                    title: 'dashboard.review_mistakes'.tr(),
+                    subtitle: 'dashboard.review_mistakes_subtitle'.tr(),
                     color: isDark ? const Color(0xFF4A1C1C) : const Color(0xFFFFEBEE),
                     iconColor: Colors.red,
                     onTap: () {
@@ -90,10 +92,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: const Text("No Words to Review"),
-                            content: const Text("You don't have any words to review right now. Keep learning new words!"),
+                            title:  Text('dashboard.review_mistakes_anouncement'.tr()),
+                            content:  Text('dashboard.review_mistakes_message'.tr()),
                             actions: [
-                              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close"))
+                              TextButton(onPressed: () => Navigator.pop(context), child:  Text('dashboard.btn_close'.tr())),
                             ],
                           ),
                         );
@@ -108,8 +110,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(height: 12),
                   SmartActionButton(
                     icon: Icons.shuffle_rounded,
-                    title: 'Random 10 Words',
-                    subtitle: 'Quick daily test',
+                    title: 'dashboard.daily_test'.tr(),
+                    subtitle: 'dashboard.daily_test_subtitle'.tr(),
                     color: isDark ? const Color(0xFF1E3A23) : const Color(0xFFF1F8E9),
                     iconColor: Colors.green,
                     onTap: () {
@@ -135,8 +137,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Không có đủ từ để tạo bài Quiz!'),
+                           SnackBar(
+                            content: Text('dashboard.daily_test_message'.tr()),
                           ),
                         );
                       }

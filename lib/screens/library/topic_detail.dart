@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/screens/learning/quiz_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -69,7 +70,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                         Icon(Icons.auto_stories_rounded, size: 40, color: AppConstants.primaryColor),
                         const SizedBox(height: 12),
                         Text(
-                          "$learnedCount / ${allWords.length} words learned", 
+                          "$learnedCount / ${allWords.length} ${'topic.words_learned'.tr()}", 
                           style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
                         ),
                         const SizedBox(height: 16),
@@ -103,7 +104,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                       TextField(
                         onChanged: (v) => setState(() => _searchQuery = v),
                         decoration: InputDecoration(
-                          hintText: "Search in topic...",
+                          hintText: 'topic.search_words'.tr(),
                           prefixIcon: const Icon(Icons.search),
                           filled: true,
                           fillColor: Theme.of(context).cardColor,
@@ -117,7 +118,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                       ElevatedButton.icon(
                         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => StudyScreen(topic: widget.topic))),
                         icon: const Icon(Icons.style),
-                        label: const Text("PRACTICE FLASHCARDS"),
+                        label:  Text('topic.study'.tr()),
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(double.infinity, 55),
                           backgroundColor: AppConstants.primaryColor,
@@ -136,9 +137,10 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                           // Nên nếu lúc bạn đang test mà chủ đề mới nhập có 2-3 từ thì phải chặn lại để khỏi crash app
                           if (wordsInTopic.length < 4) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                               SnackBar(
                                 content: Text(
-                                  "Topic must have at least 4 words to start a quiz. Please add more words to this topic.",
+                                  'topic.not_enough_words'.tr(args: [wordsInTopic.length.toString()]),
+                                  style: const TextStyle(color: Colors.white),                                
                                 ),
                                 backgroundColor: Colors.orange,
                               ),
@@ -161,7 +163,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                           );
                         },
                         icon: const Icon(Icons.quiz_rounded),
-                        label: const Text("TAKE A QUIZ"),
+                        label:  Text('topic.take_quiz'.tr()),
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(double.infinity, 55),
                           backgroundColor: Colors

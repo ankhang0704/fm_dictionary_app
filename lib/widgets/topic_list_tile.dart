@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 
@@ -63,7 +64,7 @@ class TopicListTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '$count words available',
+                    '$count ' '${'widget.word_available'.tr()}',
                     style: AppConstants.subHeadingStyle.copyWith(letterSpacing: 0),
                   ),
                 ],

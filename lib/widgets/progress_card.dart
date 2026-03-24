@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 
@@ -32,7 +33,7 @@ class ProgressCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Overall Progress',
+          'widget.progress_title'.tr(),
           style: TextStyle(
             color: isDark ? theme.colorScheme.onSurfaceVariant : Colors.white70, 
             fontSize: 12,
@@ -41,7 +42,7 @@ class ProgressCard extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          '$learnedCount / $totalCount words',
+          '$learnedCount / $totalCount ${'widget.words'.tr()}',
           style: TextStyle(
             color: isDark ? theme.colorScheme.onSurface : Colors.white,
             fontSize: 26,

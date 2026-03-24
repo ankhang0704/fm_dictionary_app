@@ -32,15 +32,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Change Name'),
+        title:  Text('settings.edit_name'.tr()),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(hintText: "Enter your name"),
+          decoration:  InputDecoration(hintText: 'settings.name_hint'.tr()),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL'),
+            child:  Text('settings.cancel'.tr()),
           ),
           TextButton(
             onPressed: () {
@@ -48,7 +48,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _updateSettings();
               Navigator.pop(context);
             },
-            child: const Text('SAVE'),
+            child:  Text('settings.save'.tr()),
           ),
         ],
       ),
@@ -59,14 +59,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reset All Progress?'),
-        content: const Text(
-          'This will clear all your learned words and Anki data. This action cannot be undone.',
-        ),
+        title:  Text('settings.reset_btn'.tr()),
+        content:  Text('settings.reset_desc'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL'),
+            child:  Text('settings.cancel'.tr()),
           ),
           TextButton(
             onPressed: () async {
@@ -81,10 +79,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                if (!context.mounted) return; 
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Progress reset successfully!')),
+                 SnackBar(content: Text('settings.reset_success'.tr())),
               );
             },
-            child: const Text('RESET', style: TextStyle(color: Colors.red)),
+            child:  Text('settings.reset_btn'.tr(), style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -97,8 +95,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
-          'SETTINGS',
+        title:  Text(
+          'settings.title'.tr(),
           style: AppConstants.subHeadingStyle,
         ),
         centerTitle: true,
@@ -108,14 +106,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
         children: [
-          const Text(
-            'PROFILE',
+           Text(
+            'settings.profile'.tr(),
             style: AppConstants.subHeadingStyle,
           ),
           const SizedBox(height: 8),
           ListTile(
             leading: const Icon(Icons.person_outline),
-            title: const Text('User Name'),
+            title:  Text('settings.profile_name'.tr()),
             trailing: Text(
               _settings.userName,
               style: const TextStyle(
@@ -127,12 +125,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             contentPadding: EdgeInsets.zero,
           ),
           const Divider(height: 48),
+           Text(
+            'settings.language'.tr().toUpperCase(),
+            style: AppConstants.subHeadingStyle,
+          ),
+
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.language, color: Colors.blue),
             title: Text(
               'settings.language'.tr(),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -147,10 +149,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: currentLang,
                   icon: const Icon(Icons.arrow_drop_down),
                   items: const [
-                    DropdownMenuItem(value: 'en', child: Text('English 🇬🇧')),
+                    DropdownMenuItem(value: 'en', child: Text('English')),
                     DropdownMenuItem(
                       value: 'vi',
-                      child: Text('Tiếng Việt 🇻🇳'),
+                      child: Text('Tiếng Việt'),
                     ),
                   ],
                   onChanged: (String? newLang) {
@@ -165,14 +167,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(height: 48),
           // Appearance Section 
-          const Text(
-            'APPEARANCE',
+           Text(
+            'settings.appearance'.tr(),
             style: AppConstants.subHeadingStyle,
           ),
           const SizedBox(height: 8),
           SwitchListTile(
             secondary: const Icon(Icons.dark_mode_outlined),
-            title: const Text('Dark Mode'),
+            title:  Text('settings.dark_mode'.tr()),
             value: _settings.themeMode == 'dark',
             activeThumbColor: AppConstants.accentColor,
             contentPadding: EdgeInsets.zero,
@@ -183,8 +185,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           const Divider(height: 48),
-          const Text(
-            'AUDIO',
+           Text(
+            'settings.audio'.tr(),
             style: AppConstants.subHeadingStyle,
           ),
           const SizedBox(height: 16),
@@ -192,7 +194,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               const Icon(Icons.speed_rounded, size: 20),
               const SizedBox(width: 12),
-              const Text('TTS Speed'),
+              Text('settings.tts_speed'.tr()),
               const Spacer(),
               Text(
                 '${_settings.ttsSpeed.toStringAsFixed(1)}x',
@@ -216,11 +218,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Icons.delete_forever_rounded,
               color: AppConstants.errorColor,
             ),
-            title: const Text(
-              'Reset Progress',
+            title:  Text(
+              'settings.reset_btn'.tr(),
               style: TextStyle(color: AppConstants.errorColor),
             ),
-            subtitle: const Text('Clear all learning history'),
+            subtitle:  Text('settings.reset_desc'.tr()),
             onTap: _resetProgress,
             contentPadding: EdgeInsets.zero,
           ),

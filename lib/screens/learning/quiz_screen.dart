@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/models/word_model.dart';
 import 'package:fm_dictionary/services/quiz_service.dart';
@@ -78,8 +79,8 @@ class _QuizScreenState extends State<QuizScreen> {
   Widget build(BuildContext context) {
     if (quizData.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text("Quiz")),
-        body: const Center(child: Text("Not enough words to start a quiz.")),
+        appBar: AppBar(title:  Text('quiz.title'.tr(), style: AppConstants.headingStyle)),
+        body:  Center(child: Text('quiz.noData'.tr(), style: AppConstants.subHeadingStyle)),
       );
     }
 
@@ -89,7 +90,7 @@ class _QuizScreenState extends State<QuizScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text("Question ${currentIndex + 1}/${quizData.length}",
+        title: Text("${'quiz.question'.tr()} ${currentIndex + 1}/${quizData.length}",
             style: AppConstants.subHeadingStyle),
         centerTitle: true,
         backgroundColor: Colors.transparent,
@@ -137,8 +138,8 @@ class _QuizScreenState extends State<QuizScreen> {
   Widget _buildQuestionSection(String question) {
     return Column(
       children: [
-        const Text(
-          "Which word means:",
+         Text(
+          'quiz.instruction'.tr(),
           style: TextStyle(color: AppConstants.textSecondary, fontSize: 16),
         ),
         const SizedBox(height: 12),
@@ -242,7 +243,7 @@ class _ResultDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      title: const Text('Quiz Completed!',
+      title:  Text('quiz.completed'.tr(),
           textAlign: TextAlign.center, style: AppConstants.headingStyle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -250,12 +251,12 @@ class _ResultDialog extends StatelessWidget {
           const Icon(Icons.emoji_events_rounded, size: 80, color: Colors.amber),
           const SizedBox(height: 16),
           Text(
-            'Your Score: $score / $total',
+            '${'quiz.score'.tr()} $score / $total',
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
-            score >= total * 0.8 ? 'Excellent work!' : 'Keep practicing!',
+            score >= total * 0.8 ? 'quiz.excellent'.tr() : 'quiz.keepPracticing'.tr(),
             style: const TextStyle(color: AppConstants.textSecondary),
           ),
         ],
@@ -269,7 +270,7 @@ class _ResultDialog extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
             ),
-            child: const Text('BACK TO HOME',
+            child: Text('quiz.backToHome'.tr(),
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ),

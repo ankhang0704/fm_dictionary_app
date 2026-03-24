@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/word_model.dart';
@@ -22,8 +23,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
-          'REVIEW',
+        title:  Text(
+          'review.title'.tr(),
           style: AppConstants.subHeadingStyle,
         ),
         centerTitle: true,
@@ -77,14 +78,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
                           showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
-                              title: const Text("Tuyệt vời!"),
-                              content: const Text(
-                                "Bạn không có từ nào cần ôn tập lúc này. Hãy tiếp tục học từ mới nhé!",
+                              title:  Text('review.no_words'.tr()),
+                              content:  Text(
+                                'review.no_words_desc'.tr(),
                               ),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(context),
-                                  child: const Text("Đóng"),
+                                  child:  Text('review.close'.tr()),
                                 ),
                               ],
                             ),
@@ -93,7 +94,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       },
                       backgroundColor: AppConstants.primaryColor,
                       icon: const Icon(Icons.quiz_rounded, color: Colors.white),
-                      label: const Text('QUIZ TEST', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      label:  Text('review.quiz_test'.tr(), style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(height: 12),
                     FloatingActionButton.extended(
@@ -108,7 +109,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       },
                       backgroundColor: AppConstants.accentColor,
                       icon: const Icon(Icons.play_arrow_rounded, color: Colors.white),
-                      label: const Text('START REVIEW', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      label:  Text('review.start_review'.tr(), style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 )
@@ -125,13 +126,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
         children: [
           Icon(Icons.check_circle_outline_rounded, size: 80, color: AppConstants.successColor.withValues(alpha: 0.5)),
           const SizedBox(height: 24),
-          const Text(
-            'All caught up!',
+           Text(
+            'review.empty_state_title'.tr(),
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'No words need attention right now.',
+           Text(
+            'review.empty_state_message'.tr(),
             style: TextStyle(color: AppConstants.textSecondary),
           ),
         ],

@@ -1,15 +1,17 @@
 import 'dart:math';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../models/word_model.dart';
 import '../../services/word_service.dart';
 import '../../services/tts_service.dart';
 import '../../utils/constants.dart';
+import 'widgets/speaker_button.dart';
 
 class StudyScreen extends StatefulWidget {
   final String topic;
   const StudyScreen({super.key, required this.topic});
-
+  
   @override
   State<StudyScreen> createState() => _StudyScreenState();
 }
@@ -63,7 +65,7 @@ class _StudyScreenState extends State<StudyScreen> {
   }
 
   void _nextCard(bool known) {
-    _showNotification(known ? 'Got it! +1' : 'Needs review!', known ? AppConstants.successColor : AppConstants.errorColor);
+    _showNotification(known ? 'study.known_btn'.tr() : 'study.unknown_btn'.tr(), known ? AppConstants.successColor : AppConstants.errorColor);
     
     if (_currentIndex < _words.length - 1) {
       setState(() {
@@ -180,9 +182,9 @@ class _StudyScreenState extends State<StudyScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildSpeakerButton(word.word, 'en-US', 'US'),
+              SpeakerButton(ttsService: _ttsService, context: context, text: word.word, accent: 'en-US', label: 'US'),
               const SizedBox(width: 15),
-              _buildSpeakerButton(word.word, 'en-GB', 'UK'),
+              SpeakerButton(ttsService: _ttsService, context: context, text: word.word, accent: 'en-GB', label: 'UK'),
             ],
           ),
         ],
@@ -205,7 +207,7 @@ class _StudyScreenState extends State<StudyScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text('MEANING', style: AppConstants.subHeadingStyle),
+             Text('study.meaning'.tr(), style: AppConstants.subHeadingStyle),
             const SizedBox(height: 12),
             Text(word.meaning, textAlign: TextAlign.center, 
                 style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
@@ -213,7 +215,7 @@ class _StudyScreenState extends State<StudyScreen> {
               padding: EdgeInsets.symmetric(vertical: 20),
               child: Divider(indent: 50, endIndent: 50),
             ),
-            const Text('EXAMPLE', style: AppConstants.subHeadingStyle),
+             Text('study.example'.tr(), style: AppConstants.subHeadingStyle),
             const SizedBox(height: 12),
             Text(
               word.example,
@@ -253,7 +255,7 @@ class _StudyScreenState extends State<StudyScreen> {
       children: [
         _buildActionButton(
           icon: Icons.close_rounded,
-          label: 'FORGOT',
+          label: 'study.unknown_btn'.tr(),
           color: AppConstants.errorColor,
           onTap: () {
             currentWord.wrongCount++;
@@ -263,7 +265,7 @@ class _StudyScreenState extends State<StudyScreen> {
         ),
         _buildActionButton(
           icon: Icons.check_rounded,
-          label: 'KNOW',
+          label: 'study.known_btn'.tr(),
           color: AppConstants.successColor,
           onTap: () {
             _wordService.markAsLearned(currentWord);
@@ -271,26 +273,6 @@ class _StudyScreenState extends State<StudyScreen> {
           },
         ),
       ],
-    );
-  }
-  Widget _buildSpeakerButton(String text, String accent, String label) {
-    return GestureDetector(
-      onTap: () => _ttsService.speak(text, accent: accent),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.volume_up_rounded, size: 16),
-            const SizedBox(width: 4),
-            Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
     );
   }
 
@@ -315,3 +297,4 @@ class _StudyScreenState extends State<StudyScreen> {
     );
   }
 }
+

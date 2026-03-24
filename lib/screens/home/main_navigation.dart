@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../utils/constants.dart';
 import 'dashboard_screen.dart';
@@ -56,22 +57,22 @@ class _MainNavigationState extends State<MainNavigation> {
           showSelectedLabels: true,
           showUnselectedLabels: true,
           elevation: 0,
-          items: const [
+          items:  [
             BottomNavigationBarItem(
               icon: Icon(Icons.home_rounded),
-              label: 'Home',
+              label: 'navigation.nav_home'.tr(),
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.library_books_rounded),
-              label: 'Categories',
+              label: 'navigation.nav_categories'.tr(),
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.refresh_rounded),
-              label: 'Review',
+              label: 'navigation.nav_review'.tr(),
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings_rounded),
-              label: 'Settings',
+              label: 'navigation.nav_settings'.tr(),
             ),
           ],
         ),

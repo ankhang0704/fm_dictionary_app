@@ -9,23 +9,104 @@
     },
     "dashboard": {
         "good_morning": "Good Morning,",
-        "search_hint": "Search 1,500 words...",
-        "review_mistakes": "Review Mistakes"
+        "quick_action": "QUICK ACTIONS",
+        "continue_title": "Continue Learning",
+        "continue_subtitle": "Pick up where you left off",
+        "review_mistakes": "Review Mistakes",
+        "review_mistakes_subtitle": "Review words you've struggled with",
+        "review_mistakes_anouncement": "No Words to Review",
+        "review_mistakes_message": "You don't have any words to review right now. Keep learning new words!",
+        "btn_close": "Close",
+        "daily_test": "Daily Test",
+        "daily_test_subtitle": "Quick daily test",
+        "daily_test_message": "Not enough words to create a Quiz!",
+        "search_hint": "Search 1,500 words..."
+    },
+    "navigation": {
+        "nav_home": "Home",
+        "nav_categories": "Categories",
+        "nav_review": "Review",
+        "nav_settings": "Settings"
+    },
+    "quiz": {
+        "title": "Quiz",
+        "no_words": "Not enough words to start a quiz.",
+        "question": "Question",
+        "instruction": "Which word means:",
+        "completed": "Quiz Completed!",
+        "score": "Your Score:",
+        "excellent": "Excellent work!",
+        "keepPracticing": "Keep practicing!",
+        "backToHome": "BACK TO HOME"
+    },
+    "review": {
+        "title": "REVIEW MISTAKES",
+        "no_words": "No Words to Review",
+        "no_words_desc": "You don't have any words that need review right now. Keep learning new words!",
+        "quiz_test": "Quiz Test",
+        "start_review": "Start Review",
+        "empty_state_title": "All caught up!",
+        "empty_state_message": "No words need attention right now."
+    },
+    "study": {
+        "title": "Study",
+        "known_btn": "I know this",
+        "unknown_btn": "I don't know this",
+        "notification_known": "Got it! +1",
+        "notification_unknown": "Needs review!",
+        "meaning": "MEANING",
+        "example": "EXAMPLE"
+
+    },
+    "categories": {
+        "title": "Categories",
+        "explore_title": "EXPLORE FM TOPICS",
+        "words_learned": "words learned"
+    },
+    "topic": {
+        "words_learned": "word learned",
+        "search_words": "Search words in this topic...",
+        "study": "PRACTICE FLASHCARDS",
+        "take_quiz": "TAKE A QUIZ",
+        "not_enough_words": "Not enough words to start a quiz. You only have ${0} words in this topic."
+    },
+    "search": {
+        "search_placeholder": "Search 1,500 words...",
+        "no_results": "No results found.",
+        "history": "Search History"
+    },
+    "word_detail": {
+        "meaning": "MEANING",
+        "example": "EXAMPLE"
     },
     "settings": {
         "title": "SETTINGS",
-        "title_profile": "PROFILE",
+        "profile": "PROFILE",
+        "appearance": "APPEARANCE",
+        "audio": "AUDIO",
         "profile_name": "User Name",
-        "language": "LANGUAGE",
+        "edit_name": "Edit Name",
+        "language": "Language",
         "title_theme": "APPEARANCE",
         "dark_mode": "Dark Mode",
-        "audio": "AUDIO",
         "reset":"RESET PROGRESS",
         "reset_desc": "Clear all learning history",
         "reset_btn": "Reset All Progress?",
         "reset_confirm": "This will clear all your learning history and cannot be undone. Are you sure you want to proceed?",
         "reset_btn_cancel": "CANCEL",
         "reset_btn_confirm": "RESET",
-        "reset_success": "All progress has been reset successfully!"
+        "reset_success": "All progress has been reset successfully!",
+        "reset_cancelled": "Progress reset cancelled.",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "save": "Save",
+        "tts_speed": "Text-to-Speech Speed"
+    },
+    "widget":
+    {
+        "search_placeholder": "Search 1,500 words...",
+        "progress_title": "Overall Progress",
+        "words": "words",
+        "words_available": "words available"
     }
 }

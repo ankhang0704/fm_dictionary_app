@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/word_model.dart';
@@ -58,8 +59,8 @@ class _SearchScreenState extends State<SearchScreen> {
             controller: _controller,
             autofocus: true,
             onChanged: _onSearch,
-            decoration: const InputDecoration(
-              hintText: 'Search 1,500 words...',
+            decoration:  InputDecoration(
+              hintText: 'search.search_placeholder'.tr(),
               border: InputBorder.none,
             ),
           ),
@@ -71,7 +72,7 @@ class _SearchScreenState extends State<SearchScreen> {
           // NẾU CHƯA GÕ GÌ -> HIỆN LỊCH SỬ
           if (_controller.text.isEmpty) return _buildHistory();
 
-          if (results.isEmpty) return _buildInfo("Don't have this word in database!");
+          if (results.isEmpty) return _buildInfo('search.no_results'.tr(args: [_controller.text]));
 
           return ListView.builder(
             itemCount: results.length,
@@ -116,15 +117,15 @@ class _SearchScreenState extends State<SearchScreen> {
         .reversed
         .toList(); // Đảo ngược để hiện từ mới nhất
 
-    if (history.isEmpty) return _buildInfo("Input something to search...");
+    if (history.isEmpty) return _buildInfo('search.no_results'.tr(args: ['']));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
+         Padding(
           padding: EdgeInsets.all(16.0),
           child: Text(
-            "Search History",
+            'search.history'.tr(),
             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
           ),
         ),

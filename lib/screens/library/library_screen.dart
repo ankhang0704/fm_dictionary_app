@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/screens/library/topic_detail.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -16,13 +17,13 @@ class LibraryScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
+             Padding(
               padding: EdgeInsets.fromLTRB(AppConstants.defaultPadding, 40, AppConstants.defaultPadding, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Categories', style: AppConstants.headingStyle),
-                  Text('EXPLORE FM TOPICS', style: AppConstants.subHeadingStyle),
+                  Text('categories.title'.tr(), style: AppConstants.headingStyle),
+                  Text('categories.explore_title'.tr(), style: AppConstants.subHeadingStyle),
                 ],
               ),
             ),
@@ -96,7 +97,7 @@ class LibraryScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      '$learnedCount / $totalCount words learned',
+                                      '$learnedCount / $totalCount ${'categories.words_learned'.tr()}',
                                       style: TextStyle(
                                         fontSize: 13,
                                         color: isDark ? Colors.grey[400] : Colors.grey[600],
