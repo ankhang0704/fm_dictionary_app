@@ -1,0 +1,31 @@
+{
+    "welcome": {
+        "title": "FM Dictionary",
+        "subtitle": "Chào mừng bạn đến với hành trình chinh phục 1500 từ vựng chuyên ngành.",
+        "name_hint": "Tên của bạn là gì?",
+        "start_btn": "Bắt đầu",
+        "light_mode": "Giao diện sáng",
+        "dark_mode": "Giao diện tối"
+    },
+    "dashboard": {
+        "good_morning": "Chào buổi sáng,",
+        "search_hint": "Tìm kiếm 1.500 từ...",
+        "review_mistakes": "Ôn tập lỗi sai"
+    },
+    "settings": {
+        "title": "CÀI ĐẶT",
+        "title_profile": "HỒ SƠ",
+        "profile_name": "Tên người dùng",
+        "language": "NGÔN NGỮ",
+        "title_theme": "GIAO DIỆN",
+        "dark_mode": "Giao diện tối",
+        "audio": "ÂM THANH",
+        "reset":"ĐẶT LẠI TIẾN TRÌNH",
+        "reset_desc": "Xóa tất cả lịch sử học tập",
+        "reset_btn": "Đặt lại tất cả tiến trình?",
+        "reset_confirm": "Điều này sẽ xóa tất cả lịch sử học tập của bạn và không thể hoàn tác. Bạn có chắc chắn muốn tiếp tục không?",
+        "reset_btn_cancel": "HỦY BỎ",
+        "reset_btn_confirm": "ĐẶT LẠI",
+        "reset_success": "Tất cả tiến trình đã được đặt lại thành công!"
+    }
+}

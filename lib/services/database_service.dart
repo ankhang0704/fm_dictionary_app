@@ -10,7 +10,7 @@ class DatabaseService {
 
   static Future<void> init() async {
     await Hive.initFlutter();
-    
+    await Hive.openBox<String>('searchHistoryBox');
     // Đăng ký Adapters
     Hive.registerAdapter(WordAdapter());
     Hive.registerAdapter(AppSettingsAdapter());

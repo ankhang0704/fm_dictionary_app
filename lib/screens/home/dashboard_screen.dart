@@ -90,10 +90,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: const Text("Tuyệt vời!"),
-                            content: const Text("Bạn không có từ nào cần ôn tập lúc này. Hãy tiếp tục học từ mới nhé!"),
+                            title: const Text("No Words to Review"),
+                            content: const Text("You don't have any words to review right now. Keep learning new words!"),
                             actions: [
-                              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Đóng"))
+                              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close"))
                             ],
                           ),
                         );
@@ -114,14 +114,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     iconColor: Colors.green,
                     onTap: () {
                       final randomWords = _wordService.getRandomWords(10);
+
                       if (randomWords.isNotEmpty) {
+                        // Lấy toàn bộ từ trong DB để làm đáp án gây nhiễu
+                        final allWords = Hive.box<Word>(
+                          DatabaseService.wordBoxName,
+                        ).values.toList();
+
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => QuizScreen(words: randomWords)),
+                          MaterialPageRoute(
+                            builder: (context) => QuizScreen(
+                              targetWords: randomWords, // Các từ cần hỏi
+                              distractorPool:
+                                  allWords, // Kho từ để lấy đáp án sai
+                              questionCount: randomWords
+                                  .length, // Số lượng câu hỏi (thường là 10)
+                            ),
+                          ),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('No words available for quiz!')),
+                          const SnackBar(
+                            content: Text('Không có đủ từ để tạo bài Quiz!'),
+                          ),
                         );
                       }
                     },

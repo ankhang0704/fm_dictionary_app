@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/word_model.dart';
 import '../../services/database_service.dart';
-import '../../services/tts_service.dart';
 import 'word_detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -13,7 +12,6 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final TtsService _ttsService = TtsService();
   final TextEditingController _controller = TextEditingController();
   final ValueNotifier<List<Word>> _searchResults = ValueNotifier([]);
   late Box<Word> _wordBox;
@@ -35,27 +33,34 @@ class _SearchScreenState extends State<SearchScreen> {
              word.meaning.toLowerCase().contains(lowercaseQuery);
     }).toList();
   }
-
+  void _saveToHistory(String word) {
+    final box = Hive.box<String>('searchHistoryBox');
+    final history = box.values.toList();
+    // Xóa nếu đã tồn tại để đưa lên đầu
+    if (history.contains(word)) {
+      final keyToDelete = box.keys.firstWhere((k) => box.get(k) == word);
+      box.delete(keyToDelete);
+    }
+    box.add(word);
+    // Chỉ giữ lại 10 từ gần nhất cho nhẹ
+    if (box.length > 10) {
+      box.delete(box.keys.first);
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        titleSpacing: 0, // Giúp TextField không bị ép lề gây overflow
-        title: Hero(
-          tag: 'search_hero',
-          child: Material(
-            color: Colors.transparent,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: TextField(
-                controller: _controller,
-                autofocus: true,
-                onChanged: _onSearch,
-                decoration: const InputDecoration(
-                  hintText: 'Search 1,500 words...',
-                  border: InputBorder.none,
-                ),
-              ),
+        titleSpacing: 0,
+        title: Padding(
+          padding: const EdgeInsets.only(right: 16.0),
+          child: TextField(
+            controller: _controller,
+            autofocus: true,
+            onChanged: _onSearch,
+            decoration: const InputDecoration(
+              hintText: 'Search 1,500 words...',
+              border: InputBorder.none,
             ),
           ),
         ),
@@ -63,34 +68,33 @@ class _SearchScreenState extends State<SearchScreen> {
       body: ValueListenableBuilder<List<Word>>(
         valueListenable: _searchResults,
         builder: (context, results, _) {
-          if (_controller.text.isEmpty) return _buildInfo("Nhập từ để tìm kiếm...");
-          if (results.isEmpty) return _buildInfo("Không tìm thấy từ này.");
+          // NẾU CHƯA GÕ GÌ -> HIỆN LỊCH SỬ
+          if (_controller.text.isEmpty) return _buildHistory();
+
+          if (results.isEmpty) return _buildInfo("Don't have this word in database!");
 
           return ListView.builder(
             itemCount: results.length,
             itemBuilder: (context, index) {
               final word = results[index];
               return ListTile(
-                // CHỐNG TRÀN CHỮ Ở ĐÂY
                 title: Text(
-                  word.word, 
+                  word.word,
                   style: const TextStyle(fontWeight: FontWeight.bold),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 subtitle: Text(
                   word.meaning,
-                  maxLines: 2, // Giới hạn nghĩa dài tối đa 2 dòng
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.volume_up, color: Colors.blue),
-                  onPressed: () => _ttsService.speak(word.word),
-                ),
                 onTap: () {
+                  FocusScope.of(context).unfocus();
+                  _saveToHistory(word.word); // LƯU VÀO LỊCH SỬ KHI BẤM XEM
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => WordDetailScreen(word: word)),
+                    MaterialPageRoute(
+                      builder: (_) => WordDetailScreen(word: word),
+                    ),
                   );
                 },
               );
@@ -103,5 +107,43 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildInfo(String text) {
     return Center(child: Text(text, style: const TextStyle(color: Colors.grey)));
+  }
+  // Hàm render phần Lịch sử
+  Widget _buildHistory() {
+    final box = Hive.box<String>('searchHistoryBox');
+    final history = box.values
+        .toList()
+        .reversed
+        .toList(); // Đảo ngược để hiện từ mới nhất
+
+    if (history.isEmpty) return _buildInfo("Input something to search...");
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            "Search History",
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: history.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                leading: const Icon(Icons.history, color: Colors.grey),
+                title: Text(history[index]),
+                onTap: () {
+                  _controller.text = history[index];
+                  _onSearch(history[index]);
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 }

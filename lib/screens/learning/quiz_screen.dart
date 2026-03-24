@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import '../../models/word_model.dart';
-import '../../services/quiz_service.dart';
-import '../../services/database_service.dart';
-import '../../utils/constants.dart';
+import 'package:fm_dictionary/models/word_model.dart';
+import 'package:fm_dictionary/services/quiz_service.dart';
+import 'package:fm_dictionary/utils/constants.dart';
+
 
 class QuizScreen extends StatefulWidget {
-  final List<Word> words;
-  const QuizScreen({super.key, required this.words});
+  final List<Word> targetWords;
+  final List<Word> distractorPool;
+  final int questionCount; // Nhận số lượng câu hỏi từ bên ngoài
+
+  const QuizScreen({
+    super.key, 
+    required this.targetWords, 
+    required this.distractorPool,
+    this.questionCount = 10, // Mặc định là 10
+  });
 
   @override
   State<QuizScreen> createState() => _QuizScreenState();
@@ -22,11 +29,11 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   void initState() {
     super.initState();
-    final allWords = Hive.box<Word>(DatabaseService.wordBoxName).values.toList();
+    // Gọi QuizService của bạn
     quizData = QuizService.generateQuiz(
-      widget.words,
-      allWords,
-      widget.words.length < 10 ? widget.words.length : 10,
+      widget.targetWords, 
+      widget.distractorPool, 
+      widget.questionCount
     );
   }
 

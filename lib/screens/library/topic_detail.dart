@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/screens/learning/quiz_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/word_model.dart';
 import '../../services/database_service.dart';
@@ -122,6 +123,54 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                           backgroundColor: AppConstants.primaryColor,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          final wordsInTopic = WordService().getWordsByTopic(
+                            widget.topic,
+                          );
+
+                          // Safety Check: Hiện tại UI cần 4 đáp án (1 đúng, 3 sai)
+                          // Nên nếu lúc bạn đang test mà chủ đề mới nhập có 2-3 từ thì phải chặn lại để khỏi crash app
+                          if (wordsInTopic.length < 4) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Topic must have at least 4 words to start a quiz. Please add more words to this topic.",
+                                ),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                            return;
+                          }
+
+                          // Tương lai: Chỗ này bạn có thể gọi showDialog để hỏi người dùng muốn test 10, 20 hay 50 câu.
+                          // Tạm thời bây giờ ta truyền thẳng vào QuizScreen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => QuizScreen(
+                                targetWords: wordsInTopic,
+                                distractorPool:
+                                    wordsInTopic, // Dùng chính danh sách này làm đáp án nhiễu
+                                questionCount: 10, // Tạm fix cứng 10 câu
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.quiz_rounded),
+                        label: const Text("TAKE A QUIZ"),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 55),
+                          backgroundColor: Colors
+                              .orange
+                              .shade600, // Đổi sang màu Cam để dễ phân biệt
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
                         ),
                       ),
                     ],

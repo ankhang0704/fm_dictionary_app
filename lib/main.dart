@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'services/database_service.dart';
 import 'services/tts_service.dart';
@@ -9,13 +10,20 @@ import 'utils/constants.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  await EasyLocalization.ensureInitialized();
   // 1. Khởi tạo Hive & Data
   await DatabaseService.init();
-  
   // 2. Khởi tạo TTS
   await TtsService().init();
   
-  runApp(const MyApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('en'), Locale('vi')],
+      path: 'assets/translations', // Đường dẫn tới file JSON
+      fallbackLocale: const Locale('en'),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -29,6 +37,10 @@ class MyApp extends StatelessWidget {
       valueListenable: ThemeManager.themeNotifier,
       builder: (_, ThemeMode currentMode, _) {
         return MaterialApp(
+          // Localization setup
+          localizationsDelegates: context.localizationDelegates, 
+          supportedLocales: context.supportedLocales, 
+          locale: context.locale,
           title: AppConstants.appName,
           debugShowCheckedModeBanner: false,
           themeMode: currentMode,

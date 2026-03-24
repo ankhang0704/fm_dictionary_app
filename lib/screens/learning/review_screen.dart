@@ -51,12 +51,45 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     FloatingActionButton.extended(
                       heroTag: 'quiz_btn',
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => QuizScreen(words: reviewWords),
-                          ),
-                        );
+                       final reviewWords = _wordService.getWordsToReview();
+
+                        if (reviewWords.isNotEmpty) {
+                          // Lấy toàn bộ từ trong DB để làm đáp án gây nhiễu
+                          final allWords = Hive.box<Word>(
+                            DatabaseService.wordBoxName,
+                          ).values.toList();
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => QuizScreen(
+                                targetWords:
+                                    reviewWords, // Các từ sai cần ôn lại
+                                distractorPool:
+                                    allWords, // Kho từ để lấy đáp án sai
+                                questionCount: reviewWords
+                                    .length, // Hỏi hết các từ đang bị sai
+                              ),
+                            ),
+                          );
+                        } else {
+                          // Thông báo nếu không có từ nào cần ôn tập (Như ta đã bàn ở trên)
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text("Tuyệt vời!"),
+                              content: const Text(
+                                "Bạn không có từ nào cần ôn tập lúc này. Hãy tiếp tục học từ mới nhé!",
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("Đóng"),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
                       },
                       backgroundColor: AppConstants.primaryColor,
                       icon: const Icon(Icons.quiz_rounded, color: Colors.white),

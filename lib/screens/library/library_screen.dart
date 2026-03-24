@@ -21,7 +21,7 @@ class LibraryScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Library', style: AppConstants.headingStyle),
+                  Text('Categories', style: AppConstants.headingStyle),
                   Text('EXPLORE FM TOPICS', style: AppConstants.subHeadingStyle),
                 ],
               ),

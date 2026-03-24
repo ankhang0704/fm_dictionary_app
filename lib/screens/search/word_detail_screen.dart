@@ -42,15 +42,15 @@ class WordDetailScreen extends StatelessWidget {
             ),
             const Divider(height: 40),
 
-            // Nghĩa tiếng Việt
-            const Text("NGHĨA", style: TextStyle(color: Colors.grey, letterSpacing: 1.5, fontSize: 12)),
+            // Meaning
+            const Text("MEANING", style: TextStyle(color: Colors.grey, letterSpacing: 1.5, fontSize: 12)),
             const SizedBox(height: 8),
             Text(word.meaning, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
             
             const SizedBox(height: 32),
 
-            // Ví dụ
-            const Text("VÍ DỤ", style: TextStyle(color: Colors.grey, letterSpacing: 1.5, fontSize: 12)),
+            // Example
+            const Text("EXAMPLE", style: TextStyle(color: Colors.grey, letterSpacing: 1.5, fontSize: 12)),
             const SizedBox(height: 8),
             Container(
               width: double.infinity, // Đảm bảo full chiều ngang

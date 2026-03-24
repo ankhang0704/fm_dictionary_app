@@ -1,0 +1,31 @@
+{
+    "welcome": {
+        "title": "FM Dictionary",
+        "subtitle": "Welcome to the journey of conquering 1500 specialized vocabulary.",
+        "name_hint": "What is your name?",
+        "start_btn": "Get Started",
+        "light_mode": "Light Mode",
+        "dark_mode": "Dark Mode"
+    },
+    "dashboard": {
+        "good_morning": "Good Morning,",
+        "search_hint": "Search 1,500 words...",
+        "review_mistakes": "Review Mistakes"
+    },
+    "settings": {
+        "title": "SETTINGS",
+        "title_profile": "PROFILE",
+        "profile_name": "User Name",
+        "language": "LANGUAGE",
+        "title_theme": "APPEARANCE",
+        "dark_mode": "Dark Mode",
+        "audio": "AUDIO",
+        "reset":"RESET PROGRESS",
+        "reset_desc": "Clear all learning history",
+        "reset_btn": "Reset All Progress?",
+        "reset_confirm": "This will clear all your learning history and cannot be undone. Are you sure you want to proceed?",
+        "reset_btn_cancel": "CANCEL",
+        "reset_btn_confirm": "RESET",
+        "reset_success": "All progress has been reset successfully!"
+    }
+}

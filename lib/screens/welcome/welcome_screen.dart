@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../services/database_service.dart';
 import '../../services/theme_manager.dart';
@@ -14,115 +15,200 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   final TextEditingController _nameController = TextEditingController();
   bool _isDarkMode = false;
 
+  // Widget chọn ngôn ngữ dạng Tab hiện đại
+  Widget _buildLanguageSelector(String currentLang) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _langTab('en', 'English 🇬🇧', currentLang == 'en'),
+          _langTab('vi', 'Tiếng Việt 🇻🇳', currentLang == 'vi'),
+        ],
+      ),
+    );
+  }
+
+  Widget _langTab(String code, String label, bool isSelected) {
+    return GestureDetector(
+      onTap: () => context.setLocale(Locale(code)),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final currentLang = context.locale.languageCode;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 60),
-                const Text(
-                  "English\nMaster.",
-                  style: TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Georgia',
-                    height: 1.1,
-                  ),
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 30),
+
+              Text(
+                'welcome.title'
+                    .tr(), // Chú ý: .tr() chỉ chạy nếu JSON có key 'welcome' -> 'title'
+                style: const TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Georgia',
+                  height: 1.1,
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  "Chào mừng bạn đến với hành trình chinh phục 1500 từ vựng chuyên ngành.",
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+              ),             
+              const SizedBox(height: 12),
+              // Nút chọn ngôn ngữ đặt ở trên cùng bên phải
+              Align(
+                alignment: Alignment.centerRight,
+                child: _buildLanguageSelector(currentLang),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'welcome.subtitle'.tr(),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: isDark ? Colors.white60 : Colors.black54,
                 ),
-                const SizedBox(height: 40),
-                
-                // Ô nhập tên
-                TextField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: "Tên của bạn là gì?",
-                    hintText: "Nhập tên...",
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                    prefixIcon: const Icon(Icons.person_outline),
-                  ),
-                ),
-                const SizedBox(height: 30),
-  
-                // Chọn Giao diện
-                Container(
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: _isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+              ),
+              const SizedBox(height: 40),
+
+              // Ô nhập tên thiết kế lại
+              TextField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: 'welcome.name_hint'.tr(),
+                  filled: true,
+                  fillColor: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.grey.withValues(alpha: 0.05),
+                  border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
+                  ),
+                  prefixIcon: const Icon(Icons.person_pin_rounded),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Widget chọn Theme thiết kế lại dạng Card
+              InkWell(
+                onTap: () {
+                  setState(() => _isDarkMode = !_isDarkMode);
+                  ThemeManager.updateTheme(_isDarkMode ? 'dark' : 'light');
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 15,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.grey.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
                     children: [
-                      Icon(_isDarkMode ? Icons.dark_mode : Icons.light_mode),
+                      Icon(
+                        _isDarkMode
+                            ? Icons.dark_mode_rounded
+                            : Icons.light_mode_rounded,
+                        color: Colors.blue,
+                      ),
                       const SizedBox(width: 15),
-                      const Expanded(child: Text("Giao diện tối", style: TextStyle(fontWeight: FontWeight.bold))),
+                      Expanded(
+                        child: Text(
+                          _isDarkMode ? 'welcome.dark_mode'.tr() : 'welcome.light_mode'.tr(),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
                       Switch(
                         value: _isDarkMode,
+                        activeThumbColor: Colors.blue,
                         onChanged: (value) {
-                          setState(() {
-                            _isDarkMode = value;
-                          });
-                          // Preview theme ngay lập tức
+                          setState(() => _isDarkMode = value);
                           ThemeManager.updateTheme(value ? 'dark' : 'light');
                         },
                       ),
                     ],
                   ),
                 ),
-                
-                const SizedBox(height: 60),
-  
-                // Nút bắt đầu
-                SizedBox(
-                  width: double.infinity,
-                  height: 60,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A1A1A),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              ),
+
+              const SizedBox(height: 80),
+
+              // Nút bắt đầu thiết kế kiểu Modern
+              SizedBox(
+                width: double.infinity,
+                height: 60,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDark
+                        ? Colors.blue
+                        : const Color(0xFF1A1A1A),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
                     ),
-                    onPressed: () async {
-                      final name = _nameController.text.trim();
-  
-                      // 1. Kiểm tra Validate
-                      if (name.isEmpty) {
-                        if (!mounted) return; 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Vui lòng nhập tên của bạn")),
-                        );
-                        return; 
-                      }
-                      final navigator = Navigator.of(context);
-                      // 2. Xử lý Logic dữ liệu
-                      var settings = DatabaseService.getSettings();
-                      settings.userName = name;
-                      settings.themeMode = _isDarkMode ? 'dark' : 'light';
-                      settings.isFirstRun = false;
-                      
-                      await DatabaseService.saveSettings(settings); // Async Gap ở đây
-  
-                      // 4. Dùng biến navigator đã lấy từ trước -> HẾT GẠCH XANH 100%
-                      navigator.pushReplacement(
-                        MaterialPageRoute(builder: (_) => const MainNavigation()),
+                  ),
+                  onPressed: () async {
+                    final name = _nameController.text.trim();
+                    if (name.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Vui lòng nhập tên của bạn"),
+                        ),
                       );
-                    },
-                   
-                    child: const Text("BẮT ĐẦU HỌC", style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold)),
+                      return;
+                    }
+                    final navigator = Navigator.of(context);
+                    var settings = DatabaseService.getSettings();
+                    settings.userName = name;
+                    settings.themeMode = _isDarkMode ? 'dark' : 'light';
+                    settings.isFirstRun = false;
+                    await DatabaseService.saveSettings(settings);
+
+                    navigator.pushReplacement(
+                      MaterialPageRoute(builder: (_) => const MainNavigation()),
+                    );
+                  },
+                  child: Text(
+                    'welcome.start_btn'.tr().toUpperCase(),
+                    style: const TextStyle(
+                      letterSpacing: 1.5,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 40),
-              ],
-            ),
+              ),
+              const SizedBox(height: 40),
+            ],
           ),
         ),
       ),

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/models/app_settings.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -92,6 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentLang = context.locale.languageCode;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -125,6 +127,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
             contentPadding: EdgeInsets.zero,
           ),
           const Divider(height: 48),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.language, color: Colors.blue),
+            title: Text(
+              'settings.language'.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+            ),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+              ),
+              // Nút Dropdown chọn ngôn ngữ
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: currentLang,
+                  icon: const Icon(Icons.arrow_drop_down),
+                  items: const [
+                    DropdownMenuItem(value: 'en', child: Text('English 🇬🇧')),
+                    DropdownMenuItem(
+                      value: 'vi',
+                      child: Text('Tiếng Việt 🇻🇳'),
+                    ),
+                  ],
+                  onChanged: (String? newLang) {
+                    if (newLang != null) {
+                      // GỌI HÀM NÀY LÀ TOÀN BỘ APP TỰ ĐỘNG ĐỔI NGÔN NGỮ
+                      context.setLocale(Locale(newLang));
+                    }
+                  },
+                ),
+              ),
+            ),
+          ),
+          const Divider(height: 48),
+          // Appearance Section 
           const Text(
             'APPEARANCE',
             style: AppConstants.subHeadingStyle,

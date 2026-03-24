@@ -63,7 +63,7 @@ class _MainNavigationState extends State<MainNavigation> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.library_books_rounded),
-              label: 'Library',
+              label: 'Categories',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.refresh_rounded),
