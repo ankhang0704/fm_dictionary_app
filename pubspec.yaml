@@ -30,6 +30,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  record: ^5.0.0
+  path_provider: ^2.1.1
+  permission_handler: ^11.0.0
+  string_similarity: ^2.0.0
   audioplayers: ^5.2.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0
@@ -63,7 +67,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/data/words.json
+    - assets/data/fm_dictionary.json
     - assets/translations/
   fonts:
     - family: Inter

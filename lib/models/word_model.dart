@@ -9,9 +9,9 @@ class Word extends HiveObject {
   @HiveField(1)
   final String meaning;
   @HiveField(2)
-  final String phoneticUS; // Phiên âm Mỹ
+  final String phoneticUS;
   @HiveField(3)
-  final String phoneticUK; // Phiên âm Anh
+  final String phoneticUK;
   @HiveField(4)
   final String example;
   @HiveField(5)
@@ -33,7 +33,12 @@ class Word extends HiveObject {
   @HiveField(12)
   DateTime? nextReview;
 
+  // BỔ SUNG ID ĐỂ QUẢN LÝ DỮ LIỆU TỐT HƠN
+  @HiveField(13)
+  final String id;
+
   Word({
+    required this.id, // Bắt buộc có ID
     required this.word,
     required this.meaning,
     required this.phoneticUS,
@@ -51,9 +56,13 @@ class Word extends HiveObject {
 
   factory Word.fromJson(Map<String, dynamic> json) {
     return Word(
+      id:
+          json['id'] ??
+          DateTime.now().millisecondsSinceEpoch
+              .toString(), // Dự phòng nếu thiếu ID
       word: json['word'] ?? '',
       meaning: json['meaning'] ?? '',
-      phoneticUS: json['phoneticUS'] ?? json['phonetic'] ?? '', // Fallback nếu json cũ chỉ có 'phonetic'
+      phoneticUS: json['phoneticUS'] ?? json['phonetic'] ?? '',
       phoneticUK: json['phoneticUK'] ?? json['phonetic'] ?? '',
       example: json['example'] ?? '',
       topic: json['topic'] ?? 'General',

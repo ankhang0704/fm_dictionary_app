@@ -1,8 +1,9 @@
+// file: lib/utils/constants.dart
 import 'package:flutter/material.dart';
 
 class AppConstants {
   static const String appName = 'FM Dictionary';
-  
+
   // Colors
   static const Color primaryColor = Color(0xFF1A1A1A);
   static const Color accentColor = Color(0xFFF27D26);
@@ -17,38 +18,46 @@ class AppConstants {
   static const Color errorColor = Color(0xFFF44336);
 
   // Fonts
-  static final String bodyFont = 'Inter';
-  static final String displayFont = 'PlayfairDisplay';
+  static const String bodyFont = 'Inter';
+  static const String displayFont = 'Playfair Display';
 
   // Text Styles
   static const TextStyle headingStyle = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.bold,
-    fontFamily: 'Playfair Display', // We'll use the font family name directly
+    fontFamily: displayFont,
     fontStyle: FontStyle.italic,
   );
 
   static const TextStyle subHeadingStyle = TextStyle(
     fontSize: 12,
     letterSpacing: 2,
-    color: Colors.grey,
+    color: textSecondary,
     fontWeight: FontWeight.bold,
   );
 
   static const TextStyle wordStyle = TextStyle(
     fontSize: 36,
     fontWeight: FontWeight.bold,
-    fontFamily: 'Playfair Display',
+    fontFamily: displayFont,
     letterSpacing: -0.5,
+  );
+
+  static const TextStyle bodyStyle = TextStyle(
+    fontSize: 16,
+    fontFamily: bodyFont,
+    color: textPrimary,
   );
 
   // Layout
   static const double defaultPadding = 24.0;
   static const double cardRadius = 32.0;
   static const double buttonRadius = 20.0;
-  
+  static const double inputRadius = 16.0;
+
   // Animations
   static const Duration flipDuration = Duration(milliseconds: 400);
+  static const Duration defaultAnimationDuration = Duration(milliseconds: 300);
 
   // Topic Icons Mapping
   static const Map<String, IconData> topicIcons = {

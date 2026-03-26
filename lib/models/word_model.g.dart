@@ -17,6 +17,7 @@ class WordAdapter extends TypeAdapter<Word> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Word(
+      id: fields[13] as String,
       word: fields[0] as String,
       meaning: fields[1] as String,
       phoneticUS: fields[2] as String,
@@ -36,7 +37,7 @@ class WordAdapter extends TypeAdapter<Word> {
   @override
   void write(BinaryWriter writer, Word obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.word)
       ..writeByte(1)
@@ -62,7 +63,9 @@ class WordAdapter extends TypeAdapter<Word> {
       ..writeByte(11)
       ..write(obj.lastReview)
       ..writeByte(12)
-      ..write(obj.nextReview);
+      ..write(obj.nextReview)
+      ..writeByte(13)
+      ..write(obj.id);
   }
 
   @override
