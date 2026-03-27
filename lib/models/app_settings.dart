@@ -18,6 +18,8 @@ class AppSettings extends HiveObject {
   DateTime? lastStudyDate;
   @HiveField(6)
   String defaultAccent; // 'en-US' hoặc 'en-GB'
+  @HiveField(7)
+  bool useNativeEngine; // true: native, false: whisper
 
   AppSettings({
     this.ttsSpeed = 0.5,
@@ -27,5 +29,6 @@ class AppSettings extends HiveObject {
     this.isFirstRun = true,
     this.lastStudyDate,
     this.defaultAccent = 'en-US',
+    this.useNativeEngine = true,
   });
 }

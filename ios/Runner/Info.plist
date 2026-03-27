@@ -3,6 +3,8 @@
 <plist version="1.0">
 <key>NSMicrophoneUsageDescription</key>
 <string>Chúng tôi cần quyền truy cập micro để bạn luyện phát âm tiếng Anh.</string>
+<key>NSSpeechRecognitionUsageDescription</key>
+<string>App cần quyền nhận diện giọng nói để chấm điểm phát âm.</string>
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>

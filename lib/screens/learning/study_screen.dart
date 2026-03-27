@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -23,51 +24,87 @@ class _StudyScreenState extends State<StudyScreen> {
   List<Word> _words = [];
   int _currentIndex = 0;
   bool _isFlipped = false;
-  final VoiceService _voiceService = VoiceService();
   bool _isRecording = false;
   String _spokenText = "";
   double? _pronunciationScore;
   bool _isAnalyzing = false;
+  final VoiceService _whisperService = VoiceService();
+  // final NativeVoiceService _nativeService = NativeVoiceService();
 
+  Timer? _recordingTimer;
+  final bool _useNativeEngine = true;
+  
   @override
   void initState() {
     super.initState();
     _loadWords();
     // Nạp model AI ngay khi vào màn hình
-    _voiceService.initModel().then((_) {
-    setState(() {
-       // Cập nhật trạng thái để UI biết AI đã sẵn sàng
-    });
-    });
+    if (_useNativeEngine) {
+      // _nativeService.init();
+    } else {
+      _whisperService.initModel();
+    }
   }
 
   // Xử lý khi nhấn giữ nút Micro
   void _onRecordStart() async {
     try {
-      await _voiceService.startRecording();
       setState(() {
         _isRecording = true;
         _spokenText = "";
         _pronunciationScore = null;
       });
+
+      if (_useNativeEngine) {
+        // LUỒNG NATIVE (Google/Siri)
+        // await _nativeService.startListening((text) {
+        //   _spokenText = text; // Cập nhật text liên tục
+        // });
+      } else {
+        // LUỒNG WHISPER AI
+        await _whisperService.startRecording();
+      }
+
+      // Giới hạn 5s ghi âm để tránh file quá lớn làm đơ máy
+      _recordingTimer = Timer(const Duration(seconds: 5), () {
+        if (_isRecording) {
+           _showNotification("Hết 5s ghi âm!", Colors.orange);
+          _onRecordStop(_words[_currentIndex].word);
+        }
+      });
+
     } catch (e) {
-      _showNotification("Vui lòng cấp quyền Micro!", Colors.red);
+      _showNotification("Lỗi Micro: $e", Colors.red);
+      setState(() => _isRecording = false);
     }
   }
 
-  // Xử lý khi thả nút Micro ra
+  // Thả tay Micro
   void _onRecordStop(String targetWord) async {
+    if (!_isRecording) return;
+    _recordingTimer?.cancel(); // Hủy timer nếu thả tay sớm
+
     setState(() {
       _isRecording = false;
-      _isAnalyzing = true; // Hiện loading quay quay
+      _isAnalyzing = true;
     });
 
-    final text = await _voiceService.stopAndTranscribe();
+    String? finalSpokenText;
 
-    if (text != null && text.isNotEmpty) {
-      final score = _voiceService.calculateScore(text, targetWord);
+    if (_useNativeEngine) {
+      // await _nativeService.stopListening();
+      finalSpokenText = _spokenText; 
+      // Chờ Native ngắt hẳn 1 nhịp (Fix lỗi UI)
+      await Future.delayed(const Duration(milliseconds: 500)); 
+    } else {
+      finalSpokenText = await _whisperService.stopAndTranscribe();
+    }
+
+    if (finalSpokenText != null && finalSpokenText.isNotEmpty) {
+      // Tái sử dụng hàm chấm điểm của VoiceService
+      final score = _whisperService.calculateScore(finalSpokenText, targetWord);
       setState(() {
-        _spokenText = text;
+        _spokenText = finalSpokenText!;
         _pronunciationScore = score;
       });
     } else {

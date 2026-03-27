@@ -1,6 +1,7 @@
 // file: lib/screens/welcome/welcome_screen.dart
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/screens/welcome/choose_engine_screen.dart';
 import 'package:fm_dictionary/screens/welcome/widgets/language_selector.dart';
 import 'package:fm_dictionary/screens/welcome/widgets/name_input_field.dart';
 import 'package:fm_dictionary/screens/welcome/widgets/start_button.dart';
@@ -8,7 +9,6 @@ import 'package:fm_dictionary/screens/welcome/widgets/theme_toggle_card.dart';
 import 'package:fm_dictionary/screens/welcome/widgets/welcome_header.dart';
 import '../../services/database_service.dart';
 import '../../services/theme_manager.dart';
-import '../home/main_navigation.dart';
 import '../../core/utils/constants.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -59,11 +59,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     var settings = DatabaseService.getSettings();
     settings.userName = name;
     settings.themeMode = _isDarkMode ? 'dark' : 'light';
-    settings.isFirstRun = false;
     await DatabaseService.saveSettings(settings);
 
     navigator.pushReplacement(
-      MaterialPageRoute(builder: (_) => const MainNavigation()),
+      MaterialPageRoute(builder: (_) => const ChooseEngineScreen()),
     );
   }
 

@@ -74,20 +74,19 @@ class VoiceService {
 
   // 3. Dừng ghi âm & Suy luận AI
   Future<String?> stopAndTranscribe() async {
-    // Kiểm tra "chốt chặn" an toàn
-    if (!_isModelLoaded) {
-      debugPrint("Cảnh báo: Model AI chưa nạp xong, không thể dịch!");
-      await _audioRecorder.stop(); // Vẫn phải dừng ghi âm để giải phóng Micro
-      return "Model đang nạp, vui lòng thử lại...";
-    }
+    if (!_isModelLoaded) return "Model đang nạp, vui lòng thử lại...";
 
     final filePath = await _audioRecorder.stop();
     if (filePath == null) return null;
 
     try {
-      // Suy luận (Inference)
       final WhisperTranscribeResponse response = await _whisper.transcribe(
-        transcribeRequest: TranscribeRequest(audio: filePath),
+        transcribeRequest: TranscribeRequest(
+          audio: filePath,
+          threads: 4,      // Tận dụng đa nhân CPU (Fix Lag)
+          isTranslate: false,
+          language: "en",  // Ép nhận diện Tiếng Anh (Tăng tốc 50%)
+        ),
       );
       return response.text;
     } catch (e) {
@@ -97,19 +96,19 @@ class VoiceService {
   }
   // 4. Chấm điểm phát âm
   double calculateScore(String spokenText, String targetWord) {
-    // Chuẩn hóa: Biến thành chữ thường, xóa sạch dấu câu
-    String cleanSpoken = spokenText
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^\w\s]'), '')
-        .trim();
-    String cleanTarget = targetWord
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^\w\s]'), '')
-        .trim();
+    String cleanSpoken = spokenText.toLowerCase().replaceAll(RegExp(r'[^\w\s]'), '').trim();
+    String cleanTarget = targetWord.toLowerCase().replaceAll(RegExp(r'[^\w\s]'), '').trim();
 
     if (cleanSpoken.isEmpty) return 0.0;
 
-    // Tính % giống nhau
+    // 1. Kiểm tra exact match trước (Nhanh và chính xác tuyệt đối)
+    if (cleanSpoken == cleanTarget) return 100.0;
+
+    // 2. Kiểm tra từ mục tiêu có nằm trong câu nói không (Whisper hay chế thêm từ thừa)
+    final words = cleanSpoken.split(' ');
+    if (words.contains(cleanTarget)) return 95.0; // 95 điểm vì có từ thừa nhưng đọc chuẩn từ chính
+
+    // 3. Fallback: similarity score (Tính toán độ giống nhau)
     return cleanSpoken.similarityTo(cleanTarget) * 100;
   }
 

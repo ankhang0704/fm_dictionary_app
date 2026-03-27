@@ -204,7 +204,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
           const SizedBox(height: 24),
-
+           SectionHeader(title: 'TỐI ƯU HÓA NHẬN DIỆN GIỌNG NÓI'),
+          SettingsGroup(
+            children:[
+              SettingsTile(
+                icon: CupertinoIcons.mic_fill,
+                iconColor: Colors.green,
+                title: 'Dùng Native Speech',
+                trailing: Switch.adaptive(
+                  value: _settings.useNativeEngine, // SỬA THÀNH _settings
+                  // ignore: deprecated_member_use
+                  activeColor: AppConstants.accentColor,
+                  onChanged: (bool value) {
+                    _settings.useNativeEngine = value; // SỬA THÀNH _settings
+                    _updateSettings(); // Dùng hàm _updateSettings() có sẵn của bạn cho Clean Code
+                  },
+                ),
+              ),
+              // Thêm dòng text nhỏ giải thích ở dưới nút bật/tắt
+              Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 4),
+                child: Text(
+                  'Bật: Nhanh, nhẹ, cần mạng (Khuyên dùng cho máy yếu).\nTắt: Dùng mô hình AI Whisper (Chính xác, offline, nặng máy).',
+                  style: TextStyle(
+                    fontSize: 12, 
+                    color: AppConstants.textSecondary,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
           SectionHeader(title: 'settings.audio'.tr()),
           SettingsGroup(
             children: [
