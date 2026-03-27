@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/word_model.dart';
 import '../../services/database_service.dart';
 import '../../services/word_service.dart';
-import '../../utils/constants.dart';
+import '../../core/utils/constants.dart';
 import '../../widgets/progress_card.dart';
 import '../../widgets/smart_action_button.dart';
 import '../learning/study_screen.dart';

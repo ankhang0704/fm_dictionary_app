@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/utils/constants.dart';
+import 'package:fm_dictionary/core/utils/constants.dart';
 
 class NameInputField extends StatelessWidget {
   final TextEditingController controller;

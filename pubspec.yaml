@@ -30,11 +30,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  record: ^5.0.0
+  # Record Sound And Transcribe:
+  whisper_flutter_new: ^1.0.1
+  record: ^6.2.0
   path_provider: ^2.1.1
-  permission_handler: ^11.0.0
+  permission_handler: ^12.0.1
   string_similarity: ^2.0.0
-  audioplayers: ^5.2.1
+  audioplayers: ^6.6.0
+
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   flutter_tts: ^4.0.2
@@ -69,6 +72,7 @@ flutter:
   assets:
     - assets/data/fm_dictionary.json
     - assets/translations/
+    - assets/models/ggml-base.bin
   fonts:
     - family: Inter
       fonts:

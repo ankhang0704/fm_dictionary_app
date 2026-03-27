@@ -1,8 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/core/utils/loading.dart';
 import 'package:fm_dictionary/models/word_model.dart';
 import 'package:fm_dictionary/services/database_service.dart';
-import 'package:fm_dictionary/utils/constants.dart';
+import 'package:fm_dictionary/core/utils/constants.dart';
 import 'package:hive/hive.dart';
 
 class ResetProgressLogic {
@@ -48,6 +49,7 @@ class ResetProgressLogic {
               ),
             ),
             onPressed: () async {
+              LoadingManager.show();
               final wordBox = Hive.box<Word>(DatabaseService.wordBoxName);
               for (var word in wordBox.values) {
                 word.isLearned = false;
@@ -57,6 +59,7 @@ class ResetProgressLogic {
                 await word.save();
               }
               if (!context.mounted) return;
+              LoadingManager.hide();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

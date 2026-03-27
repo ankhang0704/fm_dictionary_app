@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../utils/constants.dart';
+import '../core/utils/constants.dart';
 
 class TopicListTile extends StatelessWidget {
   final String name;

@@ -2,10 +2,11 @@ import 'dart:math';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/services/voice_service.dart';
 import '../../models/word_model.dart';
 import '../../services/word_service.dart';
 import '../../services/tts_service.dart';
-import '../../utils/constants.dart';
+import '../../core/utils/constants.dart';
 import 'widgets/speaker_button.dart';
 
 class StudyScreen extends StatefulWidget {
@@ -22,11 +23,62 @@ class _StudyScreenState extends State<StudyScreen> {
   List<Word> _words = [];
   int _currentIndex = 0;
   bool _isFlipped = false;
+  final VoiceService _voiceService = VoiceService();
+  bool _isRecording = false;
+  String _spokenText = "";
+  double? _pronunciationScore;
+  bool _isAnalyzing = false;
 
   @override
   void initState() {
     super.initState();
     _loadWords();
+    // Nạp model AI ngay khi vào màn hình
+    _voiceService.initModel().then((_) {
+    setState(() {
+       // Cập nhật trạng thái để UI biết AI đã sẵn sàng
+    });
+    });
+  }
+
+  // Xử lý khi nhấn giữ nút Micro
+  void _onRecordStart() async {
+    try {
+      await _voiceService.startRecording();
+      setState(() {
+        _isRecording = true;
+        _spokenText = "";
+        _pronunciationScore = null;
+      });
+    } catch (e) {
+      _showNotification("Vui lòng cấp quyền Micro!", Colors.red);
+    }
+  }
+
+  // Xử lý khi thả nút Micro ra
+  void _onRecordStop(String targetWord) async {
+    setState(() {
+      _isRecording = false;
+      _isAnalyzing = true; // Hiện loading quay quay
+    });
+
+    final text = await _voiceService.stopAndTranscribe();
+
+    if (text != null && text.isNotEmpty) {
+      final score = _voiceService.calculateScore(text, targetWord);
+      setState(() {
+        _spokenText = text;
+        _pronunciationScore = score;
+      });
+    } else {
+      setState(() {
+        _spokenText = "Không nghe rõ. Thử lại nhé!";
+      });
+    }
+
+    setState(() {
+      _isAnalyzing = false;
+    });
   }
 
   void _loadWords() {
@@ -162,31 +214,130 @@ class _StudyScreenState extends State<StudyScreen> {
         children: [
           Text(word.topic.toUpperCase(), style: AppConstants.subHeadingStyle),
           const SizedBox(height: 20),
-          Text(word.word, textAlign: TextAlign.center, 
-              style: AppConstants.wordStyle.copyWith(
-                color: theme.textTheme.displayLarge?.color // Tự động đổi màu theo theme
-              )),
-          const SizedBox(height: 12),
-          // FIX IPA HIỂN THỊ TRÊN DARK MODE
           Text(
-            word.phoneticUS.isNotEmpty ? word.phoneticUS : word.phoneticUK,
-            textAlign: TextAlign.center, 
-            style: TextStyle(
-              fontSize: 20,
-              color: theme.colorScheme.primary, // Dùng primary của theme để có độ sáng phù hợp
-              fontWeight: FontWeight.w500,
-              fontFamily: 'sans-serif', // Font hỗ trợ ký tự phiên âm
+            word.word,
+            textAlign: TextAlign.center,
+            style: AppConstants.wordStyle.copyWith(
+              color: theme.textTheme.displayLarge?.color,
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 12),
+          Text(
+            word.phoneticUS.isNotEmpty ? word.phoneticUS : word.phoneticUK,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w500,
+              fontFamily: 'sans-serif',
+            ),
+          ),
+          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SpeakerButton(ttsService: _ttsService, context: context, text: word.word, accent: 'en-US', label: 'US'),
+              SpeakerButton(
+                ttsService: _ttsService,
+                context: context,
+                text: word.word,
+                accent: 'en-US',
+                label: 'US',
+              ),
               const SizedBox(width: 15),
-              SpeakerButton(ttsService: _ttsService, context: context, text: word.word, accent: 'en-GB', label: 'UK'),
+              SpeakerButton(
+                ttsService: _ttsService,
+                context: context,
+                text: word.word,
+                accent: 'en-GB',
+                label: 'UK',
+              ),
             ],
           ),
+
+          const SizedBox(height: 40),
+
+          // ================= THÊM PHẦN GHI ÂM Ở ĐÂY =================
+
+          // Nút Micro (Nhấn giữ để nói)
+          GestureDetector(
+            onLongPressStart: (_) => _onRecordStart(),
+            onLongPressEnd: (_) => _onRecordStop(word.word),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: _isRecording ? 80 : 65, // Nút to ra khi đang bấm
+              height: _isRecording ? 80 : 65,
+              decoration: BoxDecoration(
+                color: _isRecording
+                    ? Colors.red
+                    : theme.colorScheme.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: _isRecording ? Colors.red : theme.colorScheme.primary,
+                  width: 2,
+                ),
+                boxShadow: _isRecording
+                    ? [
+                        BoxShadow(
+                          color: Colors.red.withValues(alpha: 0.5),
+                          blurRadius: 15,
+                        ),
+                      ]
+                    : [],
+              ),
+              child: _isAnalyzing
+                  ? const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(
+                      Icons.mic_rounded,
+                      size: 32,
+                      color: _isRecording
+                          ? Colors.white
+                          : theme.colorScheme.primary,
+                    ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+          Text(
+            _isRecording ? "Đang nghe... (Thả ra để chấm)" : "Nhấn giữ để đọc",
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+          ),
+
+          // Hiển thị kết quả sau khi phân tích
+          if (_pronunciationScore != null) ...[
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: _pronunciationScore! > 80
+                    ? Colors.green.withValues(alpha: 0.1)
+                    : Colors.orange.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    "Bạn đọc: \"$_spokenText\"",
+                    style: const TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _pronunciationScore! > 80
+                        ? "Tuyệt vời! (${_pronunciationScore!.toInt()}%)"
+                        : "Cố lên nhé! (${_pronunciationScore!.toInt()}%)",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _pronunciationScore! > 80
+                          ? Colors.green
+                          : Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

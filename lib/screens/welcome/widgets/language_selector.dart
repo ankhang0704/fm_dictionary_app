@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/utils/constants.dart';
+import 'package:fm_dictionary/core/utils/constants.dart';
 
 class LanguageSelector extends StatelessWidget {
   final String currentLang;

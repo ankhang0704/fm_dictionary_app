@@ -1,21 +1,22 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/core/utils/loading.dart';
 import 'services/database_service.dart';
 import 'services/tts_service.dart';
 import 'services/theme_manager.dart';
 import 'screens/home/main_navigation.dart';
 import 'screens/welcome/welcome_screen.dart';
-import 'utils/constants.dart';
+import 'core/utils/constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await EasyLocalization.ensureInitialized();
   // 1. Khởi tạo Hive & Data
   await DatabaseService.init();
   // 2. Khởi tạo TTS
   await TtsService().init();
-  
+
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('vi')],
@@ -32,20 +33,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = DatabaseService.getSettings();
-    
+
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: ThemeManager.themeNotifier,
       builder: (_, ThemeMode currentMode, _) {
         return MaterialApp(
-          // Localization setup
-          localizationsDelegates: context.localizationDelegates, 
-          supportedLocales: context.supportedLocales, 
+          // --- GIỮ NGUYÊN PHẦN LOCALIZATION ---
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
           locale: context.locale,
           title: AppConstants.appName,
           debugShowCheckedModeBanner: false,
           themeMode: currentMode,
-          
-          // Light Theme
+
+          // --- GIỮ NGUYÊN THEME DATA ---
           theme: ThemeData(
             useMaterial3: true,
             primaryColor: AppConstants.primaryColor,
@@ -57,8 +58,6 @@ class MyApp extends StatelessWidget {
               primary: AppConstants.primaryColor,
             ),
           ),
-          
-          // Dark Theme
           darkTheme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.dark,
@@ -71,8 +70,35 @@ class MyApp extends StatelessWidget {
               surface: AppConstants.darkCardColor,
             ),
           ),
-          
-          home: settings.isFirstRun ? const WelcomeScreen() : const MainNavigation(),
+
+          // --- PHẦN QUAN TRỌNG: TÍCH HỢP LOADING TẠI ĐÂY ---
+          builder: (context, child) {
+            return Stack(
+              children: [
+                child!, // Đây là màn hình App của bạn
+                ValueListenableBuilder<bool>(
+                  valueListenable: LoadingManager.isLoading,
+                  builder: (context, loading, _) {
+                    if (!loading) return const SizedBox.shrink();
+
+                    return Container(
+                      color: Colors
+                          .black45, // Làm tối màn hình (màu này đẹp hơn black26)
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          color: AppConstants.primaryColor, // Đồng bộ màu sắc
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+
+          home: settings.isFirstRun
+              ? const WelcomeScreen()
+              : const MainNavigation(),
         );
       },
     );

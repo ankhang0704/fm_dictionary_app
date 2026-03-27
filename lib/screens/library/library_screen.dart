@@ -4,7 +4,7 @@ import 'package:fm_dictionary/screens/library/topic_detail.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/word_model.dart';
 import '../../services/database_service.dart';
-import '../../utils/constants.dart';
+import '../../core/utils/constants.dart';
 
 class LibraryScreen extends StatelessWidget {
   const LibraryScreen({super.key});
