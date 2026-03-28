@@ -15,6 +15,7 @@ List<Word> _parseJsonInBackground(String response) {
 class DatabaseService {
   static const String wordBoxName = 'words_box';
   static const String settingsBoxName = 'settings_box';
+  static const String progressBoxName = 'learning_progress_box';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -29,6 +30,7 @@ class DatabaseService {
     await Hive.openBox<AppSettings>(settingsBoxName);
 
     // Kiểm tra và Import dữ liệu lần đầu
+    await Hive.openBox(progressBoxName);
     await _checkAndImportData();
   }
 

@@ -20,19 +20,21 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // TỐI ƯU 1: Lắng nghe sự thay đổi của Progress Box thay vì Word Box
+    final progressBoxListenable = Hive.box(
+      DatabaseService.progressBoxName,
+    ).listenable();
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title:  Text(
-          'review.title'.tr(),
-          style: AppConstants.subHeadingStyle,
-        ),
+        title: Text('review.title'.tr(), style: AppConstants.subHeadingStyle),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: ValueListenableBuilder(
-        valueListenable: Hive.box<Word>(DatabaseService.wordBoxName).listenable(),
+        valueListenable: progressBoxListenable,
         builder: (context, box, _) {
           final reviewWords = _wordService.getWordsToReview();
           return reviewWords.isEmpty
@@ -41,7 +43,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         },
       ),
       floatingActionButton: ValueListenableBuilder(
-        valueListenable: Hive.box<Word>(DatabaseService.wordBoxName).listenable(),
+        valueListenable: progressBoxListenable,
         builder: (context, box, _) {
           final reviewWords = _wordService.getWordsToReview();
           return reviewWords.isNotEmpty
@@ -52,49 +54,31 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     FloatingActionButton.extended(
                       heroTag: 'quiz_btn',
                       onPressed: () {
-                       final reviewWords = _wordService.getWordsToReview();
-
                         if (reviewWords.isNotEmpty) {
-                          // Lấy toàn bộ từ trong DB để làm đáp án gây nhiễu
                           final allWords = Hive.box<Word>(
                             DatabaseService.wordBoxName,
                           ).values.toList();
-
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => QuizScreen(
-                                targetWords:
-                                    reviewWords, // Các từ sai cần ôn lại
-                                distractorPool:
-                                    allWords, // Kho từ để lấy đáp án sai
-                                questionCount: reviewWords
-                                    .length, // Hỏi hết các từ đang bị sai
+                                targetWords: reviewWords,
+                                distractorPool: allWords,
+                                questionCount: reviewWords.length,
                               ),
-                            ),
-                          );
-                        } else {
-                          // Thông báo nếu không có từ nào cần ôn tập (Như ta đã bàn ở trên)
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title:  Text('review.no_words'.tr()),
-                              content:  Text(
-                                'review.no_words_desc'.tr(),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child:  Text('review.close'.tr()),
-                                ),
-                              ],
                             ),
                           );
                         }
                       },
                       backgroundColor: AppConstants.primaryColor,
                       icon: const Icon(Icons.quiz_rounded, color: Colors.white),
-                      label:  Text('review.quiz_test'.tr(), style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      label: Text(
+                        'review.quiz_test'.tr(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     FloatingActionButton.extended(
@@ -103,13 +87,23 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const StudyScreen(topic: 'Review'),
+                            builder: (context) =>
+                                const StudyScreen(topic: 'Review'),
                           ),
                         );
                       },
                       backgroundColor: AppConstants.accentColor,
-                      icon: const Icon(Icons.play_arrow_rounded, color: Colors.white),
-                      label:  Text('review.start_review'.tr(), style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      icon: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                      ),
+                      label: Text(
+                        'review.start_review'.tr(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 )
@@ -124,16 +118,20 @@ class _ReviewScreenState extends State<ReviewScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.check_circle_outline_rounded, size: 80, color: AppConstants.successColor.withValues(alpha: 0.5)),
+          Icon(
+            Icons.check_circle_outline_rounded,
+            size: 80,
+            color: AppConstants.successColor.withValues(alpha: 0.5),
+          ),
           const SizedBox(height: 24),
-           Text(
+          Text(
             'review.empty_state_title'.tr(),
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-           Text(
+          Text(
             'review.empty_state_message'.tr(),
-            style: TextStyle(color: AppConstants.textSecondary),
+            style: const TextStyle(color: AppConstants.textSecondary),
           ),
         ],
       ),
@@ -147,6 +145,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final word = reviewWords[index];
+
+        // TỐI ƯU 2: Lấy wrongCount (wc) từ thuật toán Anki
+        final progress = _wordService.getWordProgress(word.id);
+        final int wrongCount = progress['wc'] as int;
+
         return Container(
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
@@ -154,8 +157,15 @@ class _ReviewScreenState extends State<ReviewScreen> {
             border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
           ),
           child: ListTile(
-            title: Text(word.word, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(word.meaning, maxLines: 1, overflow: TextOverflow.ellipsis),
+            title: Text(
+              word.word,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              word.meaning,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -163,8 +173,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '${word.wrongCount} mistakes',
-                style: const TextStyle(color: AppConstants.errorColor, fontSize: 10, fontWeight: FontWeight.bold),
+                '$wrongCount mistakes', // Bạn có thể cân nhắc chuyển sang .tr() nếu muốn dịch chữ "mistakes"
+                style: const TextStyle(
+                  color: AppConstants.errorColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),

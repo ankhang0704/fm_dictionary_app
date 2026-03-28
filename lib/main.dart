@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/utils/loading.dart';
+import 'package:fm_dictionary/services/voice_service.dart';
 import 'services/database_service.dart';
 import 'services/tts_service.dart';
 import 'services/theme_manager.dart';
@@ -17,6 +18,8 @@ void main() async {
   // 2. Khởi tạo TTS
   await TtsService().init();
 
+  await VoiceService.instance.initModel();
+  
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('vi')],

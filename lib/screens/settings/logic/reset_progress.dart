@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/utils/loading.dart';
-import 'package:fm_dictionary/models/word_model.dart';
 import 'package:fm_dictionary/services/database_service.dart';
 import 'package:fm_dictionary/core/utils/constants.dart';
 import 'package:hive/hive.dart';
@@ -50,17 +49,15 @@ class ResetProgressLogic {
             ),
             onPressed: () async {
               LoadingManager.show();
-              final wordBox = Hive.box<Word>(DatabaseService.wordBoxName);
-              for (var word in wordBox.values) {
-                word.isLearned = false;
-                word.wrongCount = 0;
-                word.repetitions = 0;
-                word.interval = 0;
-                await word.save();
-              }
+
+              // TỐI ƯU: Chỉ cần xóa toàn bộ dữ liệu trong progress box (Siêu tốc - O(1))
+              final progressBox = Hive.box(DatabaseService.progressBoxName);
+              await progressBox.clear();
+
               if (!context.mounted) return;
               LoadingManager.hide();
               Navigator.pop(context);
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('settings.reset_success'.tr()),

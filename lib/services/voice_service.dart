@@ -8,6 +8,10 @@ import 'package:string_similarity/string_similarity.dart';
 import 'package:whisper_flutter_new/whisper_flutter_new.dart';
 
 class VoiceService {
+  // Singleton pattern
+  VoiceService._();
+  static final VoiceService instance = VoiceService._();
+
   final AudioRecorder _audioRecorder = AudioRecorder();
   late Whisper _whisper;
   bool _isModelLoaded = false;
@@ -15,41 +19,26 @@ class VoiceService {
   // 1. Khởi tạo Model (Gọi 1 lần khi vào StudyScreen)
   Future<void> initModel() async {
     if (_isModelLoaded) return;
-
     try {
       final directory = await getApplicationDocumentsDirectory();
       final String dirPath = directory.path;
-
       final file = File("$dirPath/ggml-base.bin");
 
-      // LOG 1: Kiểm tra file đã tồn tại chưa
-      debugPrint("File exists: ${await file.exists()}");
-
       if (!await file.exists()) {
-        debugPrint("Đang copy từ assets...");
-        final data = await rootBundle.load(
-          'assets/models/ggml-base.bin',
-        );
+        final data = await rootBundle.load('assets/models/ggml-base.bin');
         await file.writeAsBytes(data.buffer.asUint8List(), flush: true);
-        debugPrint("Copy xong. File size: ${await file.length()} bytes");
       }
 
-      // LOG 2: Kiểm tra file size hợp lệ (phải > 1MB)
       final fileSize = await file.length();
-      debugPrint("Model file size: $fileSize bytes");
-      if (fileSize < 1000000) {
-        debugPrint("LỖI: File quá nhỏ, có thể bị lỗi khi copy!");
-        return;
-      }
+      if (fileSize < 1000000) return;
 
       _whisper = Whisper(model: WhisperModel.tiny, modelDir: dirPath);
-
       _isModelLoaded = true;
-      debugPrint("✅ Model loaded thành công!");
     } catch (e) {
       debugPrint("❌ Lỗi initModel: $e");
     }
   }
+
 
   // 2. Bắt đầu ghi âm (Chuẩn 16kHz)
   Future<void> startRecording() async {
@@ -74,30 +63,35 @@ class VoiceService {
 
   // 3. Dừng ghi âm & Suy luận AI
   Future<String?> stopAndTranscribe() async {
-    // Kiểm tra "chốt chặn" an toàn
     if (!_isModelLoaded) {
-      debugPrint("Cảnh báo: Model AI chưa nạp xong, không thể dịch!");
-      await _audioRecorder.stop(); // Vẫn phải dừng ghi âm để giải phóng Micro
-      return "Model đang nạp, vui lòng thử lại...";
+      await _audioRecorder.stop();
+      return null;
     }
 
     final filePath = await _audioRecorder.stop();
     if (filePath == null) return null;
 
     try {
-      // Suy luận (Inference)
+      // TỐI ƯU 1: Ép ngôn ngữ tiếng Anh & dùng đa luồng
       final WhisperTranscribeResponse response = await _whisper.transcribe(
-        transcribeRequest: TranscribeRequest(audio: filePath),
+        transcribeRequest: TranscribeRequest(
+          audio: filePath,
+          threads: 4,
+          isTranslate: false,
+          language: "en", // Tăng tốc độ dịch lên 30-50%
+        ),
       );
+      final file = File(filePath);
+      if (await file.exists()) {
+        await file.delete();
+      }
       return response.text;
     } catch (e) {
-      debugPrint("Lỗi khi AI đang dịch: $e");
       return null;
     }
   }
-  // 4. Chấm điểm phát âm
+
   double calculateScore(String spokenText, String targetWord) {
-    // Chuẩn hóa: Biến thành chữ thường, xóa sạch dấu câu
     String cleanSpoken = spokenText
         .toLowerCase()
         .replaceAll(RegExp(r'[^\w\s]'), '')
@@ -108,8 +102,11 @@ class VoiceService {
         .trim();
 
     if (cleanSpoken.isEmpty) return 0.0;
+    if (cleanSpoken == cleanTarget) return 100.0;
 
-    // Tính % giống nhau
+    final words = cleanSpoken.split(' ');
+    if (words.contains(cleanTarget)) return 95.0; // Whisper hay thêm từ rác
+
     return cleanSpoken.similarityTo(cleanTarget) * 100;
   }
 

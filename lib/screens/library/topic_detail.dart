@@ -19,6 +19,7 @@ class TopicDetailScreen extends StatefulWidget {
 
 class _TopicDetailScreenState extends State<TopicDetailScreen> {
   String _searchQuery = "";
+  final WordService _wordService = WordService();
 
   @override
   Widget build(BuildContext context) {
@@ -26,29 +27,38 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
 
     return ValueListenableBuilder(
       valueListenable: Hive.box<Word>(DatabaseService.wordBoxName).listenable(),
-      builder: (context, box, _) {
+      builder: (context, progressBox, child) {
         final allWords = WordService().getWordsByTopic(widget.topic);
-        final filteredWords = allWords.where((w) => 
-          w.word.toLowerCase().contains(_searchQuery.toLowerCase())
-        ).toList();
-        
-        final learnedCount = allWords.where((w) => w.isLearned).length;
-        final progress = allWords.isEmpty ? 0.0 : learnedCount / allWords.length;
+        final filteredWords = allWords
+            .where(
+              (w) => w.word.toLowerCase().contains(_searchQuery.toLowerCase()),
+            )
+            .toList();
+        final learnedCount = allWords
+            .where((w) => _wordService.isWordLearned(w.id))
+            .length;
+        final progress = allWords.isEmpty
+            ? 0.0
+            : learnedCount / allWords.length;
 
         return Scaffold(
           body: CustomScrollView(
-            slivers:[
+            slivers: [
               SliverAppBar(
                 expandedHeight: 220,
                 pinned: true,
                 backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 flexibleSpace: FlexibleSpaceBar(
                   centerTitle: true,
-                  titlePadding: const EdgeInsets.only(bottom: 16, left: 20, right: 20),
+                  titlePadding: const EdgeInsets.only(
+                    bottom: 16,
+                    left: 20,
+                    right: 20,
+                  ),
                   title: Text(
                     widget.topic,
                     style: TextStyle(
-                      fontSize: 18, 
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.white : Colors.black87,
                     ),
@@ -65,13 +75,19 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children:[
+                      children: [
                         const SizedBox(height: 20),
-                        Icon(Icons.auto_stories_rounded, size: 40, color: AppConstants.primaryColor),
+                        Icon(
+                          Icons.auto_stories_rounded,
+                          size: 40,
+                          color: AppConstants.primaryColor,
+                        ),
                         const SizedBox(height: 12),
                         Text(
-                          "$learnedCount / ${allWords.length} ${'topic.words_learned'.tr()}", 
-                          style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+                          "$learnedCount / ${allWords.length} ${'topic.words_learned'.tr()}",
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : Colors.black54,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         // Dùng phần trăm width thay vì pixel cứng để tránh tràn trên máy nhỏ
@@ -82,14 +98,20 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                             child: LinearProgressIndicator(
                               value: progress,
                               minHeight: 8,
-                              backgroundColor: Colors.grey.withValues(alpha: 0.2),
+                              backgroundColor: Colors.grey.withValues(
+                                alpha: 0.2,
+                              ),
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                progress == 1.0 ? Colors.green : AppConstants.primaryColor
+                                progress == 1.0
+                                    ? Colors.green
+                                    : AppConstants.primaryColor,
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 40), // Chừa chỗ cho Title của SliverAppBar
+                        const SizedBox(
+                          height: 40,
+                        ), // Chừa chỗ cho Title của SliverAppBar
                       ],
                     ),
                   ),
@@ -100,7 +122,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Column(
-                    children:[
+                    children: [
                       TextField(
                         onChanged: (v) => setState(() => _searchQuery = v),
                         decoration: InputDecoration(
@@ -109,21 +131,28 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                           filled: true,
                           fillColor: Theme.of(context).cardColor,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15), 
+                            borderRadius: BorderRadius.circular(15),
                             borderSide: BorderSide.none,
-                          )
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton.icon(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => StudyScreen(topic: widget.topic))),
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => StudyScreen(topic: widget.topic),
+                          ),
+                        ),
                         icon: const Icon(Icons.style),
-                        label:  Text('topic.study'.tr()),
+                        label: Text('topic.study'.tr()),
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(double.infinity, 55),
                           backgroundColor: AppConstants.primaryColor,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -137,10 +166,12 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                           // Nên nếu lúc bạn đang test mà chủ đề mới nhập có 2-3 từ thì phải chặn lại để khỏi crash app
                           if (wordsInTopic.length < 4) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                               SnackBar(
+                              SnackBar(
                                 content: Text(
-                                  'topic.not_enough_words'.tr(args: [wordsInTopic.length.toString()]),
-                                  style: const TextStyle(color: Colors.white),                                
+                                  'topic.not_enough_words'.tr(
+                                    args: [wordsInTopic.length.toString()],
+                                  ),
+                                  style: const TextStyle(color: Colors.white),
                                 ),
                                 backgroundColor: Colors.orange,
                               ),
@@ -163,7 +194,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                           );
                         },
                         icon: const Icon(Icons.quiz_rounded),
-                        label:  Text('topic.take_quiz'.tr()),
+                        label: Text('topic.take_quiz'.tr()),
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(double.infinity, 55),
                           backgroundColor: Colors
@@ -181,37 +212,56 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
               ),
 
               SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final word = filteredWords[index];
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-                      leading: Icon(
-                        word.isLearned ? Icons.check_circle : Icons.circle_outlined,
-                        color: word.isLearned ? Colors.green : Colors.grey.shade400,
-                        size: 28,
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final word = filteredWords[index];
+
+                  // Lấy trạng thái từ Service
+                  final bool isLearned = _wordService.isWordLearned(word.id);
+
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 4,
+                    ),
+                    leading: Icon(
+                      isLearned ? Icons.check_circle : Icons.circle_outlined,
+                      color: isLearned ? Colors.green : Colors.grey.shade400,
+                      size: 28,
+                    ),
+                    title: Text(
+                      word.word,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
-                      title: Text(
-                        word.word, 
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        maxLines: 1, overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(
+                      word.meaning,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey,
+                    ),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => WordDetailScreen(word: word),
                       ),
-                      subtitle: Text(
-                        word.meaning,
-                        maxLines: 1, overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WordDetailScreen(word: word))),
-                    );
-                  },
-                  childCount: filteredWords.length,
-                ),
+                    ),
+                  );
+                }, childCount: filteredWords.length),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 40)), // Khoảng trống dưới cùng
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 40),
+              ), // Khoảng trống dưới cùng
             ],
           ),
         );
-      }
+      },
     );
   }
 }

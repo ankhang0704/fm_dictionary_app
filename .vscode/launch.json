@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "App - Debug (Samsung)",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "SM A336E",
+        },
+        {
+            "name": "App - Windows Desktop",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "windows" 
+        },
+        {
+            "name": "App - Profile (Kiểm tra hiệu năng AI)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "App - Release (Đóng gói đi tập)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}

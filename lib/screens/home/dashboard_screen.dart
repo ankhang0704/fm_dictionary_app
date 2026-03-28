@@ -23,15 +23,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
   
   @override
   Widget build(BuildContext context) {
+    
+    return ValueListenableBuilder(
+      valueListenable: Hive.box(DatabaseService.progressBoxName).listenable(),
+      builder: (context, progressBox, child) {
     final settings = DatabaseService.getSettings();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
+    final wordBox = Hive.box<Word>(DatabaseService.wordBoxName);
+        final learnedCount = wordBox.values
+            .where((w) => _wordService.isWordLearned(w.id))
+            .length;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: ValueListenableBuilder(
         valueListenable: Hive.box<Word>(DatabaseService.wordBoxName).listenable(),
         builder: (context, box, _) {
-          final learnedCount = box.values.where((w) => w.isLearned).length;
           final totalCount = box.length;
           // final reviewCount = _wordService.getWordsToReview().length;
 
@@ -67,7 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       String targetTopic = topics.isNotEmpty ? topics.first : 'General';
                       for (var topic in topics) {
                         final words = _wordService.getWordsByTopic(topic);
-                        if (words.any((w) => !w.isLearned)) {
+                        if (words.any((w) => !_wordService.isWordLearned(w.id))) {
                           targetTopic = topic;
                           break;
                         }
@@ -151,5 +157,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
       ),
     );
+  });
   }
 }

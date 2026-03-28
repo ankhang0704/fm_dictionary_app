@@ -55,7 +55,13 @@
         "notification_known": "Got it! +1",
         "notification_unknown": "Needs review!",
         "meaning": "MEANING",
-        "example": "EXAMPLE"
+        "example": "EXAMPLE",
+        "listening": "Listening...",
+        "analyzing": "AI is analyzing your pronunciation...",
+        "tap_to_speak": "Tap to Speak",
+        "you_said": "You said: ",
+        "try_again": "Try Again",
+        "excellent": "Excellent work!"
 
     },
     "categories": {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -12,7 +13,7 @@ import 'widgets/speaker_button.dart';
 class StudyScreen extends StatefulWidget {
   final String topic;
   const StudyScreen({super.key, required this.topic});
-  
+
   @override
   State<StudyScreen> createState() => _StudyScreenState();
 }
@@ -23,77 +24,95 @@ class _StudyScreenState extends State<StudyScreen> {
   List<Word> _words = [];
   int _currentIndex = 0;
   bool _isFlipped = false;
-  final VoiceService _voiceService = VoiceService();
   bool _isRecording = false;
   String _spokenText = "";
   double? _pronunciationScore;
   bool _isAnalyzing = false;
+  bool _isMounted = true;
+  Timer? _recordingTimer;
 
   @override
   void initState() {
     super.initState();
     _loadWords();
     // Nạp model AI ngay khi vào màn hình
-    _voiceService.initModel().then((_) {
-    setState(() {
-       // Cập nhật trạng thái để UI biết AI đã sẵn sàng
-    });
-    });
   }
 
+  @override
+  void dispose() {
+    _isMounted = false;
+    _recordingTimer?.cancel();
+    super.dispose();
+  }
+
+  Word get currentWord => _words[_currentIndex];
   // Xử lý khi nhấn giữ nút Micro
-  void _onRecordStart() async {
+  void _startRecording() async {
     try {
-      await _voiceService.startRecording();
-      setState(() {
-        _isRecording = true;
-        _spokenText = "";
-        _pronunciationScore = null;
+      _recordingTimer?.cancel(); // Đảm bảo không trùng timer
+
+      await VoiceService.instance.startRecording();
+      if (_isMounted) setState(() => _isRecording = true);
+
+      // Tăng lên 8 giây
+      _recordingTimer = Timer(const Duration(seconds: 8), () {
+        if (_isRecording) _stopRecording(currentWord.word);
       });
     } catch (e) {
-      _showNotification("Vui lòng cấp quyền Micro!", Colors.red);
+      debugPrint("Lỗi khởi động ghi âm: $e");
     }
   }
 
-  // Xử lý khi thả nút Micro ra
-  void _onRecordStop(String targetWord) async {
-    setState(() {
-      _isRecording = false;
-      _isAnalyzing = true; // Hiện loading quay quay
-    });
+  void _stopRecording(String targetWord) async {
+    _recordingTimer?.cancel();
 
-    final text = await _voiceService.stopAndTranscribe();
+    // Khóa trạng thái, tránh gọi 2 lần
+    if (!_isRecording || _isAnalyzing) return;
 
-    if (text != null && text.isNotEmpty) {
-      final score = _voiceService.calculateScore(text, targetWord);
+    if (_isMounted) {
       setState(() {
-        _spokenText = text;
-        _pronunciationScore = score;
-      });
-    } else {
-      setState(() {
-        _spokenText = "Không nghe rõ. Thử lại nhé!";
+        _isRecording = false;
+        _isAnalyzing = true; // Hiện vòng quay loading
       });
     }
 
-    setState(() {
-      _isAnalyzing = false;
-    });
+    try {
+      final spokenText = await VoiceService.instance.stopAndTranscribe();
+
+      if (spokenText != null && _isMounted) {
+        setState(() {
+          _spokenText = spokenText;
+          _pronunciationScore = VoiceService.instance.calculateScore(
+            spokenText,
+            targetWord,
+          );
+        });
+      }
+    } catch (e) {
+      debugPrint("Lỗi xử lý AI: $e");
+    } finally {
+      if (_isMounted) setState(() => _isAnalyzing = false);
+    }
   }
 
   void _loadWords() {
-    final allTopicWords = widget.topic == 'Review' 
-        ? _wordService.getWordsToReview() 
+    final allTopicWords = widget.topic == 'Review'
+        ? _wordService.getWordsToReview()
         : _wordService.getWordsByTopic(widget.topic);
-    
-    final now = DateTime.now();
-    
+
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+
+
     // Lọc các từ chưa học hoặc cần ôn tập
-    _words = allTopicWords.where((w) => 
-      !w.isLearned || 
-      (w.nextReview != null && w.nextReview!.isBefore(now)) ||
-      w.wrongCount > 0
-    ).toList();
+    _words = allTopicWords.where((w) {
+      final progress = _wordService.getWordProgress(w.id);
+      final nextReview = progress['nr'] as int;
+      final step = progress['s'] as int;
+
+      // Lấy từ chưa học (nr == 0) HOẶC đã đến hạn Anki (nextReview <= nowMs)
+      // HOẶC chưa thuộc lòng (step < 4)
+      return nextReview <= nowMs || step < 4;
+    }).toList();
 
     if (_words.isEmpty) {
       // Nếu đã học hết, hiển thị lại tất cả để không bị màn hình trống
@@ -106,7 +125,11 @@ class _StudyScreenState extends State<StudyScreen> {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: color,
         duration: const Duration(milliseconds: 800),
         behavior: SnackBarBehavior.floating,
@@ -117,8 +140,11 @@ class _StudyScreenState extends State<StudyScreen> {
   }
 
   void _nextCard(bool known) {
-    _showNotification(known ? 'study.known_btn'.tr() : 'study.unknown_btn'.tr(), known ? AppConstants.successColor : AppConstants.errorColor);
-    
+    _showNotification(
+      known ? 'study.known_btn'.tr() : 'study.unknown_btn'.tr(),
+      known ? AppConstants.successColor : AppConstants.errorColor,
+    );
+
     if (_currentIndex < _words.length - 1) {
       setState(() {
         _currentIndex++;
@@ -131,7 +157,9 @@ class _StudyScreenState extends State<StudyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_words.isEmpty) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_words.isEmpty) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     final currentWord = _words[_currentIndex];
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -145,61 +173,127 @@ class _StudyScreenState extends State<StudyScreen> {
           icon: Icon(Icons.close, color: isDark ? Colors.white : Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('${_currentIndex + 1} / ${_words.length}', 
-            style: TextStyle(color: isDark ? Colors.white60 : Colors.grey, fontSize: 16)),
+        title: Text(
+          '${_currentIndex + 1} / ${_words.length}',
+          style: TextStyle(
+            color: isDark ? Colors.white60 : Colors.grey,
+            fontSize: 16,
+          ),
+        ),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Expanded(
+      // THAY ĐỔI: Bọc Body bằng Stack để tạo lớp Overlay Micro
+      body: Stack(
+        children: [
+          // LỚP 1: GIAO DIỆN HỌC BÌNH THƯỜNG
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _isFlipped = !_isFlipped),
+                    child: _buildFlipAnimation(currentWord),
+                  ),
+                ),
+                const SizedBox(height: 40),
+                _buildActionButtons(currentWord),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+
+          // LỚP 2: NỀN ĐEN FOCUS MICRO (Chỉ hiện khi đang ghi âm)
+          if (_isRecording)
+            Positioned.fill(
               child: GestureDetector(
-                onTap: () => setState(() => _isFlipped = !_isFlipped),
-                child: _buildFlipAnimation(currentWord),
+                // Chạm bất kỳ đâu trên màn hình nền đen để dừng
+                onTap: () => _stopRecording(currentWord.word),
+                child: Container(
+                  color: Colors.black87,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Icon Micro to, phát sáng
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.8),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.red.withValues(alpha: 0.5),
+                                blurRadius: 30,
+                                spreadRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.mic,
+                            size: 64,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        Text(
+                          "study.listening"
+                              .tr(), // VD: "Đang nghe...\nChạm màn hình để dừng"
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 40),
-            _buildActionButtons(currentWord),
-            const SizedBox(height: 20),
-          ],
-        ),
+        ],
       ),
     );
   }
 
   // Tách riêng Widget Animation để build() ngắn gọn
- Widget _buildFlipAnimation(Word currentWord) {
-  return AnimatedSwitcher(
-    duration: AppConstants.flipDuration,
-    transitionBuilder: (Widget child, Animation<double> animation) {
-      // Tween chạy từ Pi (180 độ) về 0
-      final rotate = Tween(begin: pi, end: 0.0).animate(animation);
-      
-      return AnimatedBuilder(
-        animation: rotate,
-        builder: (context, child) {
-          final isBack = (child!.key == const ValueKey(true));
-          
-          // Tính toán giá trị xoay: 
-          // Nếu là mặt sau, ta giới hạn nó xoay trong khoảng phù hợp để không bị ngược chữ
-          var value = isBack ? min(rotate.value, pi / 2) : rotate.value;
-          
-          return Transform(
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001) // FIX: Thay (3, 0) thành (3, 2) để tạo độ sâu chuẩn
-              ..rotateY(value),       // Xoay theo trục Y
-            alignment: Alignment.center,
-            child: child,
-          );
-        },
-        child: child,
-      );
-    },
-    // Chuyển đổi giữa mặt trước và mặt sau dựa trên biến _isFlipped
-    child: _isFlipped ? _buildBack(currentWord) : _buildFront(currentWord),
-  );
-}
+  Widget _buildFlipAnimation(Word currentWord) {
+    return AnimatedSwitcher(
+      duration: AppConstants.flipDuration,
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        // Tween chạy từ Pi (180 độ) về 0
+        final rotate = Tween(begin: pi, end: 0.0).animate(animation);
+
+        return AnimatedBuilder(
+          animation: rotate,
+          builder: (context, child) {
+            final isBack = (child!.key == const ValueKey(true));
+
+            // Tính toán giá trị xoay:
+            // Nếu là mặt sau, ta giới hạn nó xoay trong khoảng phù hợp để không bị ngược chữ
+            var value = isBack ? min(rotate.value, pi / 2) : rotate.value;
+
+            return Transform(
+              transform: Matrix4.identity()
+                ..setEntry(
+                  3,
+                  2,
+                  0.001,
+                ) // FIX: Thay (3, 0) thành (3, 2) để tạo độ sâu chuẩn
+                ..rotateY(value), // Xoay theo trục Y
+              alignment: Alignment.center,
+              child: child,
+            );
+          },
+          child: child,
+        );
+      },
+      // Chuyển đổi giữa mặt trước và mặt sau dựa trên biến _isFlipped
+      child: _isFlipped ? _buildBack(currentWord) : _buildFront(currentWord),
+    );
+  }
 
   // Mặt trước của thẻ
   Widget _buildFront(Word word) {
@@ -258,31 +352,17 @@ class _StudyScreenState extends State<StudyScreen> {
 
           // ================= THÊM PHẦN GHI ÂM Ở ĐÂY =================
 
-          // Nút Micro (Nhấn giữ để nói)
+          // Nút Micro (Nhấn chạm để bắt đầu)
           GestureDetector(
-            onLongPressStart: (_) => _onRecordStart(),
-            onLongPressEnd: (_) => _onRecordStop(word.word),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: _isRecording ? 80 : 65, // Nút to ra khi đang bấm
-              height: _isRecording ? 80 : 65,
+            // Nếu AI đang chấm điểm, khóa nút không cho bấm
+            onTap: _isAnalyzing ? null : _startRecording,
+            child: Container(
+              width: 65,
+              height: 65,
               decoration: BoxDecoration(
-                color: _isRecording
-                    ? Colors.red
-                    : theme.colorScheme.primary.withValues(alpha: 0.1),
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: _isRecording ? Colors.red : theme.colorScheme.primary,
-                  width: 2,
-                ),
-                boxShadow: _isRecording
-                    ? [
-                        BoxShadow(
-                          color: Colors.red.withValues(alpha: 0.5),
-                          blurRadius: 15,
-                        ),
-                      ]
-                    : [],
+                border: Border.all(color: theme.colorScheme.primary, width: 2),
               ),
               child: _isAnalyzing
                   ? const Padding(
@@ -292,20 +372,24 @@ class _StudyScreenState extends State<StudyScreen> {
                   : Icon(
                       Icons.mic_rounded,
                       size: 32,
-                      color: _isRecording
-                          ? Colors.white
-                          : theme.colorScheme.primary,
+                      color: theme.colorScheme.primary,
                     ),
             ),
           ),
 
           const SizedBox(height: 12),
           Text(
-            _isRecording ? "Đang nghe... (Thả ra để chấm)" : "Nhấn giữ để đọc",
-            style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+            _isAnalyzing
+                ? "study.analyzing"
+                      .tr() // VD: "AI đang chấm điểm..."
+                : "study.tap_to_speak".tr(), // VD: "Nhấn để đọc"
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 12,
+            ),
           ),
 
-          // Hiển thị kết quả sau khi phân tích
+          // Hiển thị kết quả (giữ nguyên logic tính điểm)
           if (_pronunciationScore != null) ...[
             const SizedBox(height: 20),
             Container(
@@ -319,14 +403,14 @@ class _StudyScreenState extends State<StudyScreen> {
               child: Column(
                 children: [
                   Text(
-                    "Bạn đọc: \"$_spokenText\"",
+                    "${"study.you_said".tr()}: \"$_spokenText\"",
                     style: const TextStyle(fontStyle: FontStyle.italic),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     _pronunciationScore! > 80
-                        ? "Tuyệt vời! (${_pronunciationScore!.toInt()}%)"
-                        : "Cố lên nhé! (${_pronunciationScore!.toInt()}%)",
+                        ? "${"study.excellent".tr()} (${_pronunciationScore!.toInt()}%)"
+                        : "${"study.try_again".tr()} (${_pronunciationScore!.toInt()}%)",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: _pronunciationScore! > 80
@@ -350,7 +434,10 @@ class _StudyScreenState extends State<StudyScreen> {
       key: const ValueKey(true),
       width: double.infinity,
       decoration: _cardDecoration().copyWith(
-        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3), width: 2),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.3),
+          width: 2,
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(30),
@@ -358,15 +445,18 @@ class _StudyScreenState extends State<StudyScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-             Text('study.meaning'.tr(), style: AppConstants.subHeadingStyle),
+            Text('study.meaning'.tr(), style: AppConstants.subHeadingStyle),
             const SizedBox(height: 12),
-            Text(word.meaning, textAlign: TextAlign.center, 
-                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+            Text(
+              word.meaning,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            ),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
               child: Divider(indent: 50, endIndent: 50),
             ),
-             Text('study.example'.tr(), style: AppConstants.subHeadingStyle),
+            Text('study.example'.tr(), style: AppConstants.subHeadingStyle),
             const SizedBox(height: 12),
             Text(
               word.example,
@@ -374,7 +464,9 @@ class _StudyScreenState extends State<StudyScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontStyle: FontStyle.italic,
-                color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                color: theme.textTheme.bodyMedium?.color?.withValues(
+                  alpha: 0.7,
+                ),
               ),
             ),
           ],
@@ -382,22 +474,22 @@ class _StudyScreenState extends State<StudyScreen> {
       ),
     );
   }
-  
+
   BoxDecoration _cardDecoration() {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  return BoxDecoration(
-    color: Theme.of(context).cardColor,
-    borderRadius: BorderRadius.circular(32),
-    boxShadow: [
-      BoxShadow(
-        // Dark mode dùng shadow nhẹ hơn, Light mode dùng shadow đậm hơn
-        color: isDark ? Colors.black45 : Colors.black.withValues(alpha: 0.08),
-        blurRadius: 20,
-        offset: const Offset(0, 10),
-      ),
-    ],
-  );
-}
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return BoxDecoration(
+      color: Theme.of(context).cardColor,
+      borderRadius: BorderRadius.circular(32),
+      boxShadow: [
+        BoxShadow(
+          // Dark mode dùng shadow nhẹ hơn, Light mode dùng shadow đậm hơn
+          color: isDark ? Colors.black45 : Colors.black.withValues(alpha: 0.08),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
+    );
+  }
 
   // Gom cụm Action Buttons
   Widget _buildActionButtons(Word currentWord) {
@@ -408,26 +500,32 @@ class _StudyScreenState extends State<StudyScreen> {
           icon: Icons.close_rounded,
           label: 'study.unknown_btn'.tr(),
           color: AppConstants.errorColor,
-          onTap: () {
-            currentWord.wrongCount++;
-            currentWord.save();
-            _nextCard(false);
+          onTap: () async {
+            await  _wordService.updateProgress(currentWord.id, false);
+            if (mounted) _nextCard(false);
+
           },
         ),
         _buildActionButton(
           icon: Icons.check_rounded,
           label: 'study.known_btn'.tr(),
           color: AppConstants.successColor,
-          onTap: () {
-            _wordService.markAsLearned(currentWord);
-            _nextCard(true);
+          onTap: () async {
+            await _wordService.markAsLearned(currentWord.id);
+            _wordService.updateProgress(currentWord.id, true);
+            if (mounted) _nextCard(true);
           },
         ),
       ],
     );
   }
 
-  Widget _buildActionButton({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -442,10 +540,17 @@ class _StudyScreenState extends State<StudyScreen> {
             child: Icon(icon, color: color, size: 32),
           ),
           const SizedBox(height: 8),
-          Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1)),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              letterSpacing: 1,
+            ),
+          ),
         ],
       ),
     );
   }
 }
-

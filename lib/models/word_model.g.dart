@@ -17,55 +17,34 @@ class WordAdapter extends TypeAdapter<Word> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Word(
-      id: fields[13] as String,
-      word: fields[0] as String,
-      meaning: fields[1] as String,
-      phoneticUS: fields[2] as String,
-      phoneticUK: fields[3] as String,
-      example: fields[4] as String,
-      topic: fields[5] as String,
-      isLearned: fields[6] as bool,
-      wrongCount: fields[7] as int,
-      repetitions: fields[8] as int,
-      interval: fields[9] as int,
-      easeFactor: fields[10] as double,
-      lastReview: fields[11] as DateTime?,
-      nextReview: fields[12] as DateTime?,
+      id: fields[0] as String,
+      word: fields[1] as String,
+      meaning: fields[2] as String,
+      phoneticUS: fields[3] as String,
+      phoneticUK: fields[4] as String,
+      example: fields[5] as String,
+      topic: fields[6] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, Word obj) {
     writer
-      ..writeByte(14)
-      ..writeByte(0)
-      ..write(obj.word)
-      ..writeByte(1)
-      ..write(obj.meaning)
-      ..writeByte(2)
-      ..write(obj.phoneticUS)
-      ..writeByte(3)
-      ..write(obj.phoneticUK)
-      ..writeByte(4)
-      ..write(obj.example)
-      ..writeByte(5)
-      ..write(obj.topic)
-      ..writeByte(6)
-      ..write(obj.isLearned)
       ..writeByte(7)
-      ..write(obj.wrongCount)
-      ..writeByte(8)
-      ..write(obj.repetitions)
-      ..writeByte(9)
-      ..write(obj.interval)
-      ..writeByte(10)
-      ..write(obj.easeFactor)
-      ..writeByte(11)
-      ..write(obj.lastReview)
-      ..writeByte(12)
-      ..write(obj.nextReview)
-      ..writeByte(13)
-      ..write(obj.id);
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.word)
+      ..writeByte(2)
+      ..write(obj.meaning)
+      ..writeByte(3)
+      ..write(obj.phoneticUS)
+      ..writeByte(4)
+      ..write(obj.phoneticUK)
+      ..writeByte(5)
+      ..write(obj.example)
+      ..writeByte(6)
+      ..write(obj.topic);
   }
 
   @override
