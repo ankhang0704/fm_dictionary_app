@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:fm_dictionary/core/utils/constants.dart'; // Đừng quên cái này để dùng .tr()
+import 'package:fm_dictionary/core/constants/constants.dart'; // Đừng quên cái này để dùng .tr()
 
 // XÓA dấu gạch dưới ở đây -> class WelcomeHeader
 class WelcomeHeader extends StatelessWidget {

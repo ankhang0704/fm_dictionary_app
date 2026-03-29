@@ -8,7 +8,7 @@
 PRODUCT_NAME = fm_dictionary
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.fmDictionary
+PRODUCT_BUNDLE_IDENTIFIER = com.ankhang0704.fmDictionary
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 com.ankhang0704. All rights reserved.

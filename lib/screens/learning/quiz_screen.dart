@@ -1,20 +1,22 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/models/word_model.dart';
-import 'package:fm_dictionary/services/quiz_service.dart';
-import 'package:fm_dictionary/core/utils/constants.dart';
+import 'package:fm_dictionary/core/constants/constants.dart';
+import 'package:fm_dictionary/services/tts_service.dart';
+import 'quiz_configuration_screen.dart'; // import Enum QuizMode
 
 
 class QuizScreen extends StatefulWidget {
   final List<Word> targetWords;
   final List<Word> distractorPool;
   final int questionCount; // Nhận số lượng câu hỏi từ bên ngoài
-
+  final QuizMode mode; // Nhận loại quiz từ bên ngoài
   const QuizScreen({
     super.key, 
     required this.targetWords, 
     required this.distractorPool,
     this.questionCount = 10, // Mặc định là 10
+    required this.mode 
   });
 
   @override
@@ -26,18 +28,49 @@ class _QuizScreenState extends State<QuizScreen> {
   int currentIndex = 0;
   String? selectedAnswer;
   int score = 0;
+  final TtsService _ttsService = TtsService();
 
   @override
   void initState() {
     super.initState();
-    // Gọi QuizService của bạn
-    quizData = QuizService.generateQuiz(
-      widget.targetWords, 
-      widget.distractorPool, 
-      widget.questionCount
-    );
+    _generateDynamicQuiz();
+    _playAudioIfListeningMode(); 
   }
+   void _generateDynamicQuiz() {
+    quizData =[];
+    final pool = List<Word>.from(widget.distractorPool);
+    
+    for (var word in widget.targetWords) {
+      pool.shuffle();
+      final distractors = pool.where((w) => w.id != word.id).take(3).toList();
+      
+      String correctAnswer;
+      List<String> options =[];
 
+      // Logic Map Đáp Án Theo Mode
+      if (widget.mode == QuizMode.viToEn) {
+        correctAnswer = word.word;
+        options =[correctAnswer, ...distractors.map((w) => w.word)];
+      } else {
+        // EnToVi và Listening đều có chung kiểu đáp án là Tiếng Việt
+        correctAnswer = word.meaning;
+        options =[correctAnswer, ...distractors.map((w) => w.meaning)];
+      }
+      options.shuffle();
+
+      quizData.add({
+        'wordObj': word,
+        'correctAnswer': correctAnswer,
+        'options': options,
+      });
+    }
+  }
+  void _playAudioIfListeningMode() {
+    if (widget.mode == QuizMode.listening && quizData.isNotEmpty) {
+      final Word currentWord = quizData[currentIndex]['wordObj'];
+      _ttsService.speak(currentWord.word, accent:'en-US');
+    }
+  }
   void _checkAnswer(String option) {
     if (selectedAnswer != null) return;
 
@@ -47,18 +80,21 @@ class _QuizScreenState extends State<QuizScreen> {
       if (correct) score++;
     });
 
-    Future.delayed(const Duration(milliseconds: 800), () {
+    Future.delayed(const Duration(milliseconds: 1000), () {
       if (!mounted) return;
       if (currentIndex < quizData.length - 1) {
         setState(() {
           currentIndex++;
           selectedAnswer = null;
         });
+        _playAudioIfListeningMode(); // Tự động phát âm thanh câu tiếp theo
       } else {
         _showResult();
       }
     });
   }
+
+  
 
   void _showResult() {
     showDialog(
@@ -135,22 +171,51 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
-  Widget _buildQuestionSection(String question) {
-    return Column(
-      children: [
-         Text(
-          'quiz.instruction'.tr(),
-          style: TextStyle(color: AppConstants.textSecondary, fontSize: 16),
-        ),
-        const SizedBox(height: 12),
+Widget _buildQuestionSection(Word currentWord) {
+  return Column(
+      mainAxisSize: MainAxisSize.min,
+      children:[
         Text(
-          question,
-          style: AppConstants.headingStyle.copyWith(fontSize: 28),
-          textAlign: TextAlign.center,
+          widget.mode == QuizMode.listening 
+              ? 'quiz.listen_instruction'.tr() 
+              : 'quiz.translation_instruction'.tr(),
+          style: TextStyle(color: Colors.grey[600], fontSize: 16),
         ),
+        const SizedBox(height: 24),
+
+        if (widget.mode == QuizMode.listening)
+          Column(
+            children:[
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  iconSize: 80,
+                  color: Theme.of(context).colorScheme.primary,
+                  icon: const Icon(Icons.volume_up_rounded),
+                  onPressed: () => _ttsService.speak(currentWord.word, accent:'en-US'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text('quiz.tap_to_listen'.tr(), style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.blue)),
+            ],
+          )
+        else
+          Text(
+            // Nếu là Mode ViToEn -> Hiển thị Tiếng Việt, ngược lại hiển thị Tiếng Anh
+            widget.mode == QuizMode.viToEn ? currentWord.meaning : currentWord.word, 
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            textAlign: TextAlign.center,
+          ),
       ],
     );
   }
+
 
   Widget _buildOptionsSection(Map<String, dynamic> currentQuestion) {
     final List<String> options = List<String>.from(currentQuestion['options']);
@@ -165,8 +230,8 @@ class _QuizScreenState extends State<QuizScreen> {
       }).toList(),
     );
   }
-}
 
+}
 class _QuizOption extends StatelessWidget {
   final String option;
   final String correctAnswer;

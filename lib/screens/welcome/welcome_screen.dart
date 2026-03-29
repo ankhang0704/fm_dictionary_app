@@ -9,7 +9,7 @@ import 'package:fm_dictionary/screens/welcome/widgets/welcome_header.dart';
 import '../../services/database_service.dart';
 import '../../services/theme_manager.dart';
 import '../home/main_navigation.dart';
-import '../../core/utils/constants.dart';
+import '../../core/constants/constants.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});

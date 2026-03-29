@@ -1,3 +1,10 @@
+plugins {
+    id("com.android.application") apply false
+    id("com.android.library")  apply false
+    id("kotlin-android")apply false
+    
+    id("com.google.gms.google-services") apply false
+}
 allprojects {
     repositories {
         google()

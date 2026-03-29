@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/core/utils/constants.dart';
+import 'package:fm_dictionary/core/constants/constants.dart';
 
 class LanguageOption extends StatelessWidget {
   final String title;

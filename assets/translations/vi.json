@@ -127,5 +127,42 @@
         "terms": "Điều khoản sử dụng",
         "login": "Đăng nhập Google",
         "logout": "Đăng xuất"
+    },
+    "calendar": {
+        "title": "Lịch học tập",
+        "notification_1": "Đã đến giờ ôn tập!",
+        "notification_2": "Đừng quên ôn tập để ghi nhớ tốt hơn!",
+        "notifications": "Nhận thông báo học tập",
+        "turn_on_notify": "Bật thông báo để nhắc nhở học từ vựng mỗi ngày!",
+        "permission_denied": "Bạn đã chặn thông báo. Vui lòng mở Cài đặt để cấp quyền."
+    },
+    "content": {
+        "privacy_text": "Chính sách bảo mật của FM Dictionary...\n1. Không thu thập dữ liệu trái phép.\n2. Đồng bộ an toàn qua Firebase."
+    },
+    "quiz_config": {
+        "config_title": "Cài đặt Bài kiểm tra",
+        "select_topic": "Chọn chủ đề",
+        "select_count": "Số lượng câu hỏi",
+        "listening_mode": "Chế độ Luyện nghe",
+        "listening_mode_desc": "Chỉ nghe âm thanh và chọn đáp án, ẩn từ tiếng Anh.",
+        "start_btn": "Bắt đầu ngay",
+        "listen_hint": "Nhấn vào loa để nghe lại",
+        "select_mode": "Chọn chế độ",
+        "mode_en_vi": "Tiếng Anh -> Tiếng Việt",
+        "mode_vi_en": "Tiếng Việt -> Tiếng Anh",
+        "mode_listening": "Chỉ nghe âm thanh",
+        "not_enough_words": "Chủ đề này chưa có đủ từ vựng (Cần ít nhất 4 từ)"
+    },
+    "profile": {
+        "title": "Hồ sơ cá nhân",
+        "not_logged_in": "Vui lòng đăng nhập để xem hồ sơ",
+        "learned": "Đã thuộc",
+        "review": "Cần ôn tập",
+        "join_date": "Ngày tham gia",
+        "delete_account": "Xóa tài khoản vĩnh viễn",
+        "delete_confirm_title": "Cảnh báo nguy hiểm",
+        "delete_confirm_desc": "Hành động này sẽ xóa toàn bộ tiến trình học trên Cloud. Bạn có chắc chắn không?",
+        "delete_error": "Vui lòng đăng xuất và đăng nhập lại trước khi xóa tài khoản.",
+        "delete_success": "Tài khoản đã được xóa thành công!"
     }
 }

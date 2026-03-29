@@ -62,7 +62,6 @@
         "you_said": "You said: ",
         "try_again": "Try Again",
         "excellent": "Excellent work!"
-
     },
     "categories": {
         "title": "Categories",
@@ -95,7 +94,7 @@
         "language": "Language",
         "title_theme": "APPEARANCE",
         "dark_mode": "Dark Mode",
-        "reset":"RESET PROGRESS",
+        "reset": "RESET PROGRESS",
         "reset_desc": "Clear all learning history",
         "reset_btn": "Reset All Progress?",
         "reset_confirm": "This will clear all your learning history and cannot be undone. Are you sure you want to proceed?",
@@ -108,11 +107,62 @@
         "save": "Save",
         "tts_speed": "Reading Speed"
     },
-    "widget":
-    {
+    "widget": {
         "search_placeholder": "Search 1,500 words...",
         "progress_title": "Overall Progress",
         "words": "words",
         "words_available": "words available"
+    },
+    "sidebar": {
+        "guest": "Khách",
+        "login_desc": "Đăng nhập để đồng bộ dữ liệu",
+        "no_name": "Người dùng",
+        "profile": "Hồ sơ cá nhân",
+        "sync": "Đồng bộ tiến trình (Backup)",
+        "sync_success": "Đồng bộ lên mây thành công!",
+        "sync_fail": "Lỗi đồng bộ. Vui lòng kiểm tra mạng hoặc đăng nhập.",
+        "feedback": "Góp ý & Hỗ trợ",
+        "share": "Chia sẻ ứng dụng",
+        "privacy": "Chính sách bảo mật",
+        "terms": "Điều khoản sử dụng",
+        "login": "Đăng nhập Google",
+        "logout": "Đăng xuất"
+    },
+    "calendar": {
+        "title": "Lịch học tập",
+        "notification_1": "Đã đến giờ ôn tập!",
+        "notification_2": "Đừng quên ôn tập để ghi nhớ tốt hơn!",
+        "notifications": "Nhận thông báo học tập",
+        "turn_on_notify": "Bật thông báo để nhắc nhở học từ vựng mỗi ngày!",
+        "permission_denied": "Bạn đã chặn thông báo. Vui lòng mở Cài đặt để cấp quyền."
+    },
+    "content": {
+        "privacy_text": "Privacy Policy of FM Dictionary...\n1. No unauthorized data collection.\n2. Safe synchronization via Firebase."
+    },
+    "quiz_config": {
+        "config_title": "Quiz Settings",
+        "select_topic": "Select Topic",
+        "select_count": "Number of Questions",
+        "listening_mode": "Listening Practice Mode",
+        "listening_mode_desc": "Listen to the audio and select the correct answer, hiding the English word.",
+        "start_btn": "Start Quiz",
+        "listen_hint": "Press the speaker to listen again",
+        "select_mode": "Select Mode",
+        "mode_en_vi": "English -> Vietnamese",
+        "mode_vi_en": "Vietnamese -> English",
+        "mode_listening": "Listening Only",
+        "not_enough_words": "This topic does not have enough vocabulary (at least 4 words required)"
+    },
+    "profile": {
+        "title": "Profile",
+        "not_logged_in": "Please log in to view your profile",
+        "learned": "Learned",
+        "review": "To Review",
+        "join_date": "Join Date",
+        "delete_account": "Delete Account Permanently",
+        "delete_confirm_title": "Confirm Account Deletion",
+        "delete_confirm_desc": "This action will delete all your learning progress on the cloud. Are you sure you want to proceed?",
+        "delete_error": "Please log out and log back in before deleting your account.",
+        "delete_success": "Your account has been deleted successfully!"
     }
 }

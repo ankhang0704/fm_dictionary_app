@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/core/utils/constants.dart';
+import 'package:fm_dictionary/core/constants/constants.dart';
 
 class StartButton extends StatelessWidget {
   final VoidCallback onPressed;

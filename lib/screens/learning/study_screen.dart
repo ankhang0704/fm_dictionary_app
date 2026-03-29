@@ -7,7 +7,7 @@ import 'package:fm_dictionary/services/voice_service.dart';
 import '../../models/word_model.dart';
 import '../../services/word_service.dart';
 import '../../services/tts_service.dart';
-import '../../core/utils/constants.dart';
+import '../../core/constants/constants.dart';
 import 'widgets/speaker_button.dart';
 
 class StudyScreen extends StatefulWidget {

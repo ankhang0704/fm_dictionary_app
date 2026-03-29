@@ -1,15 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/screens/learning/quiz_configuration_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/word_model.dart';
 import '../../services/database_service.dart';
 import '../../services/word_service.dart';
-import '../../core/utils/constants.dart';
-import '../../widgets/progress_card.dart';
-import '../../widgets/smart_action_button.dart';
+import '../../core/constants/constants.dart';
+import '../../widgets/common/progress_card.dart';
+import '../../widgets/common/smart_action_button.dart';
 import '../learning/study_screen.dart';
 import '../learning/quiz_screen.dart';
-import '../../widgets/home_search_bar.dart'; // Import widget mới tạo
+import '../../widgets/common/home_search_bar.dart'; // Import widget mới tạo
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -138,6 +139,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   allWords, // Kho từ để lấy đáp án sai
                               questionCount: randomWords
                                   .length, // Số lượng câu hỏi (thường là 10)
+                              mode: QuizMode.enToVi, // Chế độ mặc định
                             ),
                           ),
                         );

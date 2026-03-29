@@ -1,16 +1,24 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/utils/loading.dart';
+import 'package:fm_dictionary/services/auth_sync_service.dart';
 import 'package:fm_dictionary/services/voice_service.dart';
 import 'services/database_service.dart';
 import 'services/tts_service.dart';
 import 'services/theme_manager.dart';
 import 'screens/home/main_navigation.dart';
 import 'screens/welcome/welcome_screen.dart';
-import 'core/utils/constants.dart';
+import 'core/constants/constants.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Start Firebase initialization before anything else
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   await EasyLocalization.ensureInitialized();
   // 1. Khởi tạo Hive & Data
@@ -19,6 +27,8 @@ void main() async {
   await TtsService().init();
 
   await VoiceService.instance.initModel();
+  
+  await AuthSyncService.instance.init(); 
   
   runApp(
     EasyLocalization(
@@ -32,7 +42,6 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     final settings = DatabaseService.getSettings();

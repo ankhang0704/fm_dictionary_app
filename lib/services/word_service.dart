@@ -30,12 +30,13 @@ class WordService {
     final int now = DateTime.now().millisecondsSinceEpoch;
 
     progress['lr'] = now; // Cập nhật lần học cuối
+    progress['ua'] = now;
 
     if (!isCorrect) {
-      // TRẢ LỜI SAI: Reset step, học lại ngay, tăng wrongCount
+      // TRẢ LỜI SAI:   Reset step, học lại ngay, tăng wrongCount
       progress['s'] = 0;
       progress['wc'] = (progress['wc'] as int) + 1;
-      progress['nr'] = now;
+      progress['nr'] = now; 
     } else {
       // TRẢ LỜI ĐÚNG: Tăng step, tính ngày học tiếp theo
       int step = (progress['s'] as int) + 1;
@@ -67,6 +68,7 @@ class WordService {
       'wc': 0, // Reset sai
       'lr': now,
       'nr': now + (30 * _msPerDay), // +30 ngày
+      'ua': now,
     });
   }
 

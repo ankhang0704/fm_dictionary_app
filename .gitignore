@@ -51,3 +51,10 @@ Thumbs.db
 *.exe
 *.apk
 *.ipa
+
+# Firebase & Google Services
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+firebase_options.dart
+.firebaserc
+firebase.json

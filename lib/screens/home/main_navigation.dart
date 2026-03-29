@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../core/utils/constants.dart';
+import 'package:fm_dictionary/widgets/layout/custom_sidebar.dart';
+import 'package:fm_dictionary/widgets/layout/right_sidebar.dart';
+import '../../core/constants/constants.dart';
 import 'dashboard_screen.dart';
 import '../library/library_screen.dart';
 import '../learning/review_screen.dart';
@@ -12,6 +14,8 @@ class MainNavigation extends StatefulWidget {
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
+// Side bar navigation key
+final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
@@ -28,6 +32,16 @@ class _MainNavigationState extends State<MainNavigation> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+        key: _scaffoldKey,
+        drawer: const CustomSideBar(),
+        endDrawer: const RightSideBar(),
+        appBar: AppBar(
+        title: Text('App Name'),
+        leading: IconButton(
+          icon: const Icon(Icons.menu_rounded),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(), // Mở Sidebar
+        ),
+      ),
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,

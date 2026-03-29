@@ -8,7 +8,7 @@ import 'package:fm_dictionary/screens/settings/widgets/section_settings.dart';
 import '../../models/app_settings.dart';
 import '../../services/database_service.dart';
 import '../../services/theme_manager.dart';
-import '../../core/utils/constants.dart';
+import '../../core/constants/constants.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

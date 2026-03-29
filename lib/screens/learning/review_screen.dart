@@ -1,10 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/screens/learning/quiz_configuration_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/word_model.dart';
 import '../../services/database_service.dart';
 import '../../services/word_service.dart';
-import '../../core/utils/constants.dart';
+import '../../core/constants/constants.dart';
 import 'study_screen.dart';
 import 'quiz_screen.dart';
 
@@ -65,6 +66,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                 targetWords: reviewWords,
                                 distractorPool: allWords,
                                 questionCount: reviewWords.length,
+                                mode: QuizMode.enToVi, // Mặc định Anh - Việt
                               ),
                             ),
                           );
