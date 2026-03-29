@@ -112,5 +112,20 @@
         "progress_title": "Tổng quan tiến độ",
         "words": "từ",
         "words_available": "từ có sẵn"
+    },
+    "sidebar": {
+        "guest": "Khách",
+        "login_desc": "Đăng nhập để đồng bộ dữ liệu",
+        "no_name": "Người dùng",
+        "profile": "Hồ sơ cá nhân",
+        "sync": "Đồng bộ tiến trình (Backup)",
+        "sync_success": "Đồng bộ lên mây thành công!",
+        "sync_fail": "Lỗi đồng bộ. Vui lòng kiểm tra mạng hoặc đăng nhập.",
+        "feedback": "Góp ý & Hỗ trợ",
+        "share": "Chia sẻ ứng dụng",
+        "privacy": "Chính sách bảo mật",
+        "terms": "Điều khoản sử dụng",
+        "login": "Đăng nhập Google",
+        "logout": "Đăng xuất"
     }
 }
