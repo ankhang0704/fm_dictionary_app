@@ -7,7 +7,6 @@ import '../../services/database_service.dart';
 import '../../services/word_service.dart';
 import '../../core/constants/constants.dart';
 import 'study_screen.dart';
-import 'quiz_screen.dart';
 
 class ReviewScreen extends StatefulWidget {
   const ReviewScreen({super.key});
@@ -56,18 +55,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       heroTag: 'quiz_btn',
                       onPressed: () {
                         if (reviewWords.isNotEmpty) {
-                          final allWords = Hive.box<Word>(
-                            DatabaseService.wordBoxName,
-                          ).values.toList();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => QuizScreen(
-                                targetWords: reviewWords,
-                                distractorPool: allWords,
-                                questionCount: reviewWords.length,
-                                mode: QuizMode.enToVi, // Mặc định Anh - Việt
-                              ),
+                              builder: (context) =>
+                                  const QuizConfigurationScreen(
+                                    initialTopic: 'Review',
+                                  ),
                             ),
                           );
                         }

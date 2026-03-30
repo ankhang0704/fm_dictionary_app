@@ -151,7 +151,9 @@
         "mode_en_vi": "Tiếng Anh -> Tiếng Việt",
         "mode_vi_en": "Tiếng Việt -> Tiếng Anh",
         "mode_listening": "Chỉ nghe âm thanh",
-        "not_enough_words": "Chủ đề này chưa có đủ từ vựng (Cần ít nhất 4 từ)"
+        "not_enough_words": "Chủ đề này chưa có đủ từ vựng (Cần ít nhất 4 từ)",
+        "topic_all": "Tất cả từ vựng",
+        "topic_review": "Các từ cần ôn tập (Review)"
     },
     "profile": {
         "title": "Hồ sơ cá nhân",

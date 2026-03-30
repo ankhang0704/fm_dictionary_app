@@ -151,7 +151,9 @@
         "mode_en_vi": "English -> Vietnamese",
         "mode_vi_en": "Vietnamese -> English",
         "mode_listening": "Listening Only",
-        "not_enough_words": "This topic does not have enough vocabulary (at least 4 words required)"
+        "not_enough_words": "This topic does not have enough vocabulary (at least 4 words required)",
+        "topic_all": "All Vocabulary",
+        "topic_review": "Words to Review"
     },
     "profile": {
         "title": "Profile",

@@ -147,7 +147,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      _buildQuestionSection(currentQuestion['question']),
+                      _buildQuestionSection(currentQuestion['wordObj'] as Word),
                       const SizedBox(height: 40),
                       _buildOptionsSection(currentQuestion),
                     ],

@@ -9,7 +9,6 @@ import '../../core/constants/constants.dart';
 import '../../widgets/common/progress_card.dart';
 import '../../widgets/common/smart_action_button.dart';
 import '../learning/study_screen.dart';
-import '../learning/quiz_screen.dart';
 import '../../widgets/common/home_search_bar.dart'; // Import widget mới tạo
 
 class DashboardScreen extends StatefulWidget {
@@ -116,42 +115,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   const SizedBox(height: 12),
                   SmartActionButton(
-                    icon: Icons.shuffle_rounded,
-                    title: 'dashboard.daily_test'.tr(),
-                    subtitle: 'dashboard.daily_test_subtitle'.tr(),
-                    color: isDark ? const Color(0xFF1E3A23) : const Color(0xFFF1F8E9),
-                    iconColor: Colors.green,
-                    onTap: () {
-                      final randomWords = _wordService.getRandomWords(10);
-
-                      if (randomWords.isNotEmpty) {
-                        // Lấy toàn bộ từ trong DB để làm đáp án gây nhiễu
-                        final allWords = Hive.box<Word>(
-                          DatabaseService.wordBoxName,
-                        ).values.toList();
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => QuizScreen(
-                              targetWords: randomWords, // Các từ cần hỏi
-                              distractorPool:
-                                  allWords, // Kho từ để lấy đáp án sai
-                              questionCount: randomWords
-                                  .length, // Số lượng câu hỏi (thường là 10)
-                              mode: QuizMode.enToVi, // Chế độ mặc định
+                        icon: Icons.shuffle_rounded,
+                        title: 'dashboard.daily_test'.tr(),
+                        subtitle: 'dashboard.daily_test_subtitle'.tr(),
+                        color: isDark
+                            ? const Color(0xFF1E3A23)
+                            : const Color(0xFFF1F8E9),
+                        iconColor: Colors.green,
+                        onTap: () {
+                          // Chuyển thẳng sang Config, truyền Topic 'All'
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const QuizConfigurationScreen(
+                                    initialTopic: 'All',
+                                  ),
                             ),
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                           SnackBar(
-                            content: Text('dashboard.daily_test_message'.tr()),
-                          ),
-                        );
-                      }
-                    },
-                  ),
+                          );
+                        },
+                      ),
                 ],
               ),
             ),
