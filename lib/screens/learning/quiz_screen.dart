@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/models/word_model.dart';
 import 'package:fm_dictionary/core/constants/constants.dart';
-import 'package:fm_dictionary/services/ai_speech/speech_service.dart';
+import 'package:fm_dictionary/services/ai_speech/text_to_speech/speech_service.dart';
 import 'quiz_configuration_screen.dart'; // import Enum QuizMode
 
 

@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../models/word_model.dart';
-import '../../services/ai_speech/speech_service.dart';
+import '../../services/ai_speech/text_to_speech/speech_service.dart';
 
 class WordDetailScreen extends StatelessWidget {
   final Word word;

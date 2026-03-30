@@ -63,13 +63,16 @@ class WordService {
   // 3. ĐÁNH DẤU ĐÃ THUỘC (Manual Learn)
   Future<void> markAsLearned(String wordId) async {
     final int now = DateTime.now().millisecondsSinceEpoch;
-    await _progressBox.put(wordId, {
-      's': 4,
-      'wc': 0, // Reset sai
-      'lr': now,
-      'nr': now + (30 * _msPerDay), // +30 ngày
-      'ua': now,
-    });
+    
+    // Lấy progress hiện tại để không làm mất 'wc' (wrongCount)
+    Map<String, dynamic> progress = getWordProgress(wordId);
+    
+    progress['s'] = 4;
+    progress['lr'] = now;
+    progress['nr'] = now + (30 * _msPerDay); // +30 ngày
+    progress['ua'] = now;
+
+    await _progressBox.put(wordId, progress);
   }
 
   // 4. LẤY DANH SÁCH TỪ CẦN ÔN TẬP (Quét theo Epoch Time)

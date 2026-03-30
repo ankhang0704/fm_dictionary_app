@@ -3,10 +3,11 @@ import 'dart:math';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/services/ai_speech/ai_assistant_service.dart';
+import 'package:fm_dictionary/services/ai_speech/ai_assistant/pronunciation_scorer.dart';
+import 'package:fm_dictionary/services/ai_speech/ai_assistant/ai_assistant_service.dart';
 import '../../models/word_model.dart';
 import '../../services/database/word_service.dart';
-import '../../services/ai_speech/speech_service.dart';
+import '../../services/ai_speech/text_to_speech/speech_service.dart';
 import '../../core/constants/constants.dart';
 import 'widgets/speaker_button.dart';
 
@@ -35,6 +36,7 @@ class _StudyScreenState extends State<StudyScreen> {
   void initState() {
     super.initState();
     _loadWords();
+    AiAssistantService.instance.initModel();
     // Nạp model AI ngay khi vào màn hình
   }
 
@@ -42,6 +44,7 @@ class _StudyScreenState extends State<StudyScreen> {
   void dispose() {
     _isMounted = false;
     _recordingTimer?.cancel();
+    AiAssistantService.instance.disposeSession(); // Đảm bảo dừng ghi âm nếu đang hoạt động
     super.dispose();
   }
 
@@ -51,7 +54,7 @@ class _StudyScreenState extends State<StudyScreen> {
     try {
       _recordingTimer?.cancel(); // Đảm bảo không trùng timer
 
-      await VoiceService.instance.startRecording();
+      await AiAssistantService.instance.startRecording();
       if (_isMounted) setState(() => _isRecording = true);
 
       // Tăng lên 8 giây
@@ -65,27 +68,25 @@ class _StudyScreenState extends State<StudyScreen> {
 
   void _stopRecording(String targetWord) async {
     _recordingTimer?.cancel();
-
-    // Khóa trạng thái, tránh gọi 2 lần
     if (!_isRecording || _isAnalyzing) return;
 
     if (_isMounted) {
       setState(() {
         _isRecording = false;
-        _isAnalyzing = true; // Hiện vòng quay loading
+        _isAnalyzing = true;
       });
     }
 
     try {
-      final spokenText = await VoiceService.instance.stopAndTranscribe();
+      final spokenText = await AiAssistantService.instance.stopAndTranscribe();
 
       if (spokenText != null && _isMounted) {
+        // TỐI ƯU 3: Gọi hàm tính điểm từ Class tĩnh (đã được refactor)
+        final result = PronunciationScorer.evaluate(spokenText, targetWord);
+
         setState(() {
           _spokenText = spokenText;
-          _pronunciationScore = VoiceService.instance.calculateScore(
-            spokenText,
-            targetWord,
-          );
+          _pronunciationScore = result.score; // Lấy điểm từ object trả về
         });
       }
     } catch (e) {
@@ -145,10 +146,21 @@ class _StudyScreenState extends State<StudyScreen> {
       known ? AppConstants.successColor : AppConstants.errorColor,
     );
 
+    // ĐẢM BẢO TẮT MICRO NẾU ĐANG CHẠY MÀ BẤM QUA BÀI
+    if (_isRecording || _isAnalyzing) {
+      AiAssistantService.instance.disposeSession();
+    }
+
     if (_currentIndex < _words.length - 1) {
       setState(() {
         _currentIndex++;
         _isFlipped = false;
+        
+        // TỐI ƯU 1: Bắt buộc reset trạng thái AI cho thẻ mới
+        _spokenText = "";
+        _pronunciationScore = null;
+        _isRecording = false;
+        _isAnalyzing = false;
       });
     } else {
       Navigator.pop(context);
@@ -496,23 +508,35 @@ class _StudyScreenState extends State<StudyScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
+        // 1. NÚT ĐỎ: QUÊN (Reset tiến trình)
         _buildActionButton(
           icon: Icons.close_rounded,
-          label: 'study.unknown_btn'.tr(),
+          label: 'study.again'.tr(), // VD: "Quên"
           color: AppConstants.errorColor,
           onTap: () async {
-            await  _wordService.updateProgress(currentWord.id, false);
+            await _wordService.updateProgress(currentWord.id, false);
             if (mounted) _nextCard(false);
-
           },
         ),
+        
+        // 2. NÚT XANH DƯƠNG: NHỚ (Tăng dần tiến trình)
         _buildActionButton(
-          icon: Icons.check_rounded,
-          label: 'study.known_btn'.tr(),
+          icon: Icons.access_time_rounded, 
+          label: 'study.good'.tr(), // VD: "Nhớ"
+          color: Colors.blue, 
+          onTap: () async {
+            await _wordService.updateProgress(currentWord.id, true);
+            if (mounted) _nextCard(true); 
+          },
+        ),
+
+        // 3. NÚT XANH LÁ: ĐÃ THUỘC (Qua môn luôn)
+        _buildActionButton(
+          icon: Icons.done_all_rounded,
+          label: 'study.easy'.tr(), // VD: "Đã thuộc"
           color: AppConstants.successColor,
           onTap: () async {
             await _wordService.markAsLearned(currentWord.id);
-            _wordService.updateProgress(currentWord.id, true);
             if (mounted) _nextCard(true);
           },
         ),

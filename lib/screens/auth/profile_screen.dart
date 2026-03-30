@@ -45,11 +45,12 @@ class ProfileScreen extends StatelessWidget {
                   int learned = 0;
                   int review = 0;
                   final now = DateTime.now().millisecondsSinceEpoch;
-
+                  int totalMistakes = 0;    
                   for (var value in box.values) {
                     final map = value as Map;
                     if ((map['s'] ?? 0) >= 4) learned++;
                     if ((map['nr'] ?? 0) <= now && (map['nr'] ?? 0) > 0) review++;
+                    totalMistakes += (map['wc'] ?? 0) as int;
                   }
 
                   return Row(
@@ -57,6 +58,8 @@ class ProfileScreen extends StatelessWidget {
                       Expanded(child: _buildStatCard(context, 'profile.learned'.tr(), learned.toString(), Colors.green)),
                       const SizedBox(width: 16),
                       Expanded(child: _buildStatCard(context, 'profile.review'.tr(), review.toString(), Colors.orange)),
+                      const SizedBox(width: 16),
+                      Expanded(child: _buildStatCard(context, 'profile.mistakes'.tr(), totalMistakes.toString(), Colors.red)),
                     ],
                   );
                 },
