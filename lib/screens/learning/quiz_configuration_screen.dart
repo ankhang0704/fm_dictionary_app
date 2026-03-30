@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../models/word_model.dart';
-import '../../services/word_service.dart';
+import '../../services/database/word_service.dart';
 import 'quiz_screen.dart';
 
 enum QuizMode { enToVi, viToEn, listening }

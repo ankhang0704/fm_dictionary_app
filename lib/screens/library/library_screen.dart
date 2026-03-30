@@ -1,10 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/screens/library/topic_detail.dart';
-import 'package:fm_dictionary/services/word_service.dart';
+import 'package:fm_dictionary/services/database/word_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/word_model.dart';
-import '../../services/database_service.dart';
+import '../../services/database/database_service.dart';
 import '../../core/constants/constants.dart';
 
 class LibraryScreen extends StatelessWidget {

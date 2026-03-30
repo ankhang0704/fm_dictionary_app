@@ -1,8 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fm_dictionary/screens/auth/profile_screen.dart';
 import 'package:fm_dictionary/screens/info/static_content_screen.dart';
-import '../../../../services/auth_sync_service.dart';
+import '../../services/auth/auth_sync_service.dart';
 
 class CustomSideBar extends StatelessWidget {
   const CustomSideBar({super.key});
@@ -29,7 +30,12 @@ class CustomSideBar extends StatelessWidget {
                 _buildMenuItem(
                   Icons.person_outline,
                   'sidebar.profile'.tr(),
-                  () {},
+                  () {Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ProfileScreen()
+                      ),
+                    );},
                 ),
                 _buildMenuItem(
                   Icons.sync_rounded,
@@ -40,12 +46,26 @@ class CustomSideBar extends StatelessWidget {
                 _buildMenuItem(
                   Icons.feedback_outlined,
                   'sidebar.feedback'.tr(),
-                  () {},
+                  () {Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const StaticContentScreen(
+                          titleKey: 'sidebar.feedback',
+                          contentKey: 'content.feedback_text',
+                        ),
+                      ),);},
                 ),
                 _buildMenuItem(
                   Icons.share_outlined,
                   'sidebar.share'.tr(),
-                  () {},
+                  () {Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const StaticContentScreen(
+                          titleKey: 'sidebar.share',
+                          contentKey: 'content.share_text',
+                        ),
+                      ),);},
                 ),
                 _buildMenuItem(
                   Icons.privacy_tip_outlined,
@@ -141,10 +161,11 @@ class CustomSideBar extends StatelessWidget {
     }
   }
 
-  Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap) {
+   Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap, {String? subtitle}) {
     return ListTile(
       leading: Icon(icon),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+      subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)) : null,
       onTap: onTap,
     );
   }

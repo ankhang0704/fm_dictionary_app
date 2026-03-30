@@ -137,7 +137,9 @@
         "permission_denied": "Bạn đã chặn thông báo. Vui lòng mở Cài đặt để cấp quyền."
     },
     "content": {
-        "privacy_text": "Chính sách bảo mật của FM Dictionary...\n1. Không thu thập dữ liệu trái phép.\n2. Đồng bộ an toàn qua Firebase."
+        "privacy_text": "Chính sách bảo mật của FM Dictionary...\n1. Không thu thập dữ liệu trái phép.\n2. Đồng bộ an toàn qua Firebase.",
+        "feedback_text": "Cảm ơn bạn đã sử dụng FM Dictionary!\n\nMọi ý kiến đóng góp, báo lỗi hoặc yêu cầu tính năng mới, xin vui lòng liên hệ với chúng tôi qua Email: support@fmdictionary.com.\n\nChúng tôi luôn lắng nghe để cải thiện ứng dụng ngày một tốt hơn.",
+        "share_text": "FM Dictionary - Tiếng Anh Chuyên Ngành\n\nHọc 1500 từ vựng tiếng Anh chuyên ngành chưa bao giờ dễ dàng đến thế với AI chấm điểm phát âm và thuật toán Spaced Repetition.\n\nHãy tải ứng dụng và chia sẻ cho bạn bè cùng học tại: https://fmdictionary.com"
     },
     "quiz_config": {
         "config_title": "Cài đặt Bài kiểm tra",

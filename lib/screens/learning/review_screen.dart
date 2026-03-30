@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:fm_dictionary/screens/learning/quiz_configuration_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/word_model.dart';
-import '../../services/database_service.dart';
-import '../../services/word_service.dart';
+import '../../services/database/database_service.dart';
+import '../../services/database/word_service.dart';
 import '../../core/constants/constants.dart';
 import 'study_screen.dart';
 

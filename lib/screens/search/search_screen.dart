@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/word_model.dart';
-import '../../services/database_service.dart';
+import '../../services/database/database_service.dart';
 import 'word_detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {

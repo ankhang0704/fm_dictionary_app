@@ -6,8 +6,8 @@ import 'package:fm_dictionary/screens/settings/logic/reset_progress.dart';
 import 'package:fm_dictionary/screens/settings/logic/show_langague.dart';
 import 'package:fm_dictionary/screens/settings/widgets/section_settings.dart';
 import '../../models/app_settings.dart';
-import '../../services/database_service.dart';
-import '../../services/theme_manager.dart';
+import '../../services/database/database_service.dart';
+import '../../services/ui_management/theme_manager.dart';
 import '../../core/constants/constants.dart';
 
 class SettingsScreen extends StatefulWidget {

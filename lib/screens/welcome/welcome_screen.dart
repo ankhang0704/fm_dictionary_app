@@ -6,8 +6,8 @@ import 'package:fm_dictionary/screens/welcome/widgets/name_input_field.dart';
 import 'package:fm_dictionary/screens/welcome/widgets/start_button.dart';
 import 'package:fm_dictionary/screens/welcome/widgets/theme_toggle_card.dart';
 import 'package:fm_dictionary/screens/welcome/widgets/welcome_header.dart';
-import '../../services/database_service.dart';
-import '../../services/theme_manager.dart';
+import '../../services/database/database_service.dart';
+import '../../services/ui_management/theme_manager.dart';
 import '../home/main_navigation.dart';
 import '../../core/constants/constants.dart';
 

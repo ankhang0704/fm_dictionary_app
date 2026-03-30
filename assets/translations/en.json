@@ -137,7 +137,9 @@
         "permission_denied": "Bạn đã chặn thông báo. Vui lòng mở Cài đặt để cấp quyền."
     },
     "content": {
-        "privacy_text": "Privacy Policy of FM Dictionary...\n1. No unauthorized data collection.\n2. Safe synchronization via Firebase."
+        "privacy_text": "Privacy Policy of FM Dictionary...\n1. No unauthorized data collection.\n2. Safe synchronization via Firebase.",
+        "share_text": "Share FM Dictionary with your friends and help them conquer specialized vocabulary too!",
+        "feedback_text": "We value your feedback! Please share your thoughts, suggestions, or any issues you encounter with us. Your input helps us improve FM Dictionary and provide a better learning experience for everyone. Thank you for being part of our community!"
     },
     "quiz_config": {
         "config_title": "Quiz Settings",

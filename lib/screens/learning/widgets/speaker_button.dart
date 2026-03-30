@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/services/tts_service.dart';
+import 'package:fm_dictionary/services/ai_speech/tts_service.dart';
 
 class SpeakerButton extends StatelessWidget {
   const SpeakerButton({

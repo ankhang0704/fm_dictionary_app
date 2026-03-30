@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import '../models/word_model.dart';
+import '../../models/word_model.dart';
 import 'database_service.dart';
 
 class WordService {

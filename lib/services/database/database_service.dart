@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart'; // Bắt buộc import để dùng compute
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../models/word_model.dart';
-import '../models/app_settings.dart';
+import '../../models/word_model.dart';
+import '../../models/app_settings.dart';
 
 // HÀM CHẠY TRÊN LUỒNG NỀN (Isolate)
 // Bắt buộc phải để ngoài class DatabaseService để compute có thể gọi được

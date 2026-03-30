@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'database_service.dart';
+import '../database/database_service.dart';
 
 class AuthSyncService {
   AuthSyncService._();
@@ -17,6 +19,8 @@ class AuthSyncService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance; // Khởi tạo 1 lần duy nhất
 
+  final ValueNotifier<String> lastSyncTime = ValueNotifier<String>('Chưa đồng bộ');
+
   Future<void> init() async {
     _auth.authStateChanges().listen((user) {
       currentUser.value = user;
@@ -28,6 +32,8 @@ class AuthSyncService {
     } catch (e) {
       debugPrint("Lỗi khởi tạo GoogleSignIn: $e");
     }
+    final prefs = await SharedPreferences.getInstance();
+    lastSyncTime.value = prefs.getString('last_sync_time') ?? 'Chưa đồng bộ';
   }
 
 
@@ -149,7 +155,10 @@ class AuthSyncService {
         batch.set(docRef, {'lastSync': FieldValue.serverTimestamp()}, SetOptions(merge: true));
       }
       await batch.commit();
-
+      final timeString = DateFormat('HH:mm - dd/MM/yyyy').format(DateTime.now());
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('last_sync_time', timeString);
+      lastSyncTime.value = timeString;
     } catch (e) {
       if (e.toString().contains('unavailable') || e.toString().contains('network_error')) {
         throw Exception('network_error');

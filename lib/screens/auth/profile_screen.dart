@@ -2,8 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../services/auth_sync_service.dart';
-import '../../services/database_service.dart';
+import '../../services/auth/auth_sync_service.dart';
+import '../../services/database/database_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

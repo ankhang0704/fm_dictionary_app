@@ -1,5 +1,5 @@
 import 'package:flutter_tts/flutter_tts.dart';
-import 'database_service.dart';
+import '../database/database_service.dart';
 
 class TtsService {
   // Singleton instance

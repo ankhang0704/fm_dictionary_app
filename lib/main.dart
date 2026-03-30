@@ -1,11 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/utils/loading.dart';
-import 'package:fm_dictionary/services/auth_sync_service.dart';
-import 'package:fm_dictionary/services/voice_service.dart';
-import 'services/database_service.dart';
-import 'services/tts_service.dart';
-import 'services/theme_manager.dart';
+import 'package:fm_dictionary/services/auth/auth_sync_service.dart';
+import 'package:fm_dictionary/services/ai_speech/speech_service.dart';
+import 'services/database/database_service.dart';
+import 'services/ai_speech/tts_service.dart';
+import 'services/ui_management/theme_manager.dart';
 import 'screens/home/main_navigation.dart';
 import 'screens/welcome/welcome_screen.dart';
 import 'core/constants/constants.dart';
@@ -25,9 +25,9 @@ void main() async {
   await DatabaseService.init();
   // 2. Khởi tạo TTS
   await TtsService().init();
-
+  // 3. Khởi tạo Model Whisper (Bắt buộc phải khởi tạo trước AuthSync để tránh lỗi khi vào StudyScreen)
   await VoiceService.instance.initModel();
-  
+  // 4. Khởi tạo AuthSyncService (Lắng nghe Auth và đồng bộ dữ liệu)
   await AuthSyncService.instance.init(); 
   
   runApp(
