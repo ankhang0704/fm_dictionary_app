@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/utils/loading.dart';
 import 'package:fm_dictionary/services/auth/auth_sync_service.dart';
 import 'package:fm_dictionary/services/ai_speech/ai_assistant/ai_assistant_service.dart';
+import 'package:fm_dictionary/services/notify/notification_service.dart';
 import 'services/database/database_service.dart';
 import 'services/ai_speech/text_to_speech/speech_service.dart';
 import 'services/ui_management/theme_manager.dart';
@@ -29,7 +30,7 @@ void main() async {
   await AiAssistantService.instance.initModel();
   // 4. Khởi tạo AuthSyncService (Lắng nghe Auth và đồng bộ dữ liệu)
   await AuthSyncService.instance.init(); 
-  
+  await NotificationService.instance.init();
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('vi')],

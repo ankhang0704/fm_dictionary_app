@@ -124,4 +124,24 @@ class WordService {
     final progress = getWordProgress(wordId);
     return (progress['s'] as int) >= 4; // Step 4 trở lên là đã thuộc lòng
   }
+  Set<DateTime> getStudyDates() {
+    final box = Hive.box(DatabaseService.progressBoxName);
+    final Set<DateTime> studyDates = {};
+
+    for (var value in box.values) {
+      final map = value as Map;
+      final int lr = map['lr'] ?? 0;
+      final int ua = map['ua'] ?? 0;
+
+      // Lấy mốc thời gian lớn nhất giữa Lần học cuối (lr) và Lần cập nhật (ua)
+      final int latestActivity = lr > ua ? lr : ua;
+
+      if (latestActivity > 0) {
+        final date = DateTime.fromMillisecondsSinceEpoch(latestActivity);
+        // TỐI ƯU: Ép về đúng 00:00:00 của ngày đó để TableCalendar so sánh dễ dàng (Tránh lỗi do lệch giờ/phút)
+        studyDates.add(DateTime(date.year, date.month, date.day));
+      }
+    }
+    return studyDates;
+  }
 }
