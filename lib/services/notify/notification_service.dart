@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,7 +20,8 @@ class NotificationService {
   Future<void> init() async {
     // 1. Khởi tạo TimeZone (Bắt buộc để đặt lịch lặp lại hàng ngày chính xác theo múi giờ local)
     tz_data.initializeTimeZones();
-
+    final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(timeZoneName));
     // 2. Cấu hình Android (Sử dụng icon mặc định của app: @mipmap/ic_launcher)
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -50,9 +52,13 @@ class NotificationService {
 
   /// Đặt lịch nhắc nhở hàng ngày
   Future<void> scheduleDailyReminder(TimeOfDay time) async {
+    final androidPlugin = _notificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    await androidPlugin?.requestExactAlarmsPermission();
     // 1. Hủy lịch cũ trước khi đặt lịch mới
     await _notificationsPlugin.cancelAll();
-
     // 2. Lưu local
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('reminder_hour', time.hour);
