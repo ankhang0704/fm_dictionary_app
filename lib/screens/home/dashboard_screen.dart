@@ -1,15 +1,15 @@
+// file: lib/screens/home/dashboard_screen.dart
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/screens/learning/quiz_configuration_screen.dart';
+import 'package:fm_dictionary/screens/home/widgets/greeting_widget.dart';
+import 'package:fm_dictionary/screens/home/widgets/quick_action_widget.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/word_model.dart';
 import '../../services/database/database_service.dart';
 import '../../services/database/word_service.dart';
 import '../../core/constants/constants.dart';
 import '../../widgets/common/progress_card.dart';
-import '../../widgets/common/smart_action_button.dart';
-import '../learning/study_screen.dart';
-import '../../widgets/common/home_search_bar.dart'; // Import widget mới tạo
+import '../../widgets/common/home_search_bar.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -20,128 +20,59 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final WordService _wordService = WordService();
-  
+
   @override
   Widget build(BuildContext context) {
-    
-    return ValueListenableBuilder(
-      valueListenable: Hive.box(DatabaseService.progressBoxName).listenable(),
-      builder: (context, progressBox, child) {
     final settings = DatabaseService.getSettings();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final wordBox = Hive.box<Word>(DatabaseService.wordBoxName);
-        final learnedCount = wordBox.values
-            .where((w) => _wordService.isWordLearned(w.id))
-            .length;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: ValueListenableBuilder(
-        valueListenable: Hive.box<Word>(DatabaseService.wordBoxName).listenable(),
-        builder: (context, box, _) {
-          final totalCount = box.length;
-          // final reviewCount = _wordService.getWordsToReview().length;
+      backgroundColor: isDark ? AppConstants.darkBgColor : AppConstants.backgroundColor,
+      body: SafeArea(
+        child: ValueListenableBuilder(
+          valueListenable: Hive.box(DatabaseService.progressBoxName).listenable(),
+          builder: (context, progressBox, _) {
+            return ValueListenableBuilder(
+              valueListenable: Hive.box<Word>(DatabaseService.wordBoxName).listenable(),
+              builder: (context, wordBox, _) {
+                final totalCount = wordBox.length;
+                final learnedCount = wordBox.values.where((w) => _wordService.isWordLearned(w.id)).length;
 
-          return SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppConstants.defaultPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('dashboard.good_morning'.tr(), style: AppConstants.subHeadingStyle),
-                  Text(settings.userName, style: AppConstants.headingStyle),
-                  const SizedBox(height: 24),
-
-                  // Search Bar
-                  const HomeSearchBar(),
-                  const SizedBox(height: 32),
-
-                  ProgressCard(learnedCount: learnedCount, totalCount: totalCount),
-                  
-                  const SizedBox(height: 32),
-                  Text('dashboard.quick_action'.tr(), 
-                    style: AppConstants.subHeadingStyle),
-                  const SizedBox(height: 16),
-
-                  SmartActionButton(
-                    icon: Icons.play_circle_fill_rounded,
-                    title: 'dashboard.continue_title'.tr(),
-                    subtitle: 'dashboard.continue_subtitle'.tr(),
-                    color: isDark ? const Color(0xFF1A3B5C) : const Color(0xFFE3F2FD),
-                    iconColor: Colors.blue,
-                    onTap: () {
-                      final topics = _wordService.getAllTopics();
-                      String targetTopic = topics.isNotEmpty ? topics.first : 'General';
-                      for (var topic in topics) {
-                        final words = _wordService.getWordsByTopic(topic);
-                        if (words.any((w) => !_wordService.isWordLearned(w.id))) {
-                          targetTopic = topic;
-                          break;
-                        }
-                      }
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => StudyScreen(topic: targetTopic)),
-                      );
-                    },
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.defaultPadding,
+                    vertical: 16.0,
                   ),
-                  const SizedBox(height: 12),
-                  SmartActionButton(
-                    icon: Icons.error_outline_rounded,
-                    title: 'dashboard.review_mistakes'.tr(),
-                    subtitle: 'dashboard.review_mistakes_subtitle'.tr(),
-                    color: isDark ? const Color(0xFF4A1C1C) : const Color(0xFFFFEBEE),
-                    iconColor: Colors.red,
-                    onTap: () {
-                      final reviewCount = _wordService.getWordsToReview().length;
-                      if (reviewCount == 0) {
-                        // Hiển thị thông báo thay vì chuyển màn hình
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title:  Text('dashboard.review_mistakes_anouncement'.tr()),
-                            content:  Text('dashboard.review_mistakes_message'.tr()),
-                            actions: [
-                              TextButton(onPressed: () => Navigator.pop(context), child:  Text('dashboard.btn_close'.tr())),
-                            ],
-                          ),
-                        );
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const StudyScreen(topic: 'Review')),
-                        );
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  SmartActionButton(
-                        icon: Icons.shuffle_rounded,
-                        title: 'dashboard.daily_test'.tr(),
-                        subtitle: 'dashboard.daily_test_subtitle'.tr(),
-                        color: isDark
-                            ? const Color(0xFF1E3A23)
-                            : const Color(0xFFF1F8E9),
-                        iconColor: Colors.green,
-                        onTap: () {
-                          // Chuyển thẳng sang Config, truyền Topic 'All'
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const QuizConfigurationScreen(
-                                    initialTopic: 'All',
-                                  ),
-                            ),
-                          );
-                        },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GreetingSection(userName: settings.userName, isDark: isDark),
+                      const SizedBox(height: 24),
+                      const HomeSearchBar(),
+                      const SizedBox(height: 32),
+                      ProgressCard(learnedCount: learnedCount, totalCount: totalCount),
+                      const SizedBox(height: 32),
+                      Text(
+                        'dashboard.quick_action'.tr(),
+                        style: AppConstants.subHeadingStyle.copyWith(
+                          fontSize: 14,
+                          color: isDark ? Colors.white70 : AppConstants.textSecondary,
+                        ),
                       ),
-                ],
-              ),
-            ),
-          );
-        },
+                      const SizedBox(height: 16),
+                      QuickActionsList(wordService: _wordService, isDark: isDark),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
-  });
   }
 }
+
+

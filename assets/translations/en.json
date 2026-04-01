@@ -61,7 +61,11 @@
         "tap_to_speak": "Tap to Speak",
         "you_said": "You said: ",
         "try_again": "Try Again",
-        "excellent": "Excellent work!"
+        "excellent": "Excellent work!",
+        "keepPracticing": "Keep practicing!",
+        "again": "Try Again",
+        "good": "Good",
+        "easy": "Easy"
     },
     "categories": {
         "title": "Categories",
@@ -114,27 +118,33 @@
         "words_available": "words available"
     },
     "sidebar": {
-        "guest": "Khách",
-        "login_desc": "Đăng nhập để đồng bộ dữ liệu",
-        "no_name": "Người dùng",
-        "profile": "Hồ sơ cá nhân",
-        "sync": "Đồng bộ tiến trình (Backup)",
-        "sync_success": "Đồng bộ lên mây thành công!",
-        "sync_fail": "Lỗi đồng bộ. Vui lòng kiểm tra mạng hoặc đăng nhập.",
-        "feedback": "Góp ý & Hỗ trợ",
-        "share": "Chia sẻ ứng dụng",
-        "privacy": "Chính sách bảo mật",
-        "terms": "Điều khoản sử dụng",
-        "login": "Đăng nhập Google",
-        "logout": "Đăng xuất"
+        "guest": "Guest",
+        "login_desc": "Log in to sync your data",
+        "no_name": "User",
+        "profile": "Profile",
+        "sync": "Sync Progress (Backup)",
+        "sync_success": "Synced to cloud successfully!",
+        "sync_fail": "Sync failed: ",
+        "feedback": "Feedback & Support",
+        "share": "Share App",
+        "privacy": "Privacy Policy",
+        "terms": "Terms of Service",
+        "login": "Login with Google",
+        "logout": "Logout",
+        "about": "About Us",
+        "settings": "Settings"
     },
     "calendar": {
-        "title": "Lịch học tập",
-        "notification_1": "Đã đến giờ ôn tập!",
-        "notification_2": "Đừng quên ôn tập để ghi nhớ tốt hơn!",
-        "notifications": "Nhận thông báo học tập",
-        "turn_on_notify": "Bật thông báo để nhắc nhở học từ vựng mỗi ngày!",
-        "permission_denied": "Bạn đã chặn thông báo. Vui lòng mở Cài đặt để cấp quyền."
+        "title": "Study Notifications",
+        "notification_1": "It's time to review!",
+        "notification_2": "Don't forget to review your vocabulary!",
+        "notifications": "Receive study notifications",
+        "turn_on_notify": "Turn on notifications to be reminded of your daily vocabulary practice!",
+        "permission_denied": "You have blocked notifications. Please open Settings to grant permission.",
+        "reminder_time": "Daily Reminder Time",
+        "system_active": "Follow System Time",
+        "system_active_desc": "Receive notifications based on your device's current time settings.",
+        "custom_time": "Custom Time"
     },
     "content": {
         "privacy_text": "Privacy Policy of FM Dictionary...\n1. No unauthorized data collection.\n2. Safe synchronization via Firebase.",

@@ -55,7 +55,11 @@
         "tap_to_speak": "Chạm để nói",
         "you_said": "Bạn đã nói: ",
         "try_again": "Thử lại",
-        "excellent": "Làm tốt lắm!"
+        "excellent": "Làm tốt lắm!",
+        "keepPracticing": "Keep practicing!",
+        "again": "Thử lại",
+        "good": "Tốt",
+        "easy": "Dễ"
     },
     "categories": {
         "title": "Danh mục",

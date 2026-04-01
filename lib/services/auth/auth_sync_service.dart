@@ -95,6 +95,7 @@ class AuthSyncService {
   // 4. BACKUP TIẾN ĐỘ LÊN FIRESTORE
   Future<void> syncDataWithMerge() async {
     final user = _auth.currentUser;
+    bool hasUpdate = false;
     if (user == null) throw Exception('not_logged_in');
 
     try {
@@ -147,14 +148,20 @@ class AuthSyncService {
       // SỬ DỤNG WRITEBATCH ĐỂ TỐI ƯU GIAO DỊCH MẠNG
       final batch = _firestore.batch();
       if (cloudUpdates.isNotEmpty) {
+        hasUpdate = true;
         batch.set(docRef, {
           'progress': cloudUpdates,
           'lastSync': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
       } else if (localUpdates.isNotEmpty) {
+        hasUpdate = true;
         batch.set(docRef, {'lastSync': FieldValue.serverTimestamp()}, SetOptions(merge: true));
       }
-      await batch.commit();
+      if (hasUpdate) {
+        await batch.commit();
+      }else {
+        debugPrint("Không có cập nhật nào để đồng bộ.");
+      }
       final timeString = DateFormat('HH:mm - dd/MM/yyyy').format(DateTime.now());
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('last_sync_time', timeString);

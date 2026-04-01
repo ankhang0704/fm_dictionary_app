@@ -4,8 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:ffmpeg_kit_flutter_audio/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_audio/return_code.dart';
 import 'package:whisper_flutter_new/whisper_flutter_new.dart';
 
 // --- LUỒNG XỬ LÝ ĐỘC LẬP (ISOLATE) ---
@@ -85,35 +83,35 @@ class AiAssistantService {
       encoder: AudioEncoder.wav,
       sampleRate: 16000,
       numChannels: 1, // Mono
-      bitRate: 16000,
+      bitRate: 256000,
     );
 
     await _audioRecorder.start(config, path: filePath);
     _micActive = true;
   }
 
-  // 3. Tiền xử lý âm thanh (FFmpeg)
-  Future<String> _preprocessAudio(String inputPath) async {
-    final tempDir = await getTemporaryDirectory();
-    final outputPath =
-        '${tempDir.path}/processed_${DateTime.now().millisecondsSinceEpoch}.wav';
+  // 3. Tiền xử lý âm thanh (FFmpeg) bỏ bước này vì phần cứng 
+  // Future<String> _preprocessAudio(String inputPath) async {
+  //   final tempDir = await getTemporaryDirectory();
+  //   final outputPath =
+  //       '${tempDir.path}/processed_${DateTime.now().millisecondsSinceEpoch}.wav';
 
-    // Lọc nhiễu, chuẩn hóa âm lượng, ép về 16kHz Mono
-    final session = await FFmpegKit.execute(
-      '-i $inputPath '
-      '-af "highpass=f=80,lowpass=f=8000,afftdn=nf=-25,dynaudnorm=p=0.9" '
-      '-ar 16000 -ac 1 -sample_fmt s16 '
-      '$outputPath',
-    );
+  //   // Lọc nhiễu, chuẩn hóa âm lượng, ép về 16kHz Mono
+  //   final session = await FFmpegKit.execute(
+  //     '-i $inputPath '
+  //     '-af "highpass=f=80,lowpass=f=8000,afftdn=nf=-25,dynaudnorm=p=0.9" '
+  //     '-ar 16000 -ac 1 -sample_fmt s16 '
+  //     '$outputPath',
+  //   );
 
-    final returnCode = await session.getReturnCode();
-    if (ReturnCode.isSuccess(returnCode)) {
-      return outputPath;
-    }
+  //   final returnCode = await session.getReturnCode();
+  //   if (ReturnCode.isSuccess(returnCode)) {
+  //     return outputPath;
+  //   }
 
-    // Fallback: Nếu phần cứng không chạy được lệnh FFmpeg, trả về file gốc
-    return inputPath;
-  }
+  //   // Fallback: Nếu phần cứng không chạy được lệnh FFmpeg, trả về file gốc
+  //   return inputPath;
+  // }
 
   // 4. Dừng ghi âm & Phân tích
   Future<String?> stopAndTranscribe() async {
@@ -128,16 +126,16 @@ class AiAssistantService {
 
     try {
       // BƯỚC 1: Lọc âm qua FFmpeg
-      final processedPath = await _preprocessAudio(filePath);
+      // final processedPath = await _preprocessAudio(filePath);
 
       // BƯỚC 2: Gọi Isolate để suy luận không làm đơ màn hình
       final result = await compute(_runWhisperInIsolate, {
         'modelDir': _modelDirPath!,
-        'audioPath': processedPath,
+        'audioPath': filePath,
       });
 
       // BƯỚC 3: Dọn dẹp cả 2 file tạm ngay lập tức
-      for (final path in [filePath, processedPath]) {
+      for (final path in [filePath]) {
         final f = File(path);
         if (await f.exists()) await f.delete();
       }

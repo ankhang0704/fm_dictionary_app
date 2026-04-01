@@ -1,11 +1,14 @@
+// file: lib/widgets/layout/right_sidebar.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:fm_dictionary/services/database/database_service.dart';
-import 'package:fm_dictionary/services/database/word_service.dart';
-import 'package:fm_dictionary/services/notify/notification_service.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
+import '../../services/database/database_service.dart';
+import '../../services/database/word_service.dart';
+import '../../services/notify/notification_service.dart';
+import '../../core/constants/constants.dart';
 
 class RightSideBar extends StatefulWidget {
   const RightSideBar({super.key});
@@ -14,9 +17,7 @@ class RightSideBar extends StatefulWidget {
   State<RightSideBar> createState() => _RightSideBarState();
 }
 
-// Thêm WidgetsBindingObserver để lắng nghe trạng thái App (Foreground/Background)
-class _RightSideBarState extends State<RightSideBar>
-    with WidgetsBindingObserver {
+class _RightSideBarState extends State<RightSideBar> with WidgetsBindingObserver {
   bool _hasNotificationPermission = false;
   final WordService _wordService = WordService();
   DateTime _focusedDay = DateTime.now();
@@ -24,23 +25,20 @@ class _RightSideBarState extends State<RightSideBar>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // Đăng ký Observer
+    WidgetsBinding.instance.addObserver(this);
     _checkPermission();
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(
-      this,
-    ); // Gỡ Observer tránh tràn bộ nhớ
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  // LẮNG NGHE KHI APP ĐƯỢC MỞ LẠI TỪ BACKGROUND (VD: Quay lại từ App Settings)
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _checkPermission(); // Kiểm tra lại quyền ngay lập tức
+      _checkPermission();
     }
   }
 
@@ -54,228 +52,334 @@ class _RightSideBarState extends State<RightSideBar>
   Future<void> _handlePermissionToggle(bool value) async {
     if (value) {
       final status = await Permission.notification.request();
-
       if (status.isGranted) {
         setState(() => _hasNotificationPermission = true);
-        // Đặt mặc định 20:00 nếu mới bật
         if (NotificationService.instance.reminderTime.value == null) {
-          NotificationService.instance.scheduleDailyReminder(
-            const TimeOfDay(hour: 20, minute: 0),
-          );
+          NotificationService.instance.scheduleDailyReminder(const TimeOfDay(hour: 20, minute: 0));
         }
       } else if (status.isPermanentlyDenied) {
         _showPermissionDialog();
       }
     } else {
-      // Tắt thông báo
-      openAppSettings(); // Hệ điều hành đời mới không cho tắt qua code, mở cài đặt
+      openAppSettings();
       NotificationService.instance.cancelReminder();
     }
   }
 
   void _showPermissionDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('calendar.permission_title'.tr()),
-        content: Text('calendar.permission_denied'.tr()),
+        backgroundColor: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppConstants.cardRadius / 2)),
+        title: Text(
+          'calendar.permission_title'.tr(), 
+          style: TextStyle(color: isDark ? Colors.white : AppConstants.textPrimary, fontSize: 16),
+        ),
+        content: Text(
+          'calendar.permission_denied'.tr(), 
+          style: TextStyle(color: AppConstants.textSecondary, fontSize: 14),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('calendar.cancel'.tr()),
+            child: Text('calendar.cancel'.tr(), style: TextStyle(color: AppConstants.textSecondary)),
           ),
-          TextButton(
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppConstants.accentColor,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppConstants.buttonRadius / 2)),
+            ),
             onPressed: () {
               Navigator.pop(context);
-              openAppSettings(); // Mở cài đặt đện thoại
+              openAppSettings();
             },
-            child: Text(
-              'calendar.open_settings'.tr(),
-              style: const TextStyle(color: Colors.blue),
-            ),
+            child: Text('calendar.open_settings'.tr()),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _selectTime(BuildContext context) async {
-    final current =
-        NotificationService.instance.reminderTime.value ??
-        const TimeOfDay(hour: 20, minute: 0);
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: current,
-    );
-    if (picked != null) {
-      await NotificationService.instance.scheduleDailyReminder(picked);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Drawer(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      width: MediaQuery.of(context).size.width * 0.85,
+      backgroundColor: isDark ? AppConstants.darkBgColor : AppConstants.backgroundColor,
       child: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
               child: Text(
                 'calendar.title'.tr(),
-                style: const TextStyle(
+                style: AppConstants.headingStyle.copyWith(
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  fontStyle: FontStyle.normal,
+                  color: isDark ? Colors.white : AppConstants.textPrimary,
                 ),
               ),
             ),
+            _buildCalendarSection(isDark),
+            const SizedBox(height: 16),
+            Divider(height: 1, thickness: 1, color: Colors.grey.withValues(alpha: 0.1)),
+            const SizedBox(height: 16),
+            _buildNotificationSettings(isDark),
+            Expanded(
+              child: _hasNotificationPermission
+                  ? _buildNotificationList(isDark)
+                  : _buildPermissionPrompt(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-            // LỊCH SỬ HỌC TẬP REACTIVE (Cập nhật realtime)
-            ValueListenableBuilder(
-              valueListenable: Hive.box(
-                DatabaseService.progressBoxName,
-              ).listenable(),
-              builder: (context, box, child) {
-                // Lấy mảng ngày siêu tốc O(1) Lookup
-                final Set<DateTime> studyDates = _wordService.getStudyDates();
+  Widget _buildCalendarSection(bool isDark) {
+    return ValueListenableBuilder(
+      valueListenable: Hive.box(DatabaseService.progressBoxName).listenable(),
+      builder: (context, box, child) {
+        final Set<DateTime> studyDates = _wordService.getStudyDates();
 
-                return TableCalendar(
-                  firstDay: DateTime.now().subtract(const Duration(days: 365)),
-                  lastDay: DateTime.now().add(const Duration(days: 365)),
-                  focusedDay: _focusedDay,
-                  headerStyle: const HeaderStyle(
-                    formatButtonVisible: false,
-                    titleCentered: true,
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Container(
+            padding: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
+              borderRadius: BorderRadius.circular(AppConstants.inputRadius),
+              boxShadow: isDark ? [] : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: TableCalendar(
+              firstDay: DateTime.now().subtract(const Duration(days: 365)),
+              lastDay: DateTime.now().add(const Duration(days: 365)),
+              focusedDay: _focusedDay,
+              rowHeight: 40,
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+                leftChevronPadding: EdgeInsets.zero,
+                rightChevronPadding: EdgeInsets.zero,
+                titleTextStyle: AppConstants.bodyStyle.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: isDark ? Colors.white : AppConstants.textPrimary,
+                ),
+                leftChevronIcon: Icon(CupertinoIcons.chevron_left, color: AppConstants.textSecondary, size: 20),
+                rightChevronIcon: Icon(CupertinoIcons.chevron_right, color: AppConstants.textSecondary, size: 20),
+              ),
+              daysOfWeekStyle: DaysOfWeekStyle(
+                weekdayStyle: TextStyle(color: AppConstants.textSecondary, fontWeight: FontWeight.bold, fontSize: 12),
+                weekendStyle: TextStyle(color: AppConstants.textSecondary, fontWeight: FontWeight.bold, fontSize: 12),
+              ),
+              calendarStyle: CalendarStyle(
+                defaultTextStyle: TextStyle(color: isDark ? Colors.white : AppConstants.textPrimary, fontSize: 13),
+                weekendTextStyle: TextStyle(color: isDark ? Colors.white70 : AppConstants.textPrimary, fontSize: 13),
+                outsideTextStyle: TextStyle(color: AppConstants.textLight, fontSize: 13),
+                cellMargin: const EdgeInsets.all(4),
+                todayDecoration: BoxDecoration(
+                  color: AppConstants.accentColor.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
+                ),
+                todayTextStyle: TextStyle(
+                  color: isDark ? Colors.white : AppConstants.accentColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              onPageChanged: (focusedDay) => _focusedDay = focusedDay,
+              calendarBuilders: CalendarBuilders(
+                markerBuilder: (context, date, events) {
+                  final normalizedDate = DateTime(date.year, date.month, date.day);
+                  if (studyDates.contains(normalizedDate)) {
+                    return Positioned(
+                      bottom: 4,
+                      child: Container(
+                        width: 4,
+                        height: 4,
+                        decoration: const BoxDecoration(
+                          color: AppConstants.successColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    );
+                  }
+                  return null;
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildNotificationSettings(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'calendar.notifications'.tr(),
+                  style: AppConstants.subHeadingStyle.copyWith(
+                    fontSize: 12,
+                    color: isDark ? Colors.white70 : AppConstants.textSecondary,
                   ),
-                  calendarStyle: CalendarStyle(
-                    todayDecoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                      shape: BoxShape.circle,
+                ),
+              ),
+              Transform.scale(
+                scale: 0.8,
+                child: Switch.adaptive(
+                  value: _hasNotificationPermission,
+                  activeThumbColor: AppConstants.accentColor,
+                  onChanged: _handlePermissionToggle,
+                ),
+              ),
+            ],
+          ),
+          if (_hasNotificationPermission) ...[
+            const SizedBox(height: 8),
+            ValueListenableBuilder<TimeOfDay?>(
+              valueListenable: NotificationService.instance.reminderTime,
+              builder: (context, time, _) {
+                return GestureDetector(
+                  onTap: () async {
+                    final current = time ?? const TimeOfDay(hour: 20, minute: 0);
+                    final picked = await showTimePicker(context: context, initialTime: current);
+                    if (picked != null) {
+                      await NotificationService.instance.scheduleDailyReminder(picked);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
+                      borderRadius: BorderRadius.circular(AppConstants.inputRadius),
+                      border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
                     ),
-                  ),
-                  onPageChanged: (focusedDay) => _focusedDay = focusedDay,
-
-                  // CUSTOM UI: Vẽ "Tích đỏ" dưới những ngày đã học
-                  calendarBuilders: CalendarBuilders(
-                    markerBuilder: (context, date, events) {
-                      // Normalize ngày hiện tại trên lịch để so sánh
-                      final normalizedDate = DateTime(
-                        date.year,
-                        date.month,
-                        date.day,
-                      );
-
-                      if (studyDates.contains(normalizedDate)) {
-                        return Positioned(
-                          bottom: 4,
-                          child: Icon(
-                            Icons.check_circle,
-                            size: 14,
-                            color: Colors.red.shade400,
+                    child: Row(
+                      children: [
+                        const Icon(CupertinoIcons.clock_fill, color: AppConstants.accentColor, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'calendar.reminder_time'.tr(),
+                            style: AppConstants.bodyStyle.copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: isDark ? Colors.white : AppConstants.textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        );
-                      }
-                      return null;
-                    },
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppConstants.accentColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            time != null ? time.format(context) : '20:00',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppConstants.accentColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
             ),
+          ],
+        ],
+      ),
+    );
+  }
 
-            const Divider(height: 32),
-
-            // KHU VỰC CÀI ĐẶT THÔNG BÁO
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'calendar.notifications'.tr(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      Switch(
-                        value: _hasNotificationPermission,
-                        onChanged: _handlePermissionToggle,
-                      ),
-                    ],
-                  ),
-
-                  // Hiển thị TimePicker nếu đã cấp quyền
-                  if (_hasNotificationPermission)
-                    ValueListenableBuilder<TimeOfDay?>(
-                      valueListenable:
-                          NotificationService.instance.reminderTime,
-                      builder: (context, time, _) {
-                        return ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: const Icon(
-                            Icons.access_time_filled,
-                            color: Colors.blue,
-                          ),
-                          title: Text('calendar.reminder_time'.tr()),
-                          trailing: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              time != null ? time.format(context) : '20:00',
-                              style: const TextStyle(
-                                color: Colors.blue,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          onTap: () => _selectTime(context),
-                        );
-                      },
-                    ),
-                ],
+  Widget _buildNotificationList(bool isDark) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      physics: const BouncingScrollPhysics(),
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
+            borderRadius: BorderRadius.circular(AppConstants.inputRadius),
+            border: Border.all(color: AppConstants.accentColor.withValues(alpha: 0.3)),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppConstants.accentColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(CupertinoIcons.bell_fill, color: AppConstants.accentColor, size: 18),
+            ),
+            title: Text(
+              'calendar.system_active'.tr(),
+              style: AppConstants.bodyStyle.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: isDark ? Colors.white : AppConstants.textPrimary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                'calendar.system_active_desc'.tr(),
+                style: AppConstants.bodyStyle.copyWith(
+                  fontSize: 12,
+                  color: AppConstants.textSecondary,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
+          ),
+        ),
+      ],
+    );
+  }
 
-            // MỤC THÔNG BÁO MINH HỌA
-            Expanded(
-              child: _hasNotificationPermission
-                  ? ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        ListTile(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          tileColor: theme.cardColor,
-                          leading: const Icon(
-                            Icons.notifications_active,
-                            color: Colors.orange,
-                          ),
-                          title: Text('calendar.system_active'.tr()),
-                          subtitle: Text('calendar.system_active_desc'.tr()),
-                        ),
-                      ],
-                    )
-                  : Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Text(
-                          'calendar.turn_on_notify'.tr(),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                      ),
-                    ),
+  Widget _buildPermissionPrompt() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(CupertinoIcons.bell_slash, size: 40, color: AppConstants.textLight),
+            const SizedBox(height: 12),
+            Text(
+              'calendar.turn_on_notify'.tr(),
+              textAlign: TextAlign.center,
+              style: AppConstants.bodyStyle.copyWith(
+                fontSize: 13,
+                color: AppConstants.textSecondary,
+              ),
             ),
           ],
         ),
