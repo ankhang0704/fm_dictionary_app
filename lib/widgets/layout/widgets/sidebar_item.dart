@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/constants/constants.dart';
 import 'package:fm_dictionary/services/auth/auth_sync_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SidebarItem extends StatelessWidget {
   final IconData icon;
@@ -58,7 +59,7 @@ class SidebarFooter extends StatelessWidget {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Lỗi xác thực"),
+            content: Text("Authentication failed"),
             backgroundColor: AppConstants.errorColor,
           ),
         );
@@ -105,12 +106,20 @@ class SidebarFooter extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            'v1.0.1',
-            style: AppConstants.bodyStyle.copyWith(
-              fontSize: 12,
-              color: AppConstants.textLight,
-            ),
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Text(
+                  'v${snapshot.data!.version}', // Tự động hiển thị theo pubspec.yaml
+                  style: AppConstants.bodyStyle.copyWith(
+                    fontSize: 12,
+                    color: AppConstants.textLight,
+                  ),
+                );
+              }
+              return const SizedBox(); // Hiển thị trống khi đang load
+            },
           ),
         ],
       ),

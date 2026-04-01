@@ -21,14 +21,22 @@ class _RightSideBarState extends State<RightSideBar> with WidgetsBindingObserver
   bool _hasNotificationPermission = false;
   final WordService _wordService = WordService();
   DateTime _focusedDay = DateTime.now();
-
+  TimeOfDay? _displayTime;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _displayTime = NotificationService.instance.reminderTime.value;
+    NotificationService.instance.reminderTime.addListener(_updateLocalTime);
     _checkPermission();
   }
-
+  void _updateLocalTime() {
+    if (mounted) {
+      setState(() {
+        _displayTime = NotificationService.instance.reminderTime.value;
+      });
+    }
+  }
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -162,6 +170,7 @@ class _RightSideBarState extends State<RightSideBar> with WidgetsBindingObserver
               ],
             ),
             child: TableCalendar(
+              locale: 'en_US',
               firstDay: DateTime.now().subtract(const Duration(days: 365)),
               lastDay: DateTime.now().add(const Duration(days: 365)),
               focusedDay: _focusedDay,
@@ -259,9 +268,10 @@ class _RightSideBarState extends State<RightSideBar> with WidgetsBindingObserver
               builder: (context, time, _) {
                 return GestureDetector(
                   onTap: () async {
-                    final current = time ?? const TimeOfDay(hour: 20, minute: 0);
+                    final current = _displayTime ?? const TimeOfDay(hour: 20, minute: 0);
                     final picked = await showTimePicker(context: context, initialTime: current);
                     if (picked != null) {
+                      setState(() => _displayTime = picked);
                       await NotificationService.instance.scheduleDailyReminder(picked);
                     }
                   },

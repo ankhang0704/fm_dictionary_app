@@ -37,7 +37,9 @@
         "score": "Your Score:",
         "excellent": "Excellent work!",
         "keepPracticing": "Keep practicing!",
-        "backToHome": "BACK TO HOME"
+        "backToHome": "BACK TO HOME",
+        "translation_instruction": "Select the correct translation for the word:",
+        "listen_instruction": "Listen to the audio and select the correct answer:"
     },
     "review": {
         "title": "REVIEW MISTAKES",
@@ -75,14 +77,20 @@
     "topic": {
         "words_learned": "word learned",
         "search_words": "Search words in this topic...",
-        "study": "PRACTICE FLASHCARDS",
-        "take_quiz": "TAKE A QUIZ",
+        "study": "STUDY",
+        "take_quiz": "QUIZ",
         "not_enough_words": "Not enough words to start a quiz. You only have ${0} words in this topic."
     },
     "search": {
         "search_placeholder": "Search 1,500 words...",
         "no_results": "No results found.",
-        "history": "Search History"
+        "history": "Search History",
+        "clear_history": "Clear",
+        "clear_history_confirm": "Are you sure you want to clear your search history? This action cannot be undone.",
+        "clear_history_success": "Search history cleared successfully!",
+        "clear_history_cancelled": "Search history clear cancelled.",
+        "no_history": "No search history available."
+
     },
     "word_detail": {
         "meaning": "MEANING",
@@ -147,9 +155,11 @@
         "custom_time": "Custom Time"
     },
     "content": {
-        "privacy_text": "Privacy Policy of FM Dictionary...\n1. No unauthorized data collection.\n2. Safe synchronization via Firebase.",
-        "share_text": "Share FM Dictionary with your friends and help them conquer specialized vocabulary too!",
-        "feedback_text": "We value your feedback! Please share your thoughts, suggestions, or any issues you encounter with us. Your input helps us improve FM Dictionary and provide a better learning experience for everyone. Thank you for being part of our community!"
+        "privacy_text": "At FM Dictionary, we are committed to safeguarding your personal data. This Privacy Policy outlines how we collect and utilize your information:\nLogin Information: When you use Google or Apple Sign-in, we only store basic profile information (email, name, and profile picture) for account identification and to synchronize your learning progress.\nAudio Data: When utilizing our AI voice recognition features, your audio is processed solely to be converted into text. We do not store these recording files on our servers once the processing is complete.\nData Synchronization: Your vocabulary lists and learning progress are encrypted and securely stored in the cloud, allowing you to access your data from any device.\nOur Commitment: We never sell or share your personal data with third parties for advertising purposes.",
+        "share_text": "Share FM Dictionary with your friends and help them conquer specialized vocabulary too!\n\nShare Link: https://fm-dictionary-app.com/share\n\nThank you for spreading the word about FM Dictionary!",
+        "feedback_text": "Are you experiencing technical difficulties or have a brilliant idea to share? The FM Dictionary support team is here to help:\nSupport Email: ankhang.nguyen0704@gmail.com\nResponse Time: Within 24-48 business hours.\nFeature Suggestions: Your feedback is the driving force behind our daily improvements. Please feel free to send us screenshots or detailed descriptions of any issues you encounter.",
+        "about_text":"FM Dictionary is a specialized vocabulary learning app designed to help you master 1,500 words in the field of FM. Our mission is to provide an engaging and effective learning experience through personalized quizzes, spaced repetition, and interactive study modes. Whether you're a student, professional, or language enthusiast, FM Dictionary is your companion on the journey to mastering specialized vocabulary.",
+        "terms_text":"By installing and using FM Dictionary, you agree to the following terms:\nService Usage: You agree to use the app for personal learning purposes only. Any interference with the source code or attempts to disrupt the system are strictly prohibited.\nAccount Responsibility: You are solely responsible for maintaining the confidentiality of your login credentials.\nIntellectual Property: All content, logos, and integrated AI technologies within the app remain the exclusive property of the FM Dictionary development team.\nService Modifications: We reserve the right to update or modify features to enhance the user experience without prior notice."
     },
     "quiz_config": {
         "config_title": "Quiz Settings",
@@ -165,7 +175,9 @@
         "mode_listening": "Listening Only",
         "not_enough_words": "This topic does not have enough vocabulary (at least 4 words required)",
         "topic_all": "All Vocabulary",
-        "topic_review": "Words to Review"
+        "topic_review": "Words to Review",
+        "count_suffix": "Questions",
+        "all": "All"
     },
     "profile": {
         "title": "Profile",

@@ -11,37 +11,40 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
-
-  // Lưu trữ thời gian nhắc nhở để UI có thể hiển thị
   final ValueNotifier<TimeOfDay?> reminderTime = ValueNotifier<TimeOfDay?>(
     null,
   );
 
+  // ID Channel mới để reset cấu hình hệ thống
+  static const String _channelId = 'fm_daily_v5';
+
   Future<void> init() async {
-    // 1. Khởi tạo TimeZone (Bắt buộc để đặt lịch lặp lại hàng ngày chính xác theo múi giờ local)
     tz_data.initializeTimeZones();
-    final String timeZoneName = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(timeZoneName));
-    // 2. Cấu hình Android (Sử dụng icon mặc định của app: @mipmap/ic_launcher)
-    const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    // 3. Cấu hình iOS
-    const DarwinInitializationSettings iosSettings =
-        DarwinInitializationSettings(
-          requestAlertPermission: false,
-          requestBadgePermission: false,
-          requestSoundPermission: false,
-        );
+    // 1. Đồng bộ múi giờ
+    try {
+      final TimezoneInfo tzData = await FlutterTimezone.getLocalTimezone();
+      String timeZoneName = tzData.identifier;
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+    } catch (e) {
+      tz.setLocalLocation(tz.getLocation('Asia/Ho_Chi_Minh'));
+    }
 
-    const InitializationSettings initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
+    // 2. Khởi tạo Plugin
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
+    const iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
     );
 
-    await _notificationsPlugin.initialize(initSettings);
+    await _notificationsPlugin.initialize(
+      const InitializationSettings(android: androidSettings, iOS: iosSettings),
+    );
 
-    // 4. Lấy thời gian nhắc nhở đã lưu (nếu có)
+    // 3. Nạp dữ liệu cũ
     final prefs = await SharedPreferences.getInstance();
     final int? hour = prefs.getInt('reminder_hour');
     final int? minute = prefs.getInt('reminder_minute');
@@ -50,24 +53,23 @@ class NotificationService {
     }
   }
 
-  /// Đặt lịch nhắc nhở hàng ngày
   Future<void> scheduleDailyReminder(TimeOfDay time) async {
+    // Xin quyền báo thức chính xác (Cần thiết cho Android 12+)
     final androidPlugin = _notificationsPlugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
     await androidPlugin?.requestExactAlarmsPermission();
-    // 1. Hủy lịch cũ trước khi đặt lịch mới
+
     await _notificationsPlugin.cancelAll();
-    // 2. Lưu local
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('reminder_hour', time.hour);
     await prefs.setInt('reminder_minute', time.minute);
     reminderTime.value = time;
 
-    // 3. Tính toán thời gian theo múi giờ
     final now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduledDate = tz.TZDateTime(
+    var scheduledDate = tz.TZDateTime(
       tz.local,
       now.year,
       now.month,
@@ -76,35 +78,58 @@ class NotificationService {
       time.minute,
     );
 
-    // Nếu giờ đã qua trong ngày hôm nay, dời sang ngày mai
+    // Đảm bảo luôn nằm ở tương lai
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
-    // 4. Đăng ký với OS
     await _notificationsPlugin.zonedSchedule(
-      0, // ID Notification
+      0,
       'Đến giờ học Tiếng Anh rồi! 🚀',
       'Dành ra 10 phút ôn tập để giữ vững chuỗi Streak nhé.',
       scheduledDate,
       const NotificationDetails(
         android: AndroidNotificationDetails(
-          'daily_reminder_channel',
+          _channelId,
           'Nhắc nhở học tập',
-          channelDescription: 'Thông báo nhắc nhở học từ vựng hàng ngày',
           importance: Importance.max,
           priority: Priority.high,
+          fullScreenIntent: true,
         ),
-        iOS: DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime, // Tên Enum chuẩn
+          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
+    );
+    debugPrint("🕒 Đã đặt lịch: ${scheduledDate.toString()}");
+  }
+
+  // Hàm Test 5 giây nổ ngay lập tức
+  Future<void> testQuickNotification() async {
+    final scheduledDate = tz.TZDateTime.now(
+      tz.local,
+    ).add(const Duration(seconds: 5));
+
+    await _notificationsPlugin.zonedSchedule(
+      12345,
+      'Test Thành Công! ⚡',
+      'Thông báo đã hoạt động đúng múi giờ local.',
+      scheduledDate,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'test_quick_channel',
+          'Kênh Test Nhanh',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
-  /// Hủy thông báo
   Future<void> cancelReminder() async {
     await _notificationsPlugin.cancelAll();
     final prefs = await SharedPreferences.getInstance();

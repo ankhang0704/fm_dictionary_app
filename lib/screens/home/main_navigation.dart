@@ -42,14 +42,6 @@ class _MainNavigationState extends State<MainNavigation> {
       drawer: const CustomSideBar(),
       endDrawer: const RightSideBar(),
       appBar: AppBar(
-        title: Text(
-          AppConstants.appName,
-          style: AppConstants.headingStyle.copyWith(
-            fontSize: 20,
-            fontStyle: FontStyle.normal,
-            color: isDark ? Colors.white : AppConstants.textPrimary,
-          ),
-        ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
