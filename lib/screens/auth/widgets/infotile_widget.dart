@@ -6,18 +6,21 @@ class InfoTile extends StatelessWidget {
   final String title;
   final String value;
   final bool isDark;
-
+  final VoidCallback? onTap;
+  
   const InfoTile({
     super.key,
     required this.icon,
     required this.title,
     required this.value,
-    required this.isDark, required onTap,
+    required this.isDark, this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return InkWell(
+      onTap: onTap,
+      child: Container(
       decoration: BoxDecoration(
         color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
         borderRadius: BorderRadius.circular(AppConstants.inputRadius),
@@ -55,6 +58,6 @@ class InfoTile extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 }

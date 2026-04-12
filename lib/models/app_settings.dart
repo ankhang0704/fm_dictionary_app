@@ -20,9 +20,11 @@ class AppSettings extends HiveObject {
   String defaultAccent; // 'en-US' hoặc 'en-GB'
   @HiveField(7)
   String? userAvatarPath;
+  @HiveField(8)
+  bool isHardMode;
 
   AppSettings({
-    this.ttsSpeed = 0.5,
+    this.ttsSpeed = 0.4,
     this.themeMode = 'light',
     this.userName = 'User',
     this.dailyGoal = 20,
@@ -30,5 +32,6 @@ class AppSettings extends HiveObject {
     this.lastStudyDate,
     this.defaultAccent = 'en-US',
     this.userAvatarPath,
+    this.isHardMode = false,
   });
 }

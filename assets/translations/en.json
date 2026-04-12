@@ -8,7 +8,7 @@
         "dark_mode": "Dark Mode"
     },
     "dashboard": {
-        "good_morning": "Good Morning,",
+        "hello": "Hello,",
         "quick_action": "QUICK ACTIONS",
         "continue_title": "Continue Learning",
         "continue_subtitle": "Pick up where you left off",
@@ -20,7 +20,19 @@
         "daily_test": "Daily Test",
         "daily_test_subtitle": "Quick daily test",
         "daily_test_message": "Not enough words to create a Quiz!",
-        "search_hint": "Search 1,500 words..."
+        "search_hint": "Search 1,500 words...",
+        "explore_topics": "Explore Topics",
+        "explore_desc": "Start with core vocabulary by topics.",
+        "ai_features": "Powerful AI Features",
+        "whisper_title": "Whisper AI - Listening",
+        "whisper_desc": "Speech to text with high accuracy using AI.",
+        "tts_title": "Natural TTS - Pronunciation",
+        "tts_desc": "Native-like pronunciation for all words.",
+        "continue_study": "Continue Learning",
+        "recent_history": "Recent History",
+        "quick_actions": "Quick Actions",
+        "no_history": "No history yet",
+        "start_learning": "Start your journey"
     },
     "navigation": {
         "nav_home": "Home",
@@ -90,7 +102,6 @@
         "clear_history_success": "Search history cleared successfully!",
         "clear_history_cancelled": "Search history clear cancelled.",
         "no_history": "No search history available."
-
     },
     "word_detail": {
         "meaning": "MEANING",
@@ -158,8 +169,8 @@
         "privacy_text": "At FM Dictionary, we are committed to safeguarding your personal data. This Privacy Policy outlines how we collect and utilize your information:\nLogin Information: When you use Google or Apple Sign-in, we only store basic profile information (email, name, and profile picture) for account identification and to synchronize your learning progress.\nAudio Data: When utilizing our AI voice recognition features, your audio is processed solely to be converted into text. We do not store these recording files on our servers once the processing is complete.\nData Synchronization: Your vocabulary lists and learning progress are encrypted and securely stored in the cloud, allowing you to access your data from any device.\nOur Commitment: We never sell or share your personal data with third parties for advertising purposes.",
         "share_text": "Share FM Dictionary with your friends and help them conquer specialized vocabulary too!\n\nShare Link: https://fm-dictionary-app.com/share\n\nThank you for spreading the word about FM Dictionary!",
         "feedback_text": "Are you experiencing technical difficulties or have a brilliant idea to share? The FM Dictionary support team is here to help:\nSupport Email: ankhang.nguyen0704@gmail.com\nResponse Time: Within 24-48 business hours.\nFeature Suggestions: Your feedback is the driving force behind our daily improvements. Please feel free to send us screenshots or detailed descriptions of any issues you encounter.",
-        "about_text":"FM Dictionary is a specialized vocabulary learning app designed to help you master 1,500 words in the field of FM. Our mission is to provide an engaging and effective learning experience through personalized quizzes, spaced repetition, and interactive study modes. Whether you're a student, professional, or language enthusiast, FM Dictionary is your companion on the journey to mastering specialized vocabulary.",
-        "terms_text":"By installing and using FM Dictionary, you agree to the following terms:\nService Usage: You agree to use the app for personal learning purposes only. Any interference with the source code or attempts to disrupt the system are strictly prohibited.\nAccount Responsibility: You are solely responsible for maintaining the confidentiality of your login credentials.\nIntellectual Property: All content, logos, and integrated AI technologies within the app remain the exclusive property of the FM Dictionary development team.\nService Modifications: We reserve the right to update or modify features to enhance the user experience without prior notice."
+        "about_text": "FM Dictionary is a specialized vocabulary learning app designed to help you master 1,500 words in the field of FM. Our mission is to provide an engaging and effective learning experience through personalized quizzes, spaced repetition, and interactive study modes. Whether you're a student, professional, or language enthusiast, FM Dictionary is your companion on the journey to mastering specialized vocabulary.",
+        "terms_text": "By installing and using FM Dictionary, you agree to the following terms:\nService Usage: You agree to use the app for personal learning purposes only. Any interference with the source code or attempts to disrupt the system are strictly prohibited.\nAccount Responsibility: You are solely responsible for maintaining the confidentiality of your login credentials.\nIntellectual Property: All content, logos, and integrated AI technologies within the app remain the exclusive property of the FM Dictionary development team.\nService Modifications: We reserve the right to update or modify features to enhance the user experience without prior notice."
     },
     "quiz_config": {
         "config_title": "Quiz Settings",

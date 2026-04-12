@@ -28,9 +28,9 @@ class DatabaseService {
     await Hive.openBox<String>('searchHistoryBox');
     await Hive.openBox<Word>(wordBoxName);
     await Hive.openBox<AppSettings>(settingsBoxName);
-
     // Kiểm tra và Import dữ liệu lần đầu
     await Hive.openBox(progressBoxName);
+
     await _checkAndImportData();
   }
 

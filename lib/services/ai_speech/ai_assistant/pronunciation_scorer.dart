@@ -1,3 +1,5 @@
+import 'package:fm_dictionary/models/app_settings.dart';
+import 'package:fm_dictionary/services/database/database_service.dart';
 import 'package:string_similarity/string_similarity.dart';
 
 // Model chứa kết quả chi tiết
@@ -17,6 +19,8 @@ class PronunciationResult {
 
 class PronunciationScorer {
   static PronunciationResult evaluate(String spokenText, String targetWord) {
+    final AppSettings settings = DatabaseService.getSettings();
+    final bool isHardMode = settings.isHardMode;
     final cleanSpoken = spokenText
         .toLowerCase()
         .replaceAll(RegExp(r'[^\w\s]'), '')
@@ -58,27 +62,48 @@ class PronunciationScorer {
     }
 
     // 4. Phân tầng phản hồi (Tiered Feedback)
-    if (bestScore >= 90) {
-      return PronunciationResult(
-        score: bestScore,
-        feedback: "Rất tốt! Gần đúng rồi.",
-        level: 'excellent',
-        closestWord: bestMatch,
-      );
-    } else if (bestScore >= 70) {
-      return PronunciationResult(
-        score: bestScore,
-        feedback: "Khá tốt, hãy thử lại.",
-        level: 'good',
-        closestWord: bestMatch,
-      );
+    if (isHardMode) {
+      // --- HARD MODE (Mặc định) ---
+      if (bestScore >= 90) {
+        return PronunciationResult(
+          score: bestScore,
+          feedback: "Rất tốt! Phát âm chuẩn xác.",
+          level: 'excellent',
+          closestWord: bestMatch,
+        );
+      } else if (bestScore >= 70) {
+        return PronunciationResult(
+          score: bestScore,
+          feedback: "Khá tốt, hãy chú ý âm cuối.",
+          level: 'good',
+          closestWord: bestMatch,
+        );
+      } else {
+        return PronunciationResult(
+          score: bestScore,
+          feedback: "Chưa khớp — hãy nghe lại.",
+          level: 'retry',
+          closestWord: bestMatch,
+        );
+      }
     } else {
-      return PronunciationResult(
-        score: bestScore,
-        feedback: "Chưa khớp — hãy nghe lại.",
-        level: 'retry',
-        closestWord: bestMatch,
-      );
+      // --- EASY MODE (Người mới) ---
+      // Chỉ cần > 60% là cho Đạt (Excellent)
+      if (bestScore >= 60) {
+        return PronunciationResult(
+          score: bestScore,
+          feedback: "Tuyệt vời! Bạn đã bắt được trọng âm.",
+          level: 'excellent', // Cho excellent luôn để khích lệ
+          closestWord: bestMatch,
+        );
+      } else {
+        return PronunciationResult(
+          score: bestScore,
+          feedback: "Hãy thử đọc to và rõ hơn chút nhé.",
+          level: 'retry',
+          closestWord: bestMatch,
+        );
+      }
     }
   }
 }

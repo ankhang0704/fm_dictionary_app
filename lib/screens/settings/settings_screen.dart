@@ -208,6 +208,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SectionHeader(title: 'settings.audio'.tr()),
           SettingsGroup(
             children: [
+              SettingsTile(
+                icon: CupertinoIcons.mic_fill,
+                iconColor: Colors.deepPurple,
+                title: 'settings.hard_mode'
+                    .tr(), // Bạn nhớ thêm key này vào file dịch thuật nhé (VD: "Chấm điểm khắt khe")
+                subtitle: 'settings.hard_mode_desc'
+                    .tr(), // "Yêu cầu phát âm chính xác cao"
+                trailing: Switch.adaptive(
+                  value: _settings.isHardMode,
+                  activeThumbColor: AppConstants.accentColor,
+                  onChanged: (bool value) {
+                    _settings.isHardMode = value;
+                    _updateSettings();
+                  },
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -258,7 +274,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 8),
                     Slider.adaptive(
                       value: _settings.ttsSpeed,
-                      min: 0.5,
+                      min: 0.1,
                       max: 1.5,
                       divisions: 10,
                       activeColor: AppConstants.accentColor,

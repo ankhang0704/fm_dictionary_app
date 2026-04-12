@@ -97,25 +97,30 @@ class AuthSyncService {
   }
 
   // 2. Hàm đổi mật khẩu (Có kèm re-authenticate nếu cần)
-  Future<void> changePassword({required String currentPassword, required String newPassword}) async {
-  try {
-    User? user = _auth.currentUser;
-    if (user == null || user.email == null) throw Exception('Chưa đăng nhập');
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null || user.email == null) throw Exception('Chưa đăng nhập');
 
-    // Bước 1: Xác thực lại bằng mật khẩu cũ (Bắt buộc)
-    AuthCredential credential = EmailAuthProvider.credential(
-      email: user.email!,
-      password: currentPassword,
-    );
-    await user.reauthenticateWithCredential(credential);
+      // Bước 1: Xác thực lại bằng mật khẩu cũ (Bắt buộc)
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(credential);
 
-    // Bước 2: Cập nhật mật khẩu mới
-    await user.updatePassword(newPassword);
-  } on FirebaseAuthException catch (e) {
-    if (e.code == 'wrong-password') throw Exception('Mật khẩu hiện tại không chính xác.');
-    throw Exception(_handleAuthError(e.code));
+      // Bước 2: Cập nhật mật khẩu mới
+      await user.updatePassword(newPassword);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'wrong-password'){
+        throw Exception('Mật khẩu hiện tại không chính xác.');
+      }        
+      throw Exception(_handleAuthError(e.code));
+    }
   }
-}
 
   Future<void> signOut() async {
     try {
@@ -125,7 +130,32 @@ class AuthSyncService {
       debugPrint("Lỗi đăng xuất: $e");
     }
   }
+  // lib/services/auth/auth_sync_service.dart
 
+  Future<void> deleteAccount(String password) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null || user.email == null) throw Exception('not_logged_in');
+
+      // 1. Xác thực lại (Re-authenticate)
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: password,
+      );
+      await user.reauthenticateWithCredential(credential);
+
+      // 2. Xóa dữ liệu trên Firestore (Cleanup)
+      await _firestore.collection('users').doc(user.uid).delete();
+
+      // 3. Xóa tài khoản trên Auth
+      await user.delete();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'wrong-password') {
+        throw Exception('Mật khẩu xác nhận không đúng.');
+      }
+      throw Exception(_handleAuthError(e.code));
+    }
+  }
   // --- SYNC LOGIC (Đã tối ưu try-catch) ---
 
   Future<void> syncDataWithMerge() async {

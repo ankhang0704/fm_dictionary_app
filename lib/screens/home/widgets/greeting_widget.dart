@@ -18,22 +18,14 @@ class GreetingSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'dashboard.good_morning'.tr(),
+          '${'dashboard.hello'.tr()} $userName',
           style: AppConstants.bodyStyle.copyWith(
             color: isDark ? Colors.white54 : AppConstants.textSecondary,
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          userName,
-          style: AppConstants.headingStyle.copyWith(
-            fontSize: 32,
-            fontStyle: FontStyle.normal,
-            color: isDark ? Colors.white : AppConstants.textPrimary,
-          ),
-        ),
+        
       ],
     );
   }

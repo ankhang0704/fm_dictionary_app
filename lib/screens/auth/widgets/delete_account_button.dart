@@ -10,6 +10,52 @@ class DeleteAccountButton extends StatelessWidget {
 
   const DeleteAccountButton({super.key, required this.user});
 
+   Future<String?> _showPasswordConfirmDialog(
+    BuildContext context,
+    bool isDark,
+  ) async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? AppConstants.darkCardColor : Colors.white,
+        title: const Text("Xác nhận mật khẩu"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Vui lòng nhập mật khẩu của bạn để hoàn tất việc xóa tài khoản.",
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: "Mật khẩu",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Hủy"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppConstants.errorColor,
+            ),
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: const Text(
+              "Xác nhận xóa",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
   Future<void> _handleDeleteAccount(BuildContext context) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -62,27 +108,37 @@ class DeleteAccountButton extends StatelessWidget {
     );
 
     if (confirm != true) return;
+    if(!context.mounted) return;
+    final password = await _showPasswordConfirmDialog(context, isDark);
+    if (password == null || password.isEmpty) return;
 
+    // BƯỚC 3: THỰC HIỆN XÓA
     try {
-      await user.delete();
-      await AuthSyncService.instance.signOut();
+      // Hiện loading
       if (!context.mounted) return;
-      Navigator.pop(context);
+      showDialog(
+        context: context,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      // Gọi hàm xóa đã viết ở AuthSyncService
+      await AuthSyncService.instance.deleteAccount(password);
+
+      if (!context.mounted) return;
+
+      // Đóng loading và quay về màn hình đầu tiên (Welcome/Login)
+      Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (e) {
       if (!context.mounted) return;
+      Navigator.pop(context); // Đóng loading nếu lỗi
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('profile.delete_error'.tr()),
+          content: Text(e.toString().replaceAll("Exception: ", "")),
           backgroundColor: AppConstants.errorColor,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.inputRadius),
-          ),
         ),
       );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(

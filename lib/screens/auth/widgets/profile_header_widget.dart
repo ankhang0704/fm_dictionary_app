@@ -1,8 +1,9 @@
+import 'dart:io'; // Bắt buộc phải có để dùng File
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/constants/constants.dart';
+import 'package:fm_dictionary/services/database/database_service.dart'; // Thêm import này
 
 class ProfileHeader extends StatelessWidget {
   final User user;
@@ -12,6 +13,16 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Lấy thông tin từ Hive Settings
+    final settings = DatabaseService.getSettings();
+    final localPath = settings.userAvatarPath;
+   final displayName =
+        (settings.userName as String?) ??
+        'sidebar.no_name'.tr();
+    // 2. Kiểm tra ảnh Local có tồn tại không
+    final bool hasLocalPhoto =
+        localPath != null && File(localPath).existsSync();
+
     return Column(
       children: [
         Container(
@@ -28,21 +39,25 @@ class ProfileHeader extends StatelessWidget {
             backgroundColor: isDark
                 ? AppConstants.darkCardColor
                 : Colors.grey.withValues(alpha: 0.1),
-            backgroundImage: user.photoURL != null
-                ? NetworkImage(user.photoURL!)
-                : null,
-            child: user.photoURL == null
-                ? Icon(
-                    CupertinoIcons.person_solid,
-                    size: 48,
-                    color: isDark ? Colors.white54 : AppConstants.textSecondary,
+            // ƯU TIÊN 1: Ảnh Local từ máy
+            // ƯU TIÊN 2: Ảnh từ Firebase (nếu có)
+            backgroundImage: hasLocalPhoto
+                ? FileImage(File(localPath)) as ImageProvider
+                : (user.photoURL != null ? NetworkImage(user.photoURL!) : null),
+            child: (!hasLocalPhoto && user.photoURL == null)
+                ? Text(
+                    displayName.isNotEmpty ? displayName[0].toUpperCase() : "U",
+                    style: AppConstants.headingStyle.copyWith(
+                      fontSize: 40,
+                      color: AppConstants.accentColor,
+                    ),
                   )
                 : null,
           ),
         ),
         const SizedBox(height: 16),
         Text(
-          user.displayName ?? 'profile.default_name'.tr(),
+          displayName,
           textAlign: TextAlign.center,
           style: AppConstants.bodyStyle.copyWith(
             fontSize: 24,

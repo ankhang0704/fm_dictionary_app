@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/screens/auth/email_verification_screen.dart';
 import 'package:fm_dictionary/services/database/database_service.dart';
 import '../../services/auth/auth_sync_service.dart';
 
@@ -21,14 +22,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         name: nameFromHive,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Đăng ký thành công! Vui lòng check Email để xác thực.",
-          ),
+       Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => EmailVerificationScreen(email: _emailController.text.trim()),
         ),
       );
-      Navigator.pop(context); // Quay lại Login
     } catch (e) {
       ScaffoldMessenger.of(
         context,

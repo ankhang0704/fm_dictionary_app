@@ -13,15 +13,70 @@ import 'package:image_picker/image_picker.dart';
 import '../../services/auth/auth_sync_service.dart';
 import '../../core/constants/constants.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
+  // Chuyển sang StatefulWidget
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  // Hàm chọn ảnh đặt bên trong State để gọi được setState
+  void _showAvatarPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (dialogContext) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Chọn từ thư viện'),
+              onTap: () async {
+                final ImagePicker picker = ImagePicker();
+                final XFile? image = await picker.pickImage(
+                  source: ImageSource.gallery,
+                );
+                if (image != null) {
+                  var settings = DatabaseService.getSettings();
+                  settings.userAvatarPath = image.path;
+                  await DatabaseService.saveSettings(settings);
+                  if (!mounted) return;
+                  setState(() {}); // Lệnh này giúp UI vẽ lại để hiện ảnh mới
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+                  }
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: const Text('Xóa ảnh đại diện'),
+              onTap: () async {
+                var settings = DatabaseService.getSettings();
+                settings.userAvatarPath = null;
+                await DatabaseService.saveSettings(settings);
+                if (!mounted) return;
+                setState(() {}); // Vẽ lại để hiện avatar mặc định
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppConstants.darkBgColor : AppConstants.backgroundColor,
+      backgroundColor: isDark
+          ? AppConstants.darkBgColor
+          : AppConstants.backgroundColor,
       appBar: AppBar(
         title: Text(
           'profile.title'.tr(),
@@ -45,7 +100,9 @@ class ProfileScreen extends StatelessWidget {
             return Center(
               child: Text(
                 'profile.not_logged_in'.tr(),
-                style: AppConstants.bodyStyle.copyWith(color: AppConstants.textSecondary),
+                style: AppConstants.bodyStyle.copyWith(
+                  color: AppConstants.textSecondary,
+                ),
               ),
             );
           }
@@ -102,52 +159,3 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
-
-
-
-void _showAvatarPicker(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    builder: (context) => SafeArea(
-      child: Wrap(
-        children: [
-          ListTile(
-            leading: const Icon(Icons.photo_library),
-            title: const Text('Chọn từ thư viện'),
-            onTap: () async {
-              final ImagePicker picker = ImagePicker();
-              final XFile? image = await picker.pickImage(
-                source: ImageSource.gallery,
-              );
-
-              if (image != null) {
-                // LƯU PATH VÀO HIVE
-                var settings = DatabaseService.getSettings();
-                settings.userAvatarPath =
-                    image.path; // Giả sử model Settings có trường này
-                await DatabaseService.saveSettings(settings);
-
-                if (context.mounted) Navigator.pop(context);
-              }
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.delete_outline, color: Colors.red),
-            title: const Text('Xóa ảnh đại diện'),
-            onTap: () async {
-              var settings = DatabaseService.getSettings();
-              settings.userAvatarPath = null; // Xóa path
-              await DatabaseService.saveSettings(settings);
-              if (context.mounted) Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-
-
-
-
