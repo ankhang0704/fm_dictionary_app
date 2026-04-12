@@ -12,7 +12,7 @@ class InfoTile extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.value,
-    required this.isDark,
+    required this.isDark, required onTap,
   });
 
   @override

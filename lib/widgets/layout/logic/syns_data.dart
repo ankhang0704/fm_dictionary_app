@@ -58,5 +58,5 @@ Future<void> handleSync(BuildContext context) async {
     } else if (errorString.contains('not_logged_in')) {
       return "Bạn cần đăng nhập để đồng bộ dữ liệu.";
     }
-    return "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.";
+     return "Lỗi hệ thống (${error.toString()})";
   }

@@ -26,7 +26,7 @@ class AppConstants {
     fontSize: 28,
     fontWeight: FontWeight.bold,
     fontFamily: displayFont,
-    fontStyle: FontStyle.italic,
+    fontStyle: FontStyle.normal,
   );
 
   static const TextStyle subHeadingStyle = TextStyle(

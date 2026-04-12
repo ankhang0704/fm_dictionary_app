@@ -1,4 +1,4 @@
-// file: lib/screens/learning/quiz_configuration_screen.dart
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -78,10 +78,128 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
     );
   }
 
+  String _getTopicDisplayName(String topic) {
+    if (topic == 'All') return 'quiz_config.topic_all'.tr();
+    if (topic == 'Review') return 'quiz_config.topic_review'.tr();
+    return topic;
+  }
+
+  void _showTopicPicker() {
+    final topics = ['All', 'Review', ..._wordService.getAllTopics()];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppConstants.cardRadius),
+            ),
+          ),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.7,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'quiz_config.select_topic'.tr(),
+                style: AppConstants.headingStyle.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : AppConstants.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: topics.length,
+                  itemBuilder: (context, index) {
+                    final topic = topics[index];
+                    final isSelected = _selectedTopic == topic;
+                    return InkWell(
+                      onTap: () {
+                        setState(() {
+                          _selectedTopic = topic;
+                          _updateWordsPool();
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
+                        color: isSelected
+                            ? AppConstants.accentColor.withValues(alpha: 0.1)
+                            : Colors.transparent,
+                        child: Row(
+                          children: [
+                            Icon(
+                              topic == 'Review'
+                                  ? CupertinoIcons.refresh_thick
+                                  : CupertinoIcons.tag_fill,
+                              size: 22,
+                              color: isSelected
+                                  ? AppConstants.accentColor
+                                  : AppConstants.textSecondary,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                _getTopicDisplayName(topic),
+                                style: AppConstants.bodyStyle.copyWith(
+                                  fontSize: 16,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? AppConstants.accentColor
+                                      : (isDark
+                                            ? Colors.white
+                                            : AppConstants.textPrimary),
+                                ),
+                              ),
+                            ),
+                            if (isSelected)
+                              const Icon(
+                                CupertinoIcons.checkmark_alt,
+                                color: AppConstants.accentColor,
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final topics = ['All', 'Review', ..._wordService.getAllTopics()];
     final maxWords = _currentWordsPool.length;
     final bool isNotEnoughWords = maxWords < 4;
 
@@ -93,8 +211,8 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
         title: Text(
           'quiz_config.config_title'.tr(),
           style: AppConstants.headingStyle.copyWith(
-            fontSize: 22,
-            fontStyle: FontStyle.normal,
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
             color: isDark ? Colors.white : AppConstants.textPrimary,
           ),
         ),
@@ -105,138 +223,115 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
           color: isDark ? Colors.white : AppConstants.textPrimary,
         ),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.all(AppConstants.defaultPadding),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _SectionTitle(title: 'quiz_config.select_topic'.tr()),
-                    const SizedBox(height: 12),
-                    _TopicSelector(
-                      topics: topics,
-                      selectedTopic: _selectedTopic,
-                      onChanged: (val) {
-                        setState(() {
-                          _selectedTopic = val;
-                          _updateWordsPool();
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 32),
-
-                    _SectionTitle(title: 'quiz_config.select_count'.tr()),
-                    const SizedBox(height: 12),
-                    if (isNotEnoughWords)
-                      _NotEnoughWordsWarning(maxWords: maxWords)
-                    else
-                      _CountSelector(
-                        maxWords: maxWords,
-                        selectedCount: _questionCount,
-                        onChanged: (val) =>
-                            setState(() => _questionCount = val),
-                      ),
-                    const SizedBox(height: 32),
-
-                    _SectionTitle(title: 'quiz_config.select_mode'.tr()),
-                    const SizedBox(height: 12),
-                    _ModeSelector(
-                      selectedMode: _selectedMode,
-                      onChanged: (val) => setState(() => _selectedMode = val),
-                    ),
-                    const SizedBox(height: 32),
-                  ],
-                ),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: ListView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.defaultPadding,
               ),
+              children: [
+                const SizedBox(height: 12),
+                _SectionHeader(title: 'quiz_config.select_topic'.tr()),
+                _TopicTile(
+                  topicName: _getTopicDisplayName(_selectedTopic),
+                  onTap: _showTopicPicker,
+                ),
+                const SizedBox(height: 24),
+                _SectionHeader(title: 'quiz_config.select_count'.tr()),
+                if (isNotEnoughWords)
+                  _NotEnoughWordsWarning(maxWords: maxWords)
+                else
+                  _CountSelector(
+                    maxWords: maxWords,
+                    selectedCount: _questionCount,
+                    onChanged: (val) => setState(() => _questionCount = val),
+                  ),
+                const SizedBox(height: 24),
+                _SectionHeader(title: 'quiz_config.select_mode'.tr()),
+                _ModeSelector(
+                  selectedMode: _selectedMode,
+                  onChanged: (val) => setState(() => _selectedMode = val),
+                ),
+                const SizedBox(height: 120),
+              ],
             ),
-            _StartButton(
-              isNotEnoughWords: isNotEnoughWords,
-              onPressed: _startQuiz,
-            ),
-          ],
+          ),
+          _StickyBottomAction(
+            isNotEnoughWords: isNotEnoughWords,
+            onPressed: _startQuiz,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  const _SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 10),
+      child: Text(
+        title.toUpperCase(),
+        style: AppConstants.bodyStyle.copyWith(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          color: AppConstants.textSecondary,
+          letterSpacing: 1.2,
         ),
       ),
     );
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  const _SectionTitle({required this.title});
+class _TopicTile extends StatelessWidget {
+  final String topicName;
+  final VoidCallback onTap;
+
+  const _TopicTile({required this.topicName, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Text(
-      title,
-      style: AppConstants.bodyStyle.copyWith(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: isDark ? Colors.white : AppConstants.textPrimary,
-      ),
-    );
-  }
-}
-
-class _TopicSelector extends StatelessWidget {
-  final List<String> topics;
-  final String selectedTopic;
-  final ValueChanged<String> onChanged;
-
-  const _TopicSelector({
-    required this.topics,
-    required this.selectedTopic,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
-        borderRadius: BorderRadius.circular(AppConstants.inputRadius),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          isExpanded: true,
-          value: topics.contains(selectedTopic) ? selectedTopic : 'All',
-          icon: const Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: Icon(CupertinoIcons.chevron_down, size: 20),
-          ),
-          dropdownColor: isDark
-              ? AppConstants.darkCardColor
-              : AppConstants.cardColor,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppConstants.inputRadius),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
           borderRadius: BorderRadius.circular(AppConstants.inputRadius),
-          items: topics.map((t) {
-            String displayName = t;
-            if (t == 'All') displayName = 'quiz_config.topic_all'.tr();
-            if (t == 'Review') displayName = 'quiz_config.topic_review'.tr();
-
-            return DropdownMenuItem(
-              value: t,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  displayName,
-                  style: AppConstants.bodyStyle.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.white : AppConstants.textPrimary,
-                  ),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              CupertinoIcons.book_fill,
+              color: Colors.blueAccent,
+              size: 22,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                topicName,
+                style: AppConstants.bodyStyle.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : AppConstants.textPrimary,
                 ),
               ),
-            );
-          }).toList(),
-          onChanged: (val) {
-            if (val != null) onChanged(val);
-          },
+            ),
+            Icon(
+              CupertinoIcons.chevron_up_chevron_down,
+              size: 16,
+              color: AppConstants.textSecondary,
+            ),
+          ],
         ),
       ),
     );
@@ -263,31 +358,35 @@ class _CountSelector extends StatelessWidget {
     options.add(9999);
 
     return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+      spacing: 10,
+      runSpacing: 10,
       children: options.map((count) {
         final isSelected = selectedCount == count;
-        final label = count == 9999 ? "${'quiz_config.all'.tr()}($maxWords)" : "$count ${'quiz_config.count_suffix'.tr()}";
+        final label = count == 9999
+            ? "${'quiz_config.all'.tr()}($maxWords)"
+            : "$count";
 
-        return GestureDetector(
+        return InkWell(
           onTap: () => onChanged(count),
+          borderRadius: BorderRadius.circular(12),
           child: AnimatedContainer(
             duration: AppConstants.defaultAnimationDuration,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             decoration: BoxDecoration(
               color: isSelected ? AppConstants.accentColor : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppConstants.buttonRadius),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isSelected
                     ? AppConstants.accentColor
                     : Colors.grey.withValues(alpha: 0.3),
+                width: 1.5,
               ),
             ),
             child: Text(
               label,
               style: AppConstants.bodyStyle.copyWith(
                 fontSize: 14,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontWeight: FontWeight.bold,
                 color: isSelected ? Colors.white : AppConstants.textSecondary,
               ),
             ),
@@ -354,25 +453,18 @@ class _ModeCard extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: AppConstants.defaultAnimationDuration,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         decoration: BoxDecoration(
           color: isSelected
               ? AppConstants.accentColor.withValues(alpha: 0.1)
               : (isDark ? AppConstants.darkCardColor : AppConstants.cardColor),
           borderRadius: BorderRadius.circular(AppConstants.inputRadius),
           border: Border.all(
-            color: isSelected ? AppConstants.accentColor : Colors.transparent,
+            color: isSelected
+                ? AppConstants.accentColor
+                : Colors.grey.withValues(alpha: 0.1),
             width: 2,
           ),
-          boxShadow: isDark || isSelected
-              ? []
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.02),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
         ),
         child: Row(
           children: [
@@ -381,14 +473,15 @@ class _ModeCard extends StatelessWidget {
               color: isSelected
                   ? AppConstants.accentColor
                   : AppConstants.textSecondary,
-              size: 24,
+              size: 22,
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
                 style: AppConstants.bodyStyle.copyWith(
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  fontSize: 14,
                   color: isSelected
                       ? AppConstants.accentColor
                       : (isDark ? Colors.white : AppConstants.textPrimary),
@@ -397,8 +490,9 @@ class _ModeCard extends StatelessWidget {
             ),
             if (isSelected)
               const Icon(
-                CupertinoIcons.checkmark_circle_fill,
+                CupertinoIcons.checkmark_alt_circle_fill,
                 color: AppConstants.accentColor,
+                size: 22,
               ),
           ],
         ),
@@ -416,17 +510,16 @@ class _NotEnoughWordsWarning extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppConstants.errorColor.withValues(alpha: 0.1),
+        color: AppConstants.errorColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(AppConstants.inputRadius),
-        border: Border.all(
-          color: AppConstants.errorColor.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: AppConstants.errorColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           const Icon(
-            CupertinoIcons.exclamationmark_triangle,
+            CupertinoIcons.exclamationmark_circle_fill,
             color: AppConstants.errorColor,
+            size: 22,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -434,6 +527,8 @@ class _NotEnoughWordsWarning extends StatelessWidget {
               'quiz_config.not_enough_words'.tr(args: [maxWords.toString()]),
               style: AppConstants.bodyStyle.copyWith(
                 color: AppConstants.errorColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
               ),
             ),
           ),
@@ -443,49 +538,70 @@ class _NotEnoughWordsWarning extends StatelessWidget {
   }
 }
 
-class _StartButton extends StatelessWidget {
+class _StickyBottomAction extends StatelessWidget {
   final bool isNotEnoughWords;
   final VoidCallback onPressed;
 
-  const _StartButton({required this.isNotEnoughWords, required this.onPressed});
+  const _StickyBottomAction({
+    required this.isNotEnoughWords,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.defaultPadding),
-      decoration: BoxDecoration(
-        color: isDark ? AppConstants.darkBgColor : AppConstants.backgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isNotEnoughWords
-                ? Colors.grey
-                : AppConstants.accentColor,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppConstants.buttonRadius),
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: EdgeInsets.fromLTRB(
+              AppConstants.defaultPadding,
+              16,
+              AppConstants.defaultPadding,
+              MediaQuery.of(context).padding.bottom + 16,
             ),
-          ),
-          onPressed: isNotEnoughWords ? null : onPressed,
-          child: Text(
-            'quiz_config.start_btn'.tr().toUpperCase(),
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
+            decoration: BoxDecoration(
+              color:
+                  (isDark
+                          ? AppConstants.darkBgColor
+                          : AppConstants.backgroundColor)
+                      .withValues(alpha: 0.8),
+              border: Border(
+                top: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
+              ),
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              height: 58,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isNotEnoughWords
+                      ? Colors.grey
+                      : AppConstants.accentColor,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      AppConstants.buttonRadius,
+                    ),
+                  ),
+                ),
+                onPressed: isNotEnoughWords ? null : onPressed,
+                child: Text(
+                  'quiz_config.start_btn'.tr().toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              ),
             ),
           ),
         ),

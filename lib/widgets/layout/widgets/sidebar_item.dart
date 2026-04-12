@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/constants/constants.dart';
+import 'package:fm_dictionary/screens/auth/login_screen.dart';
 import 'package:fm_dictionary/services/auth/auth_sync_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -53,17 +54,10 @@ class SidebarFooter extends StatelessWidget {
     if (isLoggedIn) {
       await AuthSyncService.instance.signOut();
     } else {
-      try {
-        await AuthSyncService.instance.signInWithGoogle();
-      } catch (e) {
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Authentication failed"),
-            backgroundColor: AppConstants.errorColor,
-          ),
-        );
-      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
     }
   }
 

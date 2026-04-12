@@ -24,13 +24,14 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       isFirstRun: fields[4] as bool,
       lastStudyDate: fields[5] as DateTime?,
       defaultAccent: fields[6] as String,
+      userAvatarPath: fields[7] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, AppSettings obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.ttsSpeed)
       ..writeByte(1)
@@ -44,7 +45,9 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       ..writeByte(5)
       ..write(obj.lastStudyDate)
       ..writeByte(6)
-      ..write(obj.defaultAccent);
+      ..write(obj.defaultAccent)
+      ..writeByte(7)
+      ..write(obj.userAvatarPath);
   }
 
   @override
