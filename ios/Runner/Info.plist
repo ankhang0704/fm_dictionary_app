@@ -4,6 +4,13 @@
 <key>NSMicrophoneUsageDescription</key>
 <string>Chúng tôi cần quyền truy cập micro để bạn luyện phát âm tiếng Anh.</string>
 <dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>Chúng tôi cần gửi thông báo để nhắc bạn học từ vựng mỗi ngày.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
