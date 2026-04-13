@@ -51,7 +51,7 @@ dependencies:
   flutter_tts: ^4.0.2
   shared_preferences: ^2.5.5  
   easy_localization: ^3.0.3
-  
+  flutter_markdown: ^0.6.10
   #Notification:
   table_calendar: ^3.2.0
   flutter_local_notifications: ^21.0.0

@@ -10,30 +10,40 @@ class StatusNavigator {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => GenericStatusScreen(
+        builder: (newContext) => GenericStatusScreen(
           icon: CupertinoIcons.mail,
           themeColor: Colors.blue,
           title: "Xác thực Email",
-          subTitle: "Chúng tôi đã gửi một liên kết xác thực đến:\n$email\n\nVui lòng kiểm tra hộp thư (bao gồm cả mục Spam).",
+          subTitle:
+              "Chúng tôi đã gửi liên kết xác thực đến:\n$email\n\nVui lòng kiểm tra hộp thư để kích hoạt tài khoản.",
           primaryButtonLabel: "Quay lại Đăng nhập",
-          onPrimaryPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+          onPrimaryPressed: () {
+            Navigator.of(newContext).popUntil((route) => route.isFirst);
+          },
         ),
       ),
     );
   }
 
   // 2. Màn hình Thành công chung (Đổi mật khẩu, Xóa tài khoản, v.v)
-  static void showSuccess(BuildContext context, {required String title, required String message, VoidCallback? onDone}) {
+  static void showSuccess(
+    BuildContext context, {
+    required String title,
+    required String message,
+    VoidCallback? onDone,
+  }) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => GenericStatusScreen(
+        builder: (newContext) => GenericStatusScreen(
           icon: CupertinoIcons.checkmark_seal_fill,
           themeColor: Colors.green,
           title: title,
           subTitle: message,
           primaryButtonLabel: "Hoàn tất",
-          onPrimaryPressed: onDone ?? () => Navigator.of(context).popUntil((route) => route.isFirst),
+          onPrimaryPressed:
+              onDone ??
+              () => Navigator.of(newContext).popUntil((route) => route.isFirst),
         ),
       ),
     );

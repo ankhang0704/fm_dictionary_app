@@ -76,4 +76,18 @@ class AuthProvider extends ChangeNotifier {
       _setLoading(false);
     }
    }
+    Future<void> logout() async {
+    _setLoading(true);
+    try {
+      await AuthSyncService.instance.signOut();
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Thêm hàm Đồng bộ dữ liệu
+  Future<void> syncData() async {
+    // Không dùng _setLoading ở đây vì ta sẽ dùng Dialog ở UI cho thao tác Sync
+    await AuthSyncService.instance.syncDataWithMerge();
+  }
 }
