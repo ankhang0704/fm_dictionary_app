@@ -1,34 +1,42 @@
-// Đường dẫn: lib/features/settings/presentation/providers/notification_provider.dart
+// lib/features/settings/presentation/providers/notification_provider.dart
 
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../../../../data/services/notify/notification_service.dart';
 
 class NotificationProvider extends ChangeNotifier {
-  bool _hasPermission = false;
-  bool get hasPermission => _hasPermission;
-
-  // Lấy dữ liệu từ Service hệ thống của bạn
-  bool get isEnabled => NotificationService.instance.isEnabled.value;
-  TimeOfDay? get reminderTime => NotificationService.instance.reminderTime.value;
+  final NotificationService _service = NotificationService.instance;
 
   NotificationProvider() {
-    checkPermission();
+    // Lắng nghe sự thay đổi từ Service để notify cho UI
+    _service.isEnabled.addListener(_onServiceUpdate);
+    _service.reminderTime.addListener(_onServiceUpdate);
   }
 
-  Future<void> checkPermission() async {
-    final status = await Permission.notification.status;
-    _hasPermission = status.isGranted;
+  // Getters lấy dữ liệu từ Service
+  bool get isEnabled => _service.isEnabled.value;
+  TimeOfDay? get reminderTime => _service.reminderTime.value;
+
+  void _onServiceUpdate() {
     notifyListeners();
   }
 
+  // Hàm bật/tắt thông báo
   Future<void> toggleNotification(bool value) async {
-    await NotificationService.instance.toggleNotification(value);
-    notifyListeners();
+    await _service.toggleNotification(value);
+    // notifyListeners() sẽ được gọi tự động qua listener ở constructor
   }
 
+  // Hàm cập nhật giờ nhắc
   Future<void> updateReminderTime(TimeOfDay time) async {
-    await NotificationService.instance.updateReminderTime(time);
-    notifyListeners();
+    await _service.updateReminderTime(time);
+    // notifyListeners() sẽ được gọi tự động qua listener ở constructor
+  }
+
+  @override
+  void dispose() {
+    // Hủy lắng nghe khi provider bị hủy để tránh rò rỉ bộ nhớ
+    _service.isEnabled.removeListener(_onServiceUpdate);
+    _service.reminderTime.removeListener(_onServiceUpdate);
+    super.dispose();
   }
 }

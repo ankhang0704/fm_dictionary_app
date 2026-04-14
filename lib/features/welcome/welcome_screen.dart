@@ -8,7 +8,7 @@ import 'package:fm_dictionary/features/welcome/widgets/theme_toggle_card.dart';
 import 'package:fm_dictionary/features/welcome/widgets/welcome_header.dart';
 import '../../data/services/database/database_service.dart';
 import '../../data/services/ui_management/theme_manager.dart';
-import '../home/main_navigation.dart';
+import '../home/presentation/screens/main_navigation.dart';
 import '../../core/constants/constants.dart';
 
 class WelcomeScreen extends StatefulWidget {

@@ -16,6 +16,7 @@ class DatabaseService {
   static const String wordBoxName = 'words_box';
   static const String settingsBoxName = 'settings_box';
   static const String progressBoxName = 'learning_progress_box';
+  static const String saveBoxName = 'saved_words_box';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -28,6 +29,7 @@ class DatabaseService {
     await Hive.openBox<String>('searchHistoryBox');
     await Hive.openBox<Word>(wordBoxName);
     await Hive.openBox<AppSettings>(settingsBoxName);
+    await Hive.openBox(saveBoxName); 
     // Kiểm tra và Import dữ liệu lần đầu
     await Hive.openBox(progressBoxName);
 

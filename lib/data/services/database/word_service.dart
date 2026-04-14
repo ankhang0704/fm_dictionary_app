@@ -5,6 +5,7 @@ import 'database_service.dart';
 class WordService {
   final _wordBox = Hive.box<Word>(DatabaseService.wordBoxName);
   final _progressBox = Hive.box(DatabaseService.progressBoxName); // Box mới
+  final _savedBox = Hive.box(DatabaseService.saveBoxName); 
 
   static const int _msPerDay = 86400000; // Số mili-giây trong 1 ngày
 
@@ -176,5 +177,27 @@ class WordService {
     }
 
     return streak;
+  }
+   // === TÍNH NĂNG LƯU TỪ VỰNG (SAVED WORDS) ===
+  bool isWordSaved(String wordId) {
+    return _savedBox.containsKey(wordId);
+  }
+
+  Future<void> toggleSaveWord(String wordId) async {
+    if (isWordSaved(wordId)) {
+      await _savedBox.delete(wordId);
+    } else {
+      // Lưu trữ timestamp để sau này sort theo thời gian lưu
+      await _savedBox.put(wordId, DateTime.now().millisecondsSinceEpoch);
+    }
+  }
+
+  List<Word> getSavedWords() {
+    List<Word> savedList = [];
+    for (var wordId in _savedBox.keys) {
+      final word = _wordBox.get(wordId);
+      if (word != null) savedList.add(word);
+    }
+    return savedList;
   }
 }

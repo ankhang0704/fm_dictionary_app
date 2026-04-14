@@ -1,16 +1,17 @@
 // Đường dẫn: lib/features/info/presentation/screens/static_content_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/services.dart'; // Bắt buộc để load file asset
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class StaticContentScreen extends StatelessWidget {
-  final String titleKey;
-  final String contentKey;
+  final String title;
+  final String mdFileName; // Ví dụ: 'privacy_en.md'
 
   const StaticContentScreen({
     super.key,
-    required this.titleKey,
-    required this.contentKey,
+    required this.title,
+    required this.mdFileName,
   });
 
   @override
@@ -19,41 +20,40 @@ class StaticContentScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: isDark ? Colors.grey[900] : Colors.grey[100],
-      appBar: AppBar(
-        title: Text(titleKey.tr()),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          physics: const BouncingScrollPhysics(),
-          child: Container(
-            // SKELETON LAYOUT BENTO: Một khối Paper đọc văn bản
-            width: double.infinity,
-            padding: const EdgeInsets.all(24.0),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+      appBar: AppBar(title: Text(title), centerTitle: true),
+      body: FutureBuilder(
+        // Đọc nội dung file từ assets
+        future: rootBundle.loadString('assets/docs/$mdFileName'),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError || !snapshot.hasData) {
+            return const Center(child: Text("Document not found."));
+          }
+
+          return SafeArea(
+            child: Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Markdown(
+                data: snapshot.data!,
+                selectable: true, // Cho phép người dùng copy text tài liệu
+                styleSheet: MarkdownStyleSheet(
+                  h1: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  h3: TextStyle(fontSize: 18, color: Colors.blue.shade700, fontWeight: FontWeight.w600),
+                  p: const TextStyle(fontSize: 15, height: 1.5),
+                  listBullet: const TextStyle(fontSize: 15),
                 ),
-              ],
-            ),
-            child: Text(
-              contentKey.tr(),
-              style: TextStyle(
-                fontSize: 16,
-                height: 1.6, // Khoảng cách dòng chuẩn để đọc Text dài
-                color: isDark ? Colors.white70 : Colors.black87,
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

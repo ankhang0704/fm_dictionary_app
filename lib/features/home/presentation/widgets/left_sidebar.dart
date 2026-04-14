@@ -14,16 +14,14 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/screens/profile_screen.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
-// import '../../../settings/presentation/screens/settings_screen.dart'; // Import Settings của bạn
 import '../../../../core/utils/status_navigator.dart';
 
 class LeftSidebar extends StatelessWidget {
   const LeftSidebar({super.key});
 
   // --- XỬ LÝ LOGIC ĐỒNG BỘ (SYNC) ---
- Future<void> _handleSync(BuildContext context) async {
+  Future<void> _handleSync(BuildContext context) async {
     final authProvider = context.read<AuthProvider>();
-
     // Hiển thị Loading Dialog
     showDialog(
       context: context,
@@ -88,7 +86,7 @@ class LeftSidebar extends StatelessWidget {
       context,
       CupertinoPageRoute(
         builder: (_) =>
-            StaticContentScreen(titleKey: titleKey, contentKey: contentKey),
+            StaticContentScreen(title: titleKey, mdFileName: contentKey),
       ),
     );
   }
@@ -99,6 +97,7 @@ class LeftSidebar extends StatelessWidget {
     final user = authProvider.currentUser;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? Colors.grey[900] : Colors.grey[100];
+    final currentLocale = context.locale.languageCode;
 
     return Drawer(
       backgroundColor: bgColor,
@@ -140,8 +139,8 @@ class LeftSidebar extends StatelessWidget {
                       'sidebar.feedback'.tr(),
                       () => _navigateToStatic(
                         context,
-                        'sidebar.feedback',
-                        'content.feedback_text',
+                        'sidebar.feedback'.tr(),
+                        'feedback_$currentLocale.md',
                       ),
                     ),
                     _buildMenuItem(
@@ -149,8 +148,8 @@ class LeftSidebar extends StatelessWidget {
                       'sidebar.share'.tr(),
                       () => _navigateToStatic(
                         context,
-                        'sidebar.share',
-                        'content.share_text',
+                        'sidebar.share'.tr(),
+                        'share_$currentLocale.md',
                       ),
                     ),
                     _buildMenuItem(
@@ -158,8 +157,8 @@ class LeftSidebar extends StatelessWidget {
                       'sidebar.privacy'.tr(),
                       () => _navigateToStatic(
                         context,
-                        'sidebar.privacy',
-                        'content.privacy_text',
+                        'sidebar.privacy'.tr(),
+                        'privacy_$currentLocale.md',
                       ),
                     ),
                     _buildMenuItem(
@@ -167,8 +166,8 @@ class LeftSidebar extends StatelessWidget {
                       'sidebar.terms'.tr(),
                       () => _navigateToStatic(
                         context,
-                        'sidebar.terms',
-                        'content.terms_text',
+                        'sidebar.terms'.tr(),
+                        'terms_$currentLocale.md',
                       ),
                     ),
                     _buildMenuItem(
@@ -176,8 +175,8 @@ class LeftSidebar extends StatelessWidget {
                       'sidebar.about'.tr(),
                       () => _navigateToStatic(
                         context,
-                        'sidebar.about',
-                        'content.about_text',
+                        'sidebar.about'.tr(),
+                        'about_$currentLocale.md',
                       ),
                     ),
                   ]),
@@ -189,7 +188,12 @@ class LeftSidebar extends StatelessWidget {
                       'sidebar.settings'.tr(),
                       () {
                         Navigator.pop(context);
-                         Navigator.push(context, CupertinoPageRoute(builder: (_) => const SettingsScreen()));
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                            builder: (_) => const SettingsScreen(),
+                          ),
+                        );
                       },
                     ),
                   ]),

@@ -153,13 +153,7 @@
         "system_active_desc": "Nhận thông báo dựa trên cài đặt thời gian trên thiết bị của bạn.",
         "custom_time": "Tùy chỉnh giờ"
     },
-    "content": {
-        "privacy_text": "Tại FM Dictionary, chúng tôi cam kết bảo vệ dữ liệu cá nhân của bạn. Chính sách bảo mật này giải thích cách chúng tôi thu thập và sử dụng thông tin:\nThông tin đăng nhập: Khi bạn sử dụng Google hoặc Apple Sign-in, chúng tôi chỉ lưu trữ thông tin cơ bản (email, tên, ảnh đại diện) để định danh tài khoản và đồng bộ dữ liệu học tập.\nDữ liệu âm thanh: Khi sử dụng tính năng nhận diện giọng nói AI, âm thanh của bạn được xử lý để chuyển đổi thành văn bản. Chúng tôi không lưu trữ các tệp ghi âm này trên máy chủ sau khi quá trình xử lý hoàn tất.\nĐồng bộ dữ liệu: Dữ liệu từ vựng và tiến trình học tập của bạn được mã hóa và lưu trữ an toàn trên hệ thống đám mây để bạn có thể truy cập từ bất kỳ thiết bị nào.\nCam kết của chúng tôi: Chúng tôi không bao giờ bán hoặc chia sẻ dữ liệu cá nhân của bạn cho bên thứ ba vì mục đích quảng cáo.",
-        "share_text": "Hãy chia sẻ FM Dictionary với bạn bè và giúp họ cùng chinh phục từ vựng chuyên ngành nhé!\n\nLink chia sẻ: https://fm-dictionary-app.com/share\n\nCảm ơn bạn đã lan tỏa FM Dictionary!",
-        "feedback_text": "Bạn gặp khó khăn khi sử dụng ứng dụng hay có ý tưởng tuyệt vời nào muốn chia sẻ? Đội ngũ hỗ trợ của FM Dictionary luôn sẵn sàng giải đáp:\nEmail hỗ trợ: ankhang.nguyen0704@gmail.com\nThời gian phản hồi: Trong vòng 24-48 giờ làm việc.\nGóp ý tính năng: Mọi phản hồi của bạn đều là động lực để chúng tôi hoàn thiện sản phẩm mỗi ngày. Đừng ngần ngại gửi cho chúng tôi ảnh chụp màn hình hoặc mô tả chi tiết lỗi nếu bạn gặp phải.",
-        "about_text": "FM Dictionary là ứng dụng học từ vựng chuyên ngành được thiết kế để giúp bạn làm chủ 1.500 từ trong lĩnh vực FM (Quản lý tòa nhà). Sứ mệnh của chúng tôi là cung cấp trải nghiệm học tập hấp dẫn và hiệu quả thông qua các bài kiểm tra cá nhân hóa, phương pháp lặp lại ngắt quãng và các chế độ học tương tác. Dù bạn là sinh viên, chuyên viên hay người đam mê ngôn ngữ, FM Dictionary sẽ là người bạn đồng hành cùng bạn trên con đường chinh phục từ vựng chuyên ngành.",
-        "terms_text": "Bằng việc cài đặt và sử dụng FM Dictionary, bạn đồng ý với các điều khoản sau:\nSử dụng dịch vụ: Bạn cam kết sử dụng ứng dụng cho mục đích học tập cá nhân, không can thiệp vào mã nguồn hoặc phá hoại hệ thống.\nTài khoản: Bạn chịu trách nhiệm bảo mật thông tin tài khoản đăng nhập của mình.\nSở hữu trí tuệ: Toàn bộ nội dung, logo, và công nghệ AI tích hợp trong ứng dụng thuộc sở hữu của đội ngũ phát triển FM Dictionary.\nThay đổi dịch vụ: Chúng tôi có quyền cập nhật hoặc thay đổi các tính năng để cải thiện trải nghiệm người dùng mà không cần thông báo trước."
-    },
+   
     "quiz_config": {
         "config_title": "Cài đặt bài kiểm tra",
         "select_topic": "Chọn chủ đề",

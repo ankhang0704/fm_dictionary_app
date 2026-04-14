@@ -1,0 +1,3 @@
+**About FM Dictionary**
+
+"FM Dictionary is a specialized vocabulary learning app designed to help you master 1,500 words in the field of FM. Our mission is to provide an engaging and effective learning experience through personalized quizzes, spaced repetition, and interactive study modes. Whether you're a student, professional, or language enthusiast, FM Dictionary is your companion on the journey to mastering specialized vocabulary."
