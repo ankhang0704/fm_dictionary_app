@@ -8,7 +8,6 @@ import 'package:fm_dictionary/core/widgets/common/home_search_bar.dart';
 import 'package:fm_dictionary/data/services/database/database_service.dart';
 import 'package:fm_dictionary/features/history/presentation/screens/history_screen.dart';
 import 'package:fm_dictionary/features/saved/presentation/screens/saved_words_screen.dart';
-import 'package:fm_dictionary/features/search/search_screen.dart';
 import 'package:fm_dictionary/features/settings/presentation/providers/notification_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/home_provider.dart';
@@ -241,10 +240,9 @@ class DashboardScreen extends StatelessWidget {
           CupertinoIcons.clock_fill,
           "History",
           Colors.blue,
-          () => Navigator.push(
-            context,
-            CupertinoPageRoute(builder: (_) => const HistoryScreen()),
-          ),
+          () => Navigator.pushNamed(context, AppRoutes.history)
+            
+          
         ),
 
         _actionIcon(

@@ -5,7 +5,7 @@ import 'database_service.dart';
 class WordService {
   final _wordBox = Hive.box<Word>(DatabaseService.wordBoxName);
   final _progressBox = Hive.box(DatabaseService.progressBoxName); // Box mới
-  final _savedBox = Hive.box(DatabaseService.saveBoxName); 
+  final _savedBox = Hive.box(DatabaseService.saveBoxName);
 
   static const int _msPerDay = 86400000; // Số mili-giây trong 1 ngày
 
@@ -37,7 +37,7 @@ class WordService {
       // TRẢ LỜI SAI:   Reset step, học lại ngay, tăng wrongCount
       progress['s'] = 0;
       progress['wc'] = (progress['wc'] as int) + 1;
-      progress['nr'] = now; 
+      progress['nr'] = now;
     } else {
       // TRẢ LỜI ĐÚNG: Tăng step, tính ngày học tiếp theo
       int step = (progress['s'] as int) + 1;
@@ -64,10 +64,10 @@ class WordService {
   // 3. ĐÁNH DẤU ĐÃ THUỘC (Manual Learn)
   Future<void> markAsLearned(String wordId) async {
     final int now = DateTime.now().millisecondsSinceEpoch;
-    
+
     // Lấy progress hiện tại để không làm mất 'wc' (wrongCount)
     Map<String, dynamic> progress = getWordProgress(wordId);
-    
+
     progress['s'] = 4;
     progress['lr'] = now;
     progress['nr'] = now + (30 * _msPerDay); // +30 ngày
@@ -121,10 +121,12 @@ class WordService {
   List<String> getAllTopics() {
     return _wordBox.values.map((w) => w.topic).toSet().toList();
   }
-    bool isWordLearned(String wordId) {
+
+  bool isWordLearned(String wordId) {
     final progress = getWordProgress(wordId);
     return (progress['s'] as int) >= 4; // Step 4 trở lên là đã thuộc lòng
   }
+
   Set<DateTime> getStudyDates() {
     final box = Hive.box(DatabaseService.progressBoxName);
     final Set<DateTime> studyDates = {};
@@ -144,7 +146,9 @@ class WordService {
       }
     }
     return studyDates;
-  }int getCurrentStreak() {
+  }
+
+  int getCurrentStreak() {
     final Set<DateTime> datesSet = getStudyDates();
     if (datesSet.isEmpty) return 0;
 
@@ -161,7 +165,7 @@ class WordService {
 
     // Kịch bản 1: Nếu hôm nay chưa học, và hôm qua cũng không học -> Mất chuỗi
     if (!sortedDates.contains(today) && !sortedDates.contains(yesterday)) {
-      return 0; 
+      return 0;
     }
 
     // Kịch bản 2: Bắt đầu đếm chuỗi
@@ -173,12 +177,50 @@ class WordService {
     // Đếm ngược về quá khứ xem liên tiếp được bao nhiêu ngày
     while (sortedDates.contains(checkDate)) {
       streak++;
-      checkDate = checkDate.subtract(const Duration(days: 1)); // Lùi về 1 ngày trước
+      checkDate = checkDate.subtract(
+        const Duration(days: 1),
+      ); // Lùi về 1 ngày trước
     }
 
     return streak;
   }
-   // === TÍNH NĂNG LƯU TỪ VỰNG (SAVED WORDS) ===
+  Future<void> saveQuizProgress(List<Word> wordsInQuiz, bool isPassed) async {
+    final int now = DateTime.now().millisecondsSinceEpoch;
+
+    for (var word in wordsInQuiz) {
+      Map<String, dynamic> progress = getWordProgress(word.id);
+
+      progress['lr'] = now; // Cập nhật lần tương tác cuối
+      progress['ua'] = now;
+
+      if (isPassed) {
+        // Nếu PASS bài test: Thưởng tiến độ (Coi như nhấn nút Dễ/Nhớ)
+        int currentStep = progress['s'] as int;
+        if (currentStep < 4) {
+          progress['s'] = currentStep + 1; // Tăng level
+        }
+
+        // Tính ngày ôn tập tiếp theo
+        int daysToAdd = (progress['s'] == 1)
+            ? 1
+            : (progress['s'] == 2)
+            ? 3
+            : (progress['s'] == 3)
+            ? 7
+            : 30;
+        progress['nr'] = now + (daysToAdd * _msPerDay);
+      } else {
+        // Nếu FAIL bài test: Ghi nhận số lần sai để ưu tiên học lại
+        progress['wc'] = (progress['wc'] as int) + 1;
+        // Không hạ step thẳng tay để đỡ nản, chỉ bắt ôn lại sớm hơn
+        progress['nr'] = now;
+      }
+
+      await _progressBox.put(word.id, progress);
+    }
+  }
+
+  // === TÍNH NĂNG LƯU TỪ VỰNG (SAVED WORDS) ===
   bool isWordSaved(String wordId) {
     return _savedBox.containsKey(wordId);
   }
@@ -199,5 +241,34 @@ class WordService {
       if (word != null) savedList.add(word);
     }
     return savedList;
+  }
+
+  // === TÍNH NĂNG LỊCH SỬ (HISTORY) ===
+  List<Word> getHistoryWords() {
+    List<Word> historyList = [];
+
+    for (var wordId in _progressBox.keys) {
+      final progress = getWordProgress(wordId as String);
+      final int lr = progress['lr'] as int;
+      final int ua = progress['ua'] ?? 0;
+
+      // Nếu từ này đã từng được tương tác (lr hoặc ua > 0)
+      if (lr > 0 || ua > 0) {
+        final word = _wordBox.get(wordId);
+        if (word != null) {
+          historyList.add(word);
+        }
+      }
+    }
+    // Sắp xếp giảm dần (Từ học gần nhất lên đầu)
+    historyList.sort((a, b) {
+      final pA = getWordProgress(a.id);
+      final pB = getWordProgress(b.id);
+      final timeA = pA['lr'] > pA['ua'] ? pA['lr'] : pA['ua'];
+      final timeB = pB['lr'] > pB['ua'] ? pB['lr'] : pB['ua'];
+      return (timeB as int).compareTo(timeA as int);
+    });
+
+    return historyList;
   }
 }

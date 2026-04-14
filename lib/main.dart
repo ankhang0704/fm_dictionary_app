@@ -13,6 +13,7 @@ import 'package:fm_dictionary/features/home/presentation/providers/home_provider
 import 'package:fm_dictionary/features/home/presentation/screens/menu_screen.dart';
 import 'package:fm_dictionary/features/home/presentation/screens/stats_screen.dart';
 import 'package:fm_dictionary/features/info/presentation/screens/static_content_screen.dart';
+import 'package:fm_dictionary/features/learning/presentation/providers/quiz_provider.dart';
 import 'package:fm_dictionary/features/learning/quiz_configuration_screen.dart';
 import 'package:fm_dictionary/features/learning/review_screen.dart';
 import 'package:fm_dictionary/features/library/library_screen.dart';
@@ -72,6 +73,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => LearningProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
+        ChangeNotifierProvider(create: (_) => QuizProvider()),
       ],
       // 2. Tiếp theo là EasyLocalization để xử lý đa ngôn ngữ
       child: EasyLocalization(
@@ -143,10 +145,10 @@ class MyApp extends StatelessWidget {
             AppRoutes.menu: (context) => const MenuScreen(),
             AppRoutes.quizConfig: (context) =>
                 const QuizConfigurationScreen(initialTopic: 'All'),
-            AppRoutes.review: (context) => const ReviewScreen(),
+            AppRoutes.review: (context) => const SmartReviewScreen(),
             AppRoutes.library: (context) => const LibraryScreen(),
             AppRoutes.search: (context) => const SearchScreen(),
-            AppRoutes.history: (context) => const HistoryScreen(),
+            AppRoutes.history: (context) =>  HistoryScreen(),
             AppRoutes.saved: (context) => const SavedWordsScreen(),
             AppRoutes.settings: (context) => const SettingsScreen(),
             AppRoutes.staticContent: (context) {

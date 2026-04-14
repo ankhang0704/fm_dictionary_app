@@ -1,23 +1,22 @@
-// file: lib/screens/learning/review_screen.dart
-import 'package:easy_localization/easy_localization.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:fm_dictionary/features/learning/quiz_configuration_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../data/models/word_model.dart';
-import '../../data/services/database/database_service.dart';
-import '../../data/services/database/word_service.dart';
-import '../../core/constants/constants.dart';
+import '../../../../data/models/word_model.dart';
+import '../../../../data/services/database/database_service.dart';
+import '../../../../data/services/database/word_service.dart';
+import '../../../../core/constants/constants.dart';
+import 'quiz_configuration_screen.dart';
 import 'study_screen.dart';
 
-class ReviewScreen extends StatefulWidget {
-  const ReviewScreen({super.key});
+class SmartReviewScreen extends StatefulWidget {
+  const SmartReviewScreen({super.key});
 
   @override
-  State<ReviewScreen> createState() => _ReviewScreenState();
+  State<SmartReviewScreen> createState() => _SmartReviewScreenState();
 }
 
-class _ReviewScreenState extends State<ReviewScreen> {
+class _SmartReviewScreenState extends State<SmartReviewScreen> {
   final WordService _wordService = WordService();
 
   @override
@@ -33,10 +32,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
           : AppConstants.backgroundColor,
       appBar: AppBar(
         title: Text(
-          'review.title'.tr(),
-          style: AppConstants.headingStyle.copyWith(
+          'Ôn tập thông minh', // Thay đổi tên cho chuyên nghiệp
+          style: TextStyle(
             fontSize: 22,
-            fontStyle: FontStyle.normal,
+            fontWeight: FontWeight.bold,
             color: isDark ? Colors.white : AppConstants.textPrimary,
           ),
         ),
@@ -48,82 +47,194 @@ class _ReviewScreenState extends State<ReviewScreen> {
         valueListenable: progressBoxListenable,
         builder: (context, box, _) {
           final reviewWords = _wordService.getWordsToReview();
-          return reviewWords.isEmpty
-              ? const _EmptyReviewState()
-              : _ReviewList(
-                  reviewWords: reviewWords,
-                  wordService: _wordService,
-                );
-        },
-      ),
-      floatingActionButton: ValueListenableBuilder(
-        valueListenable: progressBoxListenable,
-        builder: (context, box, _) {
-          final reviewWords = _wordService.getWordsToReview();
-          if (reviewWords.isEmpty) return const SizedBox.shrink();
 
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
+          if (reviewWords.isEmpty) return const _EmptyReviewState();
+
+          return Stack(
             children: [
-              FloatingActionButton.extended(
-                heroTag: 'quiz_btn',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    CupertinoPageRoute(
-                      builder: (context) =>
-                          const QuizConfigurationScreen(initialTopic: 'Review'),
-                    ),
-                  );
-                },
-                backgroundColor: isDark
-                    ? AppConstants.darkCardColor
-                    : AppConstants.cardColor,
-                icon: Icon(
-                  CupertinoIcons.question_circle_fill,
-                  color: AppConstants.accentColor,
-                ),
-                label: Text(
-                  'review.quiz_test'.tr(),
-                  style: const TextStyle(
-                    color: AppConstants.accentColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              FloatingActionButton.extended(
-                heroTag: 'study_btn',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    CupertinoPageRoute(
-                      builder: (context) => const StudyScreen(topic: 'Review'),
-                    ),
-                  );
-                },
-                backgroundColor: AppConstants.accentColor,
-                icon: const Icon(
-                  CupertinoIcons.play_arrow_solid,
-                  color: Colors.white,
-                ),
-                label: Text(
-                  'review.start_review'.tr(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              _buildReviewList(reviewWords, isDark),
+              _buildStickyBottomAction(
+                context,
+                isDark,
+              ), // Thanh action bar thay cho FAB
             ],
           );
         },
       ),
     );
   }
+
+  Widget _buildReviewList(List<Word> reviewWords, bool isDark) {
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(
+        AppConstants.defaultPadding,
+        8,
+        AppConstants.defaultPadding,
+        120,
+      ), // Padding đáy chừa chỗ cho bottom bar
+      physics: const BouncingScrollPhysics(),
+      itemCount: reviewWords.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final word = reviewWords[index];
+        final progress = _wordService.getWordProgress(word.id);
+        final int wrongCount = progress['wc'] as int;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
+            borderRadius: BorderRadius.circular(20), // Chuẩn Bento
+            border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 12,
+            ),
+            title: Text(
+              word.word,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            subtitle: Text(
+              word.meaning,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.grey),
+            ),
+            trailing: wrongCount > 0
+                ? Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppConstants.errorColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          CupertinoIcons.exclamationmark_triangle_fill,
+                          size: 14,
+                          color: AppConstants.errorColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$wrongCount lỗi',
+                          style: const TextStyle(
+                            color: AppConstants.errorColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : const Icon(
+                    CupertinoIcons.checkmark_seal_fill,
+                    color: AppConstants.successColor,
+                  ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStickyBottomAction(BuildContext context, bool isDark) {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              16,
+              20,
+              MediaQuery.of(context).padding.bottom + 16,
+            ),
+            decoration: BoxDecoration(
+              color:
+                  (isDark
+                          ? AppConstants.darkBgColor
+                          : AppConstants.backgroundColor)
+                      .withValues(alpha: 0.8),
+              border: Border(
+                top: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 56,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppConstants
+                            .cardColor, // Nút test có màu nền nổi bật
+                        foregroundColor: AppConstants.accentColor,
+                        elevation: 0,
+                        side: const BorderSide(color: AppConstants.accentColor),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      icon: const Icon(CupertinoIcons.question_circle_fill),
+                      label: const Text(
+                        'Làm Test',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () => Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (_) => const QuizConfigurationScreen(
+                            initialTopic: 'Review',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: SizedBox(
+                    height: 56,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppConstants.accentColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      icon: const Icon(CupertinoIcons.play_arrow_solid),
+                      label: const Text(
+                        'Học ngay',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () => Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (_) => const StudyScreen(topic: 'Review'),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
+// EMPTY STATE CHUẨN BENTO
 class _EmptyReviewState extends StatelessWidget {
   const _EmptyReviewState();
 
@@ -151,124 +262,26 @@ class _EmptyReviewState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'review.empty_state_title'.tr(),
-              textAlign: TextAlign.center,
-              style: AppConstants.headingStyle.copyWith(
+              "Tuyệt vời!",
+              style: TextStyle(
                 fontSize: 24,
-                fontStyle: FontStyle.normal,
+                fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : AppConstants.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              'review.empty_state_message'.tr(),
+              "Bạn đã ôn tập xong tất cả các từ vựng cần thiết cho hôm nay. Não bộ của bạn đang được nghỉ ngơi.",
               textAlign: TextAlign.center,
-              style: AppConstants.bodyStyle.copyWith(
+              style: TextStyle(
                 color: AppConstants.textSecondary,
                 height: 1.5,
+                fontSize: 16,
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ReviewList extends StatelessWidget {
-  final List<Word> reviewWords;
-  final WordService wordService;
-
-  const _ReviewList({required this.reviewWords, required this.wordService});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(
-        AppConstants.defaultPadding,
-        8,
-        AppConstants.defaultPadding,
-        160,
-      ),
-      physics: const BouncingScrollPhysics(),
-      itemCount: reviewWords.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final word = reviewWords[index];
-        final progress = wordService.getWordProgress(word.id);
-        final int wrongCount = progress['wc'] as int;
-
-        return Container(
-          decoration: BoxDecoration(
-            color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
-            borderRadius: BorderRadius.circular(AppConstants.inputRadius),
-            border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-            boxShadow: isDark
-                ? []
-                : [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-          ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 8,
-            ),
-            title: Text(
-              word.word,
-              style: AppConstants.bodyStyle.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: isDark ? Colors.white : AppConstants.textPrimary,
-              ),
-            ),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                word.meaning,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppConstants.bodyStyle.copyWith(
-                  fontSize: 14,
-                  color: AppConstants.textSecondary,
-                ),
-              ),
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppConstants.errorColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    CupertinoIcons.exclamationmark_triangle_fill,
-                    size: 12,
-                    color: AppConstants.errorColor,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '$wrongCount',
-                    style: const TextStyle(
-                      color: AppConstants.errorColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

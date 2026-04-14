@@ -161,8 +161,25 @@ class _StudyScreenState extends State<StudyScreen> {
         border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
         boxShadow: isDark ? [] : [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10))],
       ),
+      
       child: Column(
         children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppConstants.accentColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              word.topic.toUpperCase(),
+              style: const TextStyle(
+                color: AppConstants.accentColor,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+              ),
+            ),
+          ),
           Expanded(
             child: Center(
               child: Column(
@@ -277,19 +294,87 @@ class _StudyScreenState extends State<StudyScreen> {
 
   // --- Các widget phụ trợ ---
   Widget _buildMicSection(LearningProvider provider, bool isDark) {
-    return GestureDetector(
-      onTap: provider.isAnalyzing ? null : provider.startRecording,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDark ? AppConstants.darkBgColor : AppConstants.backgroundColor,
-          shape: BoxShape.circle,
-          border: Border.all(color: provider.isAnalyzing ? Colors.grey : AppConstants.accentColor, width: 2),
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: provider.isAnalyzing ? null : provider.startRecording,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? AppConstants.darkBgColor
+                  : AppConstants.backgroundColor,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: provider.isAnalyzing
+                    ? Colors.grey
+                    : AppConstants.accentColor,
+                width: 2,
+              ),
+              boxShadow: provider.isAnalyzing
+                  ? []
+                  : [
+                      BoxShadow(
+                        color: AppConstants.accentColor.withValues(alpha: 0.2),
+                        blurRadius: 15,
+                        spreadRadius: 2,
+                      ),
+                    ],
+            ),
+            child: provider.isAnalyzing
+                ? const SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(
+                    CupertinoIcons.mic_solid,
+                    size: 28,
+                    color: AppConstants.accentColor,
+                  ),
+          ),
         ),
-        child: provider.isAnalyzing
-            ? const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2))
-            : const Icon(CupertinoIcons.mic_solid, size: 28, color: AppConstants.accentColor),
-      ),
+
+        // --- PHẦN UI BỊ THIẾU: HIỂN THỊ KẾT QUẢ ĐIỂM ---
+        if (provider.pronunciationScore != null && !provider.isAnalyzing) ...[
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: provider.pronunciationScore! > 80
+                  ? AppConstants.successColor.withValues(alpha: 0.1)
+                  : AppConstants.errorColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  "\"${provider.spokenText}\"",
+                  style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    color: isDark ? Colors.white70 : AppConstants.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  provider.pronunciationScore! > 80
+                      ? "Xuất sắc (${provider.pronunciationScore!.toInt()}%)"
+                      : "Thử lại nhé (${provider.pronunciationScore!.toInt()}%)",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: provider.pronunciationScore! > 80
+                        ? AppConstants.successColor
+                        : AppConstants.errorColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 

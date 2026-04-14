@@ -2,12 +2,14 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:fm_dictionary/features/learning/presentation/providers/quiz_provider.dart';
+import 'package:provider/provider.dart';
 import '../../data/models/word_model.dart';
 import '../../data/services/database/word_service.dart';
 import '../../core/constants/constants.dart';
 import 'quiz_screen.dart';
+import '../../data/services/features/quiz_service.dart'; // THÊM DÒNG NÀY
 
-enum QuizMode { enToVi, viToEn, listening }
 
 class QuizConfigurationScreen extends StatefulWidget {
   final String initialTopic;
@@ -63,18 +65,11 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
       targetWords = targetWords.take(_questionCount).toList();
     }
 
-    final distractorPool = _wordService.getRandomWords(9999);
+    context.read<QuizProvider>().initQuiz(targetWords, _selectedMode);
 
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
-      CupertinoPageRoute(
-        builder: (_) => QuizScreen(
-          targetWords: targetWords,
-          distractorPool: distractorPool,
-          questionCount: targetWords.length,
-          mode: _selectedMode,
-        ),
-      ),
+      CupertinoPageRoute(builder: (_) => const QuizScreen()),
     );
   }
 
