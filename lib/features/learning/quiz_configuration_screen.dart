@@ -10,7 +10,6 @@ import '../../core/constants/constants.dart';
 import 'quiz_screen.dart';
 import '../../data/services/features/quiz_service.dart'; // THÊM DÒNG NÀY
 
-
 class QuizConfigurationScreen extends StatefulWidget {
   final String initialTopic;
   const QuizConfigurationScreen({super.key, this.initialTopic = 'All'});
@@ -33,6 +32,7 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
     super.initState();
     _selectedTopic = widget.initialTopic;
     _updateWordsPool();
+    debugPrint("Topic nhận được: ${widget.initialTopic}");
   }
 
   void _updateWordsPool() {
@@ -149,7 +149,12 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
                             Icon(
                               topic == 'Review'
                                   ? CupertinoIcons.refresh_thick
-                                  : CupertinoIcons.tag_fill,
+                                  : topic == 'All'
+                                  ? CupertinoIcons
+                                        .square_grid_2x2_fill // Icon cho All
+                                  : AppConstants.topicIcons[topic] ??
+                                        CupertinoIcons
+                                            .tag_fill, // Lấy từ constants
                               size: 22,
                               color: isSelected
                                   ? AppConstants.accentColor
@@ -231,6 +236,7 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
                 _SectionHeader(title: 'quiz_config.select_topic'.tr()),
                 _TopicTile(
                   topicName: _getTopicDisplayName(_selectedTopic),
+                  rawTopic: _selectedTopic,
                   onTap: _showTopicPicker,
                 ),
                 const SizedBox(height: 24),
@@ -287,12 +293,27 @@ class _SectionHeader extends StatelessWidget {
 class _TopicTile extends StatelessWidget {
   final String topicName;
   final VoidCallback onTap;
+  final String rawTopic;
 
-  const _TopicTile({required this.topicName, required this.onTap});
+  const _TopicTile({
+    required this.topicName,
+    required this.onTap,
+    required this.rawTopic,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Xác định Icon dựa trên rawTopic
+    IconData topicIcon;
+    if (rawTopic == 'Review') {
+      topicIcon = CupertinoIcons.refresh_thick;
+    } else if (rawTopic == 'All') {
+      topicIcon = CupertinoIcons.square_grid_2x2_fill;
+    } else {
+      topicIcon = AppConstants.topicIcons[rawTopic] ?? CupertinoIcons.book_fill;
+    }
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppConstants.inputRadius),
@@ -305,8 +326,8 @@ class _TopicTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(
-              CupertinoIcons.book_fill,
+            Icon(
+              topicIcon,
               color: Colors.blueAccent,
               size: 22,
             ),
@@ -507,7 +528,9 @@ class _NotEnoughWordsWarning extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppConstants.errorColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(AppConstants.inputRadius),
-        border: Border.all(color: AppConstants.errorColor.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: AppConstants.errorColor.withValues(alpha: 0.2),
+        ),
       ),
       child: Row(
         children: [

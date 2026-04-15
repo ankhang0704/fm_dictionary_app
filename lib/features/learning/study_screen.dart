@@ -13,10 +13,12 @@ import '../../../../core/widgets/common/steak_celebration.dart';
 
 class StudyScreen extends StatefulWidget {
   final List<Word> words;
+  final bool isFromRoadmap;
 
   const StudyScreen({
     super.key,
     required this.words,
+     this.isFromRoadmap = false,
   });
 
 
@@ -52,13 +54,17 @@ class _StudyScreenState extends State<StudyScreen> {
 
     if (isDone && mounted) {
       // LUỒNG MỚI: Học xong 10 từ -> Khởi tạo Quiz và Chuyển ngay sang QuizScreen
-      context.read<QuizProvider>().initQuiz(widget.words, QuizMode.viToEn);
-
-      // Dùng pushReplacement để khi làm Quiz xong sẽ không lùi lại màn hình học thẻ nữa
-      Navigator.pushReplacement(
-        context,
-        CupertinoPageRoute(builder: (_) => const QuizScreen()),
-      );
+     if (widget.isFromRoadmap) {
+        // Luồng Roadmap: Chuyển sang Quiz
+        context.read<QuizProvider>().initQuiz(widget.words, QuizMode.viToEn);
+        Navigator.pushReplacement(
+          context,
+          CupertinoPageRoute(builder: (_) => const QuizScreen()),
+        );
+      } else {
+        // Luồng Dictionary (Tự do): Chỉ đơn giản là thoát ra ngoài
+        Navigator.pop(context);
+      }
     }
   }
 

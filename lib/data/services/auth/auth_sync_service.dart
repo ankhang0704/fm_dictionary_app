@@ -115,9 +115,9 @@ class AuthSyncService {
       // Bước 2: Cập nhật mật khẩu mới
       await user.updatePassword(newPassword);
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'wrong-password'){
+      if (e.code == 'wrong-password') {
         throw Exception('Mật khẩu hiện tại không chính xác.');
-      }        
+      }
       throw Exception(_handleAuthError(e.code));
     }
   }
@@ -166,28 +166,43 @@ class AuthSyncService {
       final docRef = _firestore.collection('users').doc(user.uid);
       final settings = DatabaseService.getSettings();
       final localName = settings.userName;
+
       final docSnapshot = await docRef.get(
         const GetOptions(source: Source.server),
       );
 
       Map<String, dynamic> cloudProgress = {};
-      if (docSnapshot.exists && docSnapshot.data()!.containsKey('progress')) {
-        cloudProgress = docSnapshot.data()!['progress'] as Map<String, dynamic>;
+      List<dynamic> cloudSavedWords = [];
+
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data()!;
+        if (data.containsKey('progress')) {
+          cloudProgress = data['progress'] as Map<String, dynamic>;
+        }
+        if (data.containsKey('saved_words')) {
+          cloudSavedWords = data['saved_words'] as List<dynamic>;
+        }
       }
 
       final progressBox = Hive.box(DatabaseService.progressBoxName);
       Map<String, dynamic> localUpdates = {};
-      Map<String, List<int>> cloudUpdates = {};
+      Map<String, List<dynamic>> cloudUpdates = {};
       Set<String> processedKeys = {};
 
-      // Duyệt Cloud -> Local
+      // 1. ĐỒNG BỘ PROGRESS (So sánh theo Timestamp integer)
       for (var entry in cloudProgress.entries) {
         final key = entry.key;
         processedKeys.add(key);
         final List<dynamic> cData = entry.value;
+
         final int cUpdatedAt = cData.length > 4 ? (cData[4] as int) : 0;
+        final double cPs = cData.length > 5
+            ? (cData[5] as num).toDouble()
+            : 0.0;
+        final int cPc = cData.length > 6 ? (cData[6] as int) : 0;
 
         final localRaw = progressBox.get(key);
+
         if (localRaw == null) {
           localUpdates[key] = {
             's': cData[0],
@@ -195,9 +210,13 @@ class AuthSyncService {
             'lr': cData[2],
             'nr': cData[3],
             'ua': cUpdatedAt,
+            'ps': cPs,
+            'pc': cPc,
           };
         } else {
-          final int lUpdatedAt = (localRaw as Map)['ua'] ?? 0;
+          final localMap = localRaw as Map;
+          final int lUpdatedAt = localMap['ua'] ?? 0;
+
           if (cUpdatedAt > lUpdatedAt) {
             localUpdates[key] = {
               's': cData[0],
@@ -205,20 +224,24 @@ class AuthSyncService {
               'lr': cData[2],
               'nr': cData[3],
               'ua': cUpdatedAt,
+              'ps': cPs,
+              'pc': cPc,
             };
           } else if (lUpdatedAt > cUpdatedAt) {
             cloudUpdates[key] = [
-              localRaw['s'],
-              localRaw['wc'],
-              localRaw['lr'],
-              localRaw['nr'],
+              localMap['s'],
+              localMap['wc'],
+              localMap['lr'],
+              localMap['nr'],
               lUpdatedAt,
+              localMap['ps'] ?? 0.0,
+              localMap['pc'] ?? 0,
             ];
           }
         }
       }
 
-      // Duyệt Local -> Cloud còn sót
+      // Các từ có ở Local mà Cloud chưa có
       for (var key in progressBox.keys) {
         final String strKey = key.toString();
         if (!processedKeys.contains(strKey)) {
@@ -229,30 +252,59 @@ class AuthSyncService {
             localMap['lr'],
             localMap['nr'],
             localMap['ua'] ?? 0,
+            localMap['ps'] ?? 0.0,
+            localMap['pc'] ?? 0,
           ];
         }
       }
 
+      // 2. ĐỒNG BỘ SAVED WORDS (Dùng Set gộp để không mất từ)
+      final savedBox = Hive.box(DatabaseService.saveBoxName);
+      final Set<String> localSavedWords = savedBox.values
+          .map((e) => e.toString())
+          .toSet();
+      final Set<String> cloudSavedSet = cloudSavedWords
+          .map((e) => e.toString())
+          .toSet();
+
+      final Set<String> mergedSavedWords = localSavedWords.union(cloudSavedSet);
+
+      if (mergedSavedWords.length > localSavedWords.length) {
+        await savedBox.clear();
+        await savedBox.addAll(mergedSavedWords.toList());
+      }
+
+      // 3. ĐẨY LÊN FIREBASE (Chỉ đẩy 1 Document duy nhất)
       if (localUpdates.isNotEmpty) await progressBox.putAll(localUpdates);
-      debugPrint("DEBUG: localName is '$localName'");
-      debugPrint("DEBUG: cloudUpdates size is ${cloudUpdates.length}");
+
       final batch = _firestore.batch();
       bool needCommit = false;
+      Map<String, dynamic> updatePayload = {};
 
-      if (cloudUpdates.isNotEmpty || !docSnapshot.exists) {
+      if (cloudUpdates.isNotEmpty ||
+          !docSnapshot.exists ||
+          mergedSavedWords.length > cloudSavedWords.length) {
         needCommit = true;
-        batch.set(docRef, {
+
+        // Payload siêu gọn: Tên, Goal, Từ lưu, và Cụm Progress (mảng số)
+        updatePayload = {
           'name': localName,
-          'progress': cloudUpdates,
-          'lastSync': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+          'dailyGoal': settings.dailyGoal,
+          'saved_words': mergedSavedWords.toList(),
+          'lastSync': DateTime.now()
+              .millisecondsSinceEpoch, // Dùng Int epoch thay vì Firebase Timestamp để nhẹ
+        };
+
+        if (cloudUpdates.isNotEmpty) {
+          updatePayload['progress'] = cloudUpdates;
+        }
+
+        batch.set(docRef, updatePayload, SetOptions(merge: true));
       }
 
       if (needCommit) {
         await batch.commit();
-        debugPrint(" Đồng bộ thành công!");
-      } else {
-        debugPrint(" Không có dữ liệu mới cần đồng bộ.");
+        debugPrint("Đồng bộ tối ưu thành công!");
       }
 
       final timeString = DateFormat(
@@ -262,16 +314,11 @@ class AuthSyncService {
       await prefs.setString('last_sync_time', timeString);
       lastSyncTime.value = timeString;
     } on FirebaseException catch (e) {
-      debugPrint("Firebase Error Code: ${e.code}"); // Thêm dòng này để debug
-      debugPrint(
-        "Firebase Error Message: ${e.message}",
-      ); // Thêm dòng này để debug
       if (e.code == 'unavailable' || e.code == 'network-request-failed') {
         throw Exception('network_error');
       }
       throw Exception(e.code);
     } catch (e) {
-      debugPrint("Unknown Error: $e");
       throw Exception('sync_failed');
     }
   }

@@ -1,16 +1,17 @@
 // file: lib/screens/library/topic_detail_screen.dart
+// file: lib/screens/library/topic_detail_screen.dart
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:fm_dictionary/core/constants/app_routes.dart';
-import 'package:fm_dictionary/core/constants/constants.dart';
-import 'package:fm_dictionary/data/models/word_model.dart';
-import 'package:fm_dictionary/data/services/database/database_service.dart';
-import 'package:fm_dictionary/data/services/database/word_service.dart';
-import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
-import 'package:fm_dictionary/features/learning/study_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:provider/provider.dart';
+
+import '../../../../core/constants/app_routes.dart';
+import '../../../../core/constants/constants.dart';
+import '../../../../data/models/word_model.dart';
+import '../../../../data/services/database/database_service.dart';
+import '../../../../data/services/database/word_service.dart';
+import '../../../../features/learning/study_screen.dart';
 
 class DictionaryDetailScreen extends StatefulWidget {
   final String topic;
@@ -35,9 +36,11 @@ class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // FIX LỖI NHIỆM VỤ 1: Lắng nghe PROGRESS BOX thay vì WORD BOX
+    // Giúp UI thanh tiến độ và dấu tick update instant (ngay lập tức) khi vừa học xong
     return ValueListenableBuilder(
-      valueListenable: Hive.box<Word>(DatabaseService.wordBoxName).listenable(),
-      builder: (context, wordBox, child) {
+      valueListenable: Hive.box(DatabaseService.progressBoxName).listenable(),
+      builder: (context, progressBox, child) {
         final allWords = _wordService.getWordsByTopic(widget.topic);
         final filteredWords = allWords
             .where(
@@ -85,14 +88,16 @@ class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
                               label: 'topic.study'.tr(),
                               color: AppConstants.accentColor,
                               onTap: () {
-                                final words = context.read<HomeProvider>().getWordsByTopicName(widget.topic);
+                                // TỐI ƯU LUỒNG: Không cần gọi HomeProvider nữa
+                                // Gọi thẳng StudyScreen với isFromRoadmap mặc định = false
                                 Navigator.push(
                                   context,
                                   CupertinoPageRoute(
-                                    builder: (_) => StudyScreen(words: words),
+                                    builder: (_) =>
+                                        StudyScreen(words: allWords),
                                   ),
                                 );
-                              }
+                              },
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -112,11 +117,6 @@ class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
                                       ),
                                       backgroundColor: AppConstants.errorColor,
                                       behavior: SnackBarBehavior.floating,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          AppConstants.inputRadius,
-                                        ),
-                                      ),
                                     ),
                                   );
                                   return;
@@ -155,6 +155,7 @@ class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final word = filteredWords[index];
+                      // Sẽ luôn được cập nhật chính xác do ValueListenableBuilder ở trên cùng
                       final isLearned = _wordService.isWordLearned(word.id);
 
                       return _WordListTile(
@@ -173,6 +174,8 @@ class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
     );
   }
 }
+
+// ... Các Widget con (_TopicSliverAppBar, _SearchBar, _ActionButton, _WordListTile)
 
 class _TopicSliverAppBar extends StatelessWidget {
   final String topic;

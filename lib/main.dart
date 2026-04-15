@@ -152,8 +152,11 @@ class MyApp extends StatelessWidget {
             AppRoutes.stats: (context) => const StatsScreen(),
             AppRoutes.menu: (context) => const MenuScreen(),
              // Learning Module
-            AppRoutes.quizConfig: (context) =>
-                const QuizConfigurationScreen(initialTopic: 'All'),
+            AppRoutes.quizConfig: (context) {
+               final args = ModalRoute.of(context)?.settings.arguments;
+               final String topic = (args is String) ? args : 'All';
+               return QuizConfigurationScreen(initialTopic: topic);
+            },
             AppRoutes.review: (context) => const SmartReviewScreen(),
 
              // Library & Search Module
