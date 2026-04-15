@@ -271,4 +271,27 @@ class WordService {
 
     return historyList;
   }
+  // Hàm lưu điểm phát âm 
+  Future<void> updatePronunciationScore(String wordId, double newScore) async {
+    Map<String, dynamic> progress = getWordProgress(wordId);
+    
+    double currentScore = (progress['ps'] ?? 0.0).toDouble();
+    int count = (progress['pc'] ?? 0) as int;
+
+    // Thuật toán tính trung bình cộng tích lũy
+    double updatedScore = ((currentScore * count) + newScore) / (count + 1);
+    
+    progress['ps'] = updatedScore;
+    progress['pc'] = count + 1;
+    progress['ua'] = DateTime.now().millisecondsSinceEpoch;
+
+    await _progressBox.put(wordId, progress);
+  }
+
+  // Hàm ép buộc thuộc toàn bộ list từ (Dùng khi pass Quiz 80%)
+  Future<void> massMasterWords(List<Word> words) async {
+    for (var w in words) {
+      await markAsLearned(w.id); 
+    }
+  }
 }

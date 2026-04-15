@@ -2,14 +2,23 @@ import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fm_dictionary/data/models/word_model.dart';
+import 'package:fm_dictionary/data/services/features/quiz_service.dart';
 import 'package:fm_dictionary/features/learning/presentation/providers/learning_provider.dart';
+import 'package:fm_dictionary/features/learning/presentation/providers/quiz_provider.dart';
+import 'package:fm_dictionary/features/learning/quiz_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../core/widgets/common/steak_celebration.dart';
 
 class StudyScreen extends StatefulWidget {
-  final String topic;
-  const StudyScreen({super.key, required this.topic});
+  final List<Word> words;
+
+  const StudyScreen({
+    super.key,
+    required this.words,
+  });
+
 
   @override
   State<StudyScreen> createState() => _StudyScreenState();
@@ -20,14 +29,14 @@ class _StudyScreenState extends State<StudyScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LearningProvider>().loadWords(widget.topic);
+       context.read<LearningProvider>().loadWordsFromLesson(widget.words);
     });
   }
 
   void _handleAnkiAction(bool isCorrect, bool isEasy) async {
     final provider = context.read<LearningProvider>();
     final isDone = provider.currentIndex == provider.words.length - 1;
-    
+
     bool showCelebration = await provider.processAnswer(isCorrect, isEasy);
 
     if (showCelebration && mounted) {
@@ -35,24 +44,32 @@ class _StudyScreenState extends State<StudyScreen> {
         context,
         MaterialPageRoute(
           fullscreenDialog: true,
-          builder: (context) => StreakCelebrationScreen(
-            streakCount: provider.currentStreak, 
-          ),
+          builder: (context) =>
+              StreakCelebrationScreen(streakCount: provider.currentStreak),
         ),
       );
     }
 
     if (isDone && mounted) {
-      Navigator.pop(context); // Học xong thì thoát
+      // LUỒNG MỚI: Học xong 10 từ -> Khởi tạo Quiz và Chuyển ngay sang QuizScreen
+      context.read<QuizProvider>().initQuiz(widget.words, QuizMode.viToEn);
+
+      // Dùng pushReplacement để khi làm Quiz xong sẽ không lùi lại màn hình học thẻ nữa
+      Navigator.pushReplacement(
+        context,
+        CupertinoPageRoute(builder: (_) => const QuizScreen()),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
-      backgroundColor: isDark ? AppConstants.darkBgColor : AppConstants.backgroundColor,
+      backgroundColor: isDark
+          ? AppConstants.darkBgColor
+          : AppConstants.backgroundColor,
       body: Consumer<LearningProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
@@ -70,7 +87,10 @@ class _StudyScreenState extends State<StudyScreen> {
                     _buildHeader(provider, isDark),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
                         child: GestureDetector(
                           onTap: provider.toggleFlip,
                           child: _buildFlipAnimation(provider, isDark),
@@ -97,7 +117,10 @@ class _StudyScreenState extends State<StudyScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: Icon(CupertinoIcons.xmark, color: isDark ? Colors.white : AppConstants.textPrimary),
+            icon: Icon(
+              CupertinoIcons.xmark,
+              color: isDark ? Colors.white : AppConstants.textPrimary,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
           Container(
@@ -108,13 +131,20 @@ class _StudyScreenState extends State<StudyScreen> {
             ),
             child: Text(
               '${provider.currentIndex + 1} / ${provider.words.length}',
-              style: const TextStyle(color: AppConstants.accentColor, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: AppConstants.accentColor,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           IconButton(
             icon: Icon(
-              provider.isCurrentWordSaved ? CupertinoIcons.bookmark_solid : CupertinoIcons.bookmark,
-              color: provider.isCurrentWordSaved ? AppConstants.errorColor : (isDark ? Colors.white : AppConstants.textPrimary),
+              provider.isCurrentWordSaved
+                  ? CupertinoIcons.bookmark_solid
+                  : CupertinoIcons.bookmark,
+              color: provider.isCurrentWordSaved
+                  ? AppConstants.errorColor
+                  : (isDark ? Colors.white : AppConstants.textPrimary),
             ),
             onPressed: provider.toggleSave,
           ),
@@ -134,7 +164,9 @@ class _StudyScreenState extends State<StudyScreen> {
             final isBack = (child!.key == const ValueKey(true));
             var value = isBack ? min(rotate.value, pi / 2) : rotate.value;
             return Transform(
-              transform: Matrix4.identity()..setEntry(3, 2, 0.001)..rotateY(value),
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.001)
+                ..rotateY(value),
               alignment: Alignment.center,
               child: child,
             );
@@ -142,8 +174,8 @@ class _StudyScreenState extends State<StudyScreen> {
           child: child,
         );
       },
-      child: provider.isFlipped 
-          ? _buildBackCard(provider, isDark) 
+      child: provider.isFlipped
+          ? _buildBackCard(provider, isDark)
           : _buildFrontCard(provider, isDark),
     );
   }
@@ -159,9 +191,17 @@ class _StudyScreenState extends State<StudyScreen> {
         color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-        boxShadow: isDark ? [] : [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10))],
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
       ),
-      
+
       child: Column(
         children: [
           Container(
@@ -187,17 +227,33 @@ class _StudyScreenState extends State<StudyScreen> {
                 children: [
                   Text(
                     word.word,
-                    style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppConstants.textPrimary),
+                    style: TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : AppConstants.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (word.phoneticUS.isNotEmpty) _buildPhoneticPill('US', word.phoneticUS, () => provider.playAudio('en-US'), isDark),
+                      if (word.phoneticUS.isNotEmpty)
+                        _buildPhoneticPill(
+                          'US',
+                          word.phoneticUS,
+                          () => provider.playAudio('en-US'),
+                          isDark,
+                        ),
                       const SizedBox(width: 12),
-                      if (word.phoneticUK.isNotEmpty) _buildPhoneticPill('UK', word.phoneticUK, () => provider.playAudio('en-GB'), isDark),
+                      if (word.phoneticUK.isNotEmpty)
+                        _buildPhoneticPill(
+                          'UK',
+                          word.phoneticUK,
+                          () => provider.playAudio('en-GB'),
+                          isDark,
+                        ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -218,18 +274,52 @@ class _StudyScreenState extends State<StudyScreen> {
       decoration: BoxDecoration(
         color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppConstants.accentColor.withValues(alpha: 0.3), width: 2),
+        border: Border.all(
+          color: AppConstants.accentColor.withValues(alpha: 0.3),
+          width: 2,
+        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('study.meaning'.tr(), style: const TextStyle(color: AppConstants.accentColor, fontWeight: FontWeight.bold)),
+          Text(
+            'study.meaning'.tr(),
+            style: const TextStyle(
+              color: AppConstants.accentColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 12),
-          Text(word.meaning, textAlign: TextAlign.center, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppConstants.textPrimary)),
-          const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: Divider()),
-          Text('study.example'.tr(), style: const TextStyle(color: AppConstants.accentColor, fontWeight: FontWeight.bold)),
+          Text(
+            word.meaning,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : AppConstants.textPrimary,
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Divider(),
+          ),
+          Text(
+            'study.example'.tr(),
+            style: const TextStyle(
+              color: AppConstants.accentColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 12),
-          Text(word.example, textAlign: TextAlign.center, style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic, color: isDark ? Colors.white70 : AppConstants.textSecondary)),
+          Text(
+            word.example,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              fontStyle: FontStyle.italic,
+              color: isDark ? Colors.white70 : AppConstants.textSecondary,
+            ),
+          ),
         ],
       ),
     );
@@ -246,30 +336,70 @@ class _StudyScreenState extends State<StudyScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                onPressed: provider.currentIndex > 0 ? provider.previousCard : null,
-                icon: Icon(CupertinoIcons.arrow_left_circle_fill, size: 40, color: provider.currentIndex > 0 ? AppConstants.textSecondary : Colors.grey.withValues(alpha: 0.2)),
+                onPressed: provider.currentIndex > 0
+                    ? provider.previousCard
+                    : null,
+                icon: Icon(
+                  CupertinoIcons.arrow_left_circle_fill,
+                  size: 40,
+                  color: provider.currentIndex > 0
+                      ? AppConstants.textSecondary
+                      : Colors.grey.withValues(alpha: 0.2),
+                ),
               ),
-              Text('Chạm vào thẻ để lật', style: TextStyle(color: AppConstants.textSecondary, fontSize: 13)),
+              Text(
+                'Chạm vào thẻ để lật',
+                style: TextStyle(
+                  color: AppConstants.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
               IconButton(
-                onPressed: provider.currentIndex < provider.words.length - 1 ? provider.nextCard : null,
-                icon: Icon(CupertinoIcons.arrow_right_circle_fill, size: 40, color: provider.currentIndex < provider.words.length - 1 ? AppConstants.textSecondary : Colors.grey.withValues(alpha: 0.2)),
+                onPressed: provider.currentIndex < provider.words.length - 1
+                    ? provider.nextCard
+                    : null,
+                icon: Icon(
+                  CupertinoIcons.arrow_right_circle_fill,
+                  size: 40,
+                  color: provider.currentIndex < provider.words.length - 1
+                      ? AppConstants.textSecondary
+                      : Colors.grey.withValues(alpha: 0.2),
+                ),
               ),
             ],
           ),
-          
+
           // Chỉ hiện 3 nút Anki nếu thẻ ĐÃ LẬT (bắt buộc xem đáp án mới đc đánh giá)
           if (provider.isFlipped) ...[
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _buildAnkiBtn("Quên", AppConstants.errorColor, () => _handleAnkiAction(false, false))),
+                Expanded(
+                  child: _buildAnkiBtn(
+                    "Quên",
+                    AppConstants.errorColor,
+                    () => _handleAnkiAction(false, false),
+                  ),
+                ),
                 const SizedBox(width: 12),
-                Expanded(child: _buildAnkiBtn("Nhớ", Colors.blue, () => _handleAnkiAction(true, false))),
+                Expanded(
+                  child: _buildAnkiBtn(
+                    "Nhớ",
+                    Colors.blue,
+                    () => _handleAnkiAction(true, false),
+                  ),
+                ),
                 const SizedBox(width: 12),
-                Expanded(child: _buildAnkiBtn("Dễ", AppConstants.successColor, () => _handleAnkiAction(true, true))),
+                Expanded(
+                  child: _buildAnkiBtn(
+                    "Dễ",
+                    AppConstants.successColor,
+                    () => _handleAnkiAction(true, true),
+                  ),
+                ),
               ],
-            )
-          ]
+            ),
+          ],
         ],
       ),
     );
@@ -287,7 +417,14 @@ class _StudyScreenState extends State<StudyScreen> {
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         alignment: Alignment.center,
-        child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
       ),
     );
   }
@@ -378,7 +515,12 @@ class _StudyScreenState extends State<StudyScreen> {
     );
   }
 
-  Widget _buildPhoneticPill(String flag, String text, VoidCallback onTap, bool isDark) {
+  Widget _buildPhoneticPill(
+    String flag,
+    String text,
+    VoidCallback onTap,
+    bool isDark,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -390,11 +532,28 @@ class _StudyScreenState extends State<StudyScreen> {
         ),
         child: Row(
           children: [
-            Text(flag, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)),
+            Text(
+              flag,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
             const SizedBox(width: 8),
-            Text(text, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w500)),
+            Text(
+              text,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(width: 6),
-            const Icon(CupertinoIcons.speaker_2_fill, size: 14, color: AppConstants.accentColor),
+            const Icon(
+              CupertinoIcons.speaker_2_fill,
+              size: 14,
+              color: AppConstants.accentColor,
+            ),
           ],
         ),
       ),
@@ -409,14 +568,28 @@ class _StudyScreenState extends State<StudyScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(CupertinoIcons.mic_fill, size: 80, color: AppConstants.accentColor),
+              const Icon(
+                CupertinoIcons.mic_fill,
+                size: 80,
+                color: AppConstants.accentColor,
+              ),
               const SizedBox(height: 20),
-              Text("00:0${provider.timeRemaining}", style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)),
+              Text(
+                "00:0${provider.timeRemaining}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 20),
               TextButton(
                 onPressed: provider.stopRecording,
-                child: const Text("Dừng ghi âm", style: TextStyle(color: Colors.redAccent, fontSize: 18)),
-              )
+                child: const Text(
+                  "Dừng ghi âm",
+                  style: TextStyle(color: Colors.redAccent, fontSize: 18),
+                ),
+              ),
             ],
           ),
         ),
@@ -425,6 +598,8 @@ class _StudyScreenState extends State<StudyScreen> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return const Center(child: Text("Tuyệt vời! Bạn đã hoàn thành bài học hôm nay."));
+    return const Center(
+      child: Text("Tuyệt vời! Bạn đã hoàn thành bài học hôm nay."),
+    );
   }
 }

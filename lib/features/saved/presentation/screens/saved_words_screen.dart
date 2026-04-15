@@ -1,6 +1,7 @@
 // file: lib/features/saved/presentation/screens/saved_words_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fm_dictionary/core/constants/app_routes.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../data/services/database/database_service.dart';
 import '../../../../data/services/database/word_service.dart';
@@ -68,6 +69,9 @@ class _SavedWordsScreenState extends State<SavedWordsScreen> {
                     icon: const Icon(CupertinoIcons.heart_solid, color: AppConstants.errorColor),
                     onPressed: () => _wordService.toggleSaveWord(word.id), // Bỏ lưu realtime
                   ),
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.wordDetail, arguments: {'word': word});
+                  },
                 ),
               );
             },

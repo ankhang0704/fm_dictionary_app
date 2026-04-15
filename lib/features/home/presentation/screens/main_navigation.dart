@@ -1,8 +1,9 @@
 // lib/features/home/presentation/screens/main_navigation.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:fm_dictionary/features/learning/review_screen.dart';
-import 'package:fm_dictionary/features/library/library_screen.dart';
+import 'package:fm_dictionary/features/home/presentation/screens/detail_statistical_screen.dart';
+import 'package:fm_dictionary/features/library/presentation/screens/dictionary_screen.dart';
+import 'package:fm_dictionary/features/roadmap/presentation/screen/roadmap_screen.dart';
 import 'dashboard_screen.dart';
 import 'menu_screen.dart'; // Tab mới
 
@@ -18,8 +19,9 @@ class _MainNavigationState extends State<MainNavigation> {
   
   final _screens = const [
     DashboardScreen(),
-    LibraryScreen(),
-    ReviewScreen(),
+    RoadmapScreen(),
+    DictionaryScreen(),
+    DetailStatisticalScreen(), // Tab Review giờ là DetailStatisticalScreen
     MenuScreen(), // Tab thứ 4 thay cho Sidebar
   ];
 
@@ -33,8 +35,9 @@ class _MainNavigationState extends State<MainNavigation> {
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(CupertinoIcons.house_fill), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(CupertinoIcons.book_fill), label: "Library"),
-          BottomNavigationBarItem(icon: Icon(CupertinoIcons.repeat), label: "Review"),
+          BottomNavigationBarItem(icon: Icon(CupertinoIcons.book_fill), label: "Roadmap"),
+          BottomNavigationBarItem(icon: Icon(CupertinoIcons.book), label: "Dictionary"),
+          BottomNavigationBarItem(icon: Icon(CupertinoIcons.repeat), label: "Stats"), // Tab Review giờ là Stats
           BottomNavigationBarItem(icon: Icon(CupertinoIcons.bars), label: "Menu"), // Nút Menu mới
         ],
       ),

@@ -149,6 +149,22 @@ class LearningProvider extends ChangeNotifier {
     
     return showCelebration;
   }
+  void loadWordsFromLesson(List<Word> lessonWords) {
+    _isLoading = true;
+    notifyListeners();
+
+    // Copy list để không làm ảnh hưởng list gốc
+    _words = List.from(lessonWords);
+    
+    // Tùy chọn: Xào bài để học đỡ chán
+    _words.shuffle();
+    
+    _currentIndex = 0;
+    _resetCardState();
+    
+    _isLoading = false;
+    notifyListeners();
+  }
 
   // --- AI Recording Logic (Giữ nguyên như cũ nhưng bỏ setState) ---
   void startRecording() async {
@@ -192,6 +208,9 @@ class LearningProvider extends ChangeNotifier {
         final result = PronunciationScorer.evaluate(text, currentWord!.word);
         _spokenText = text;
         _pronunciationScore = result.score;
+
+        // Cập nhật điểm số vào database
+        await _wordService.updatePronunciationScore(currentWord!.id, result.score);
       }
     } catch (e) {
       debugPrint("Lỗi AI: $e");

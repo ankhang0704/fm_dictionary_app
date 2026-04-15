@@ -9,7 +9,7 @@ class QuizProvider extends ChangeNotifier {
   final QuizService _quizService = QuizService();
   final TtsService _ttsService = TtsService();
   final WordService _wordService = WordService();
-  
+
   List<QuizQuestion> _questions = [];
   int _currentIndex = 0;
   int _score = 0;
@@ -57,14 +57,14 @@ class QuizProvider extends ChangeNotifier {
   }
 
   /// Xử lý chọn đáp án
-   void checkAnswer(String answer) {
-    if (_selectedAnswer != null) return; 
+  void checkAnswer(String answer) {
+    if (_selectedAnswer != null) return;
     if (currentQuestion == null) return;
 
     _selectedAnswer = answer;
     bool isCorrect = (answer == currentQuestion!.correctAnswer);
     if (isCorrect) _score++;
-    
+
     notifyListeners();
 
     // Chuyển câu hỏi sau 1.2s
@@ -74,15 +74,23 @@ class QuizProvider extends ChangeNotifier {
         _selectedAnswer = null;
         _playAudioIfListeningMode();
       } else {
-        _isFinished = true; 
-        
+        _isFinished = true;
+
         // --- LOGIC MỚI: LƯU KẾT QUẢ QUIZ VÀO DATABASE ---
-        final bool isPassed = _score >= (_questions.length * 0.8); // Pass nếu >= 80%
-        final List<Word> wordsInQuiz = _questions.map((q) => q.wordObj).toList();
-        
+        final bool isPassed =
+            _score >= (_questions.length * 0.8); // Pass nếu >= 80%
+        final List<Word> wordsInQuiz = _questions
+            .map((q) => q.wordObj)
+            .toList();
+
         // Gọi WordService để cập nhật tiến độ cho toàn bộ từ trong bài test
+        if (isPassed) {
+          // Đánh dấu toàn bộ list từ của level này là ĐÃ THUỘC (Mastered)
+          await _wordService.massMasterWords(
+            _questions.map((q) => q.wordObj).toList(),
+          );
+        }
         await _wordService.saveQuizProgress(wordsInQuiz, isPassed);
-        
       }
       notifyListeners();
     });

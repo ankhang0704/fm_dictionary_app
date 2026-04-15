@@ -8,7 +8,7 @@ import '../../../../core/constants/constants.dart';
 
 class HomeProvider extends ChangeNotifier {
   final WordService _wordService = WordService();
-  
+
   bool _isLoading = true;
   bool get isLoading => _isLoading;
 
@@ -21,7 +21,8 @@ class HomeProvider extends ChangeNotifier {
   int _wordsLearnedToday = 0;
   int get wordsLearnedToday => _wordsLearnedToday;
 
-  double get dailyProgressPercent => _dailyGoal == 0 ? 0 : (_wordsLearnedToday / _dailyGoal).clamp(0.0, 1.0);
+  double get dailyProgressPercent =>
+      _dailyGoal == 0 ? 0 : (_wordsLearnedToday / _dailyGoal).clamp(0.0, 1.0);
 
   Word? _wordOfTheDay;
   Word? get wordOfTheDay => _wordOfTheDay;
@@ -42,12 +43,17 @@ class HomeProvider extends ChangeNotifier {
 
     // 1. Lấy Quote ngẫu nhiên
     final random = Random();
-    _quote = AppConstants.motivationalSlogans[random.nextInt(AppConstants.motivationalSlogans.length)];
+    _quote =
+        AppConstants.motivationalSlogans[random.nextInt(
+          AppConstants.motivationalSlogans.length,
+        )];
 
     // 2. Lấy Word of the Day (Lấy random 1 từ chưa học)
     final allWords = _wordService.getRandomWords(50); // Lấy tạm 50 từ
     try {
-      _wordOfTheDay = allWords.firstWhere((w) => !_wordService.isWordLearned(w.id));
+      _wordOfTheDay = allWords.firstWhere(
+        (w) => !_wordService.isWordLearned(w.id),
+      );
     } catch (_) {
       _wordOfTheDay = allWords.isNotEmpty ? allWords.first : null;
     }
@@ -66,17 +72,31 @@ class HomeProvider extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
-    String getNextStudyTopic() {
+
+  List<Word> getWordsByTopicName(String topicName) {
+    return _wordService.getWordsByTopic(topicName);
+  }
+
+  List<Word> getWordsForNextLesson() {
     final topics = _wordService.getAllTopics();
+
     for (var topic in topics) {
-      final words = _wordService.getWordsByTopic(topic);
-      if (words.any((w) => !_wordService.isWordLearned(w.id))) {
-        return topic;
+      final wordsInTopic = _wordService.getWordsByTopic(topic);
+      // Lọc ra những từ chưa học trong chủ đề này
+      final unlearnedWords = wordsInTopic
+          .where((w) => !_wordService.isWordLearned(w.id))
+          .toList();
+
+      if (unlearnedWords.isNotEmpty) {
+        return unlearnedWords; // Trả về danh sách từ chưa học của chủ đề này
       }
     }
-    return topics.isNotEmpty ? topics.first : 'General';
+
+    // Nếu tất cả đã học hết, trả về toàn bộ từ của chủ đề đầu tiên để ôn tập chẳng hạn
+    return topics.isNotEmpty ? _wordService.getWordsByTopic(topics.first) : [];
   }
-   int getMistakesCount() => _wordService.getWordsToReview().length;
+
+  int getMistakesCount() => _wordService.getWordsToReview().length;
 
   // --- LOGIC TỪ SIDEBARS ---
   Set<DateTime> getStudyDates() => _wordService.getStudyDates();
@@ -86,6 +106,7 @@ class HomeProvider extends ChangeNotifier {
   int getReviewCount() {
     return _wordService.getWordsToReview().length;
   }
+
   // Reload lại data khi user đi học về
   void refresh() {
     _initDashboard();

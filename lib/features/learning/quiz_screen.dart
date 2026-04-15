@@ -235,15 +235,13 @@ class QuizScreen extends StatelessWidget {
 
   void _showResultDialog(BuildContext context, QuizProvider provider) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isSuccess = provider.score >= provider.questions.length * 0.8;
+    final isSuccess = provider.score >= (provider.questions.length * 0.8);
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        backgroundColor: isDark
-            ? AppConstants.darkCardColor
-            : AppConstants.cardColor,
+        backgroundColor: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         child: Padding(
           padding: const EdgeInsets.all(32.0),
@@ -251,53 +249,74 @@ class QuizScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                isSuccess
-                    ? CupertinoIcons.star_circle_fill
-                    : CupertinoIcons.flag_circle_fill,
+                isSuccess ? CupertinoIcons.star_circle_fill : CupertinoIcons.flag_circle_fill,
                 size: 80,
-                color: isSuccess ? Colors.amber : AppConstants.accentColor,
+                color: isSuccess ? Colors.amber : AppConstants.errorColor, // Đổi màu rớt cho trực quan
               ),
               const SizedBox(height: 24),
-              const Text(
-                "Hoàn thành!",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              Text(
+                isSuccess ? "Hoàn thành xuất sắc!" : "Chưa đạt rồi!",
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                isSuccess 
+                  ? "Bạn đã vượt qua bài kiểm tra. Các từ vựng đã được đánh dấu Đã Thuộc!" 
+                  : "Cần tối thiểu 80% để qua bài. Hãy làm lại nhé!",
+                style: TextStyle(color: AppConstants.textSecondary, fontSize: 14),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
                 "Điểm: ${provider.score} / ${provider.questions.length}",
                 style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: isSuccess
-                      ? AppConstants.successColor
-                      : AppConstants.accentColor,
+                  fontSize: 24, fontWeight: FontWeight.bold,
+                  color: isSuccess ? AppConstants.successColor : AppConstants.errorColor,
                 ),
               ),
               const SizedBox(height: 32),
+              
+              // NÚT ĐIỀU HƯỚNG
               SizedBox(
-                width: double.infinity,
-                height: 50,
+                width: double.infinity, height: 50,
                 child: ElevatedButton(
                   onPressed: () {
                     provider.clearQuiz();
-                    Navigator.pop(context); // Đóng Dialog
-                    Navigator.pop(context); // Đóng QuizScreen
+                    if (isSuccess) {
+                      // Nếu Pass: Đóng Dialog và thoát màn Quiz (Quay về Roadmap)
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    } else {
+                      // Nếu Fail: Lựa chọn 1 - Đóng Dialog và Làm lại Quiz ngay lập tức
+                      Navigator.pop(context);
+                      final wordsToRetry = provider.questions.map((q) => q.wordObj).toList();
+                      provider.initQuiz(wordsToRetry, provider.currentMode);
+                    }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppConstants.accentColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                    backgroundColor: isSuccess ? AppConstants.accentColor : AppConstants.errorColor,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: const Text(
-                    "Quay về",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Text(
+                    isSuccess ? "Quay về Lộ trình" : "Làm lại Quiz",
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
+              
+              // Nút phụ nếu Fail
+              if (!isSuccess) ...[
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () {
+                    provider.clearQuiz();
+                    Navigator.pop(context); // Đóng Dialog
+                    Navigator.pop(context); // Đóng Quiz -> Về lộ trình để chọn học lại Flashcard
+                  },
+                  child: const Text("Thoát", style: TextStyle(color: Colors.grey)),
+                )
+              ]
             ],
           ),
         ),

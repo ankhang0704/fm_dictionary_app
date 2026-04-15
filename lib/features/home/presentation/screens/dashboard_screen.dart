@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/constants/app_routes.dart';
 import 'package:fm_dictionary/core/widgets/common/app_avatar.dart';
 import 'package:fm_dictionary/core/widgets/common/home_search_bar.dart';
+import 'package:fm_dictionary/data/models/word_model.dart';
 import 'package:fm_dictionary/data/services/database/database_service.dart';
-import 'package:fm_dictionary/features/history/presentation/screens/history_screen.dart';
 import 'package:fm_dictionary/features/saved/presentation/screens/saved_words_screen.dart';
 import 'package:fm_dictionary/features/settings/presentation/providers/notification_provider.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +18,7 @@ import '../../../learning/quiz_configuration_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
+  
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +57,7 @@ class DashboardScreen extends StatelessWidget {
                           Expanded(
                             child: _buildWordOfDayBento(
                               context,
-                              home.wordOfTheDay?.word ?? "...",
+                              home.wordOfTheDay!,
                               isDark,
                             ),
                           ),
@@ -180,11 +181,26 @@ class DashboardScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    final topic = home.getNextStudyTopic();
+                    final List<Word> wordsToStudy = home
+                        .getWordsForNextLesson();
+                    if (wordsToStudy.isEmpty) {
+                      // Thông báo nếu không có từ nào để học
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "Chúc mừng! Bạn đã học hết tất cả các từ.",
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
                     Navigator.push(
                       context,
                       CupertinoPageRoute(
-                        builder: (_) => StudyScreen(topic: topic),
+                        builder: (_) => StudyScreen(
+                          words: wordsToStudy,
+                        ), // Dùng tham số words mới
                       ),
                     );
                   },
@@ -217,14 +233,20 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWordOfDayBento(BuildContext context, String word, bool isDark) {
+  Widget _buildWordOfDayBento(BuildContext context, Word word, bool isDark) {
     return _bentoBox(
       color: Colors.blue.withOpacity(0.1),
       icon: CupertinoIcons.lightbulb_fill,
       iconColor: Colors.blue,
       title: "Word of Day",
-      subtitle: word.toUpperCase(),
-      onTap: () {}, // TODO: Xem chi tiết từ
+      subtitle: word.word.toUpperCase(),
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          AppRoutes.wordDetail,
+          arguments: {'word': word},
+        );
+      },
     );
   }
 
@@ -240,9 +262,7 @@ class DashboardScreen extends StatelessWidget {
           CupertinoIcons.clock_fill,
           "History",
           Colors.blue,
-          () => Navigator.pushNamed(context, AppRoutes.history)
-            
-          
+          () => Navigator.pushNamed(context, AppRoutes.history),
         ),
 
         _actionIcon(
@@ -257,7 +277,7 @@ class DashboardScreen extends StatelessWidget {
 
         _actionIcon(
           CupertinoIcons.exclamationmark_triangle_fill,
-          "Mistakes",
+          "Smart Review",
           Colors.red,
           () {
             Navigator.pushNamed(context, AppRoutes.review);
@@ -402,10 +422,18 @@ class DashboardScreen extends StatelessWidget {
               leading: const Icon(CupertinoIcons.book, size: 18),
               title: Text(t, style: const TextStyle(fontSize: 14)),
               trailing: const Icon(Icons.chevron_right, size: 16),
-              onTap: () => Navigator.push(
-                context,
-                CupertinoPageRoute(builder: (_) => StudyScreen(topic: t)),
-              ),
+              onTap: () {
+                final words = context.read<HomeProvider>().getWordsByTopicName(t);
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                    builder: (_) => StudyScreen(
+                      words: words,
+                    ),
+                  ),
+                );
+              } 
+             
             ),
           ),
         ],

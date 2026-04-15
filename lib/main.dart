@@ -11,13 +11,16 @@ import 'package:fm_dictionary/features/auth/presentation/screens/login_screen.da
 import 'package:fm_dictionary/features/auth/presentation/screens/register_screen.dart';
 import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
 import 'package:fm_dictionary/features/home/presentation/screens/menu_screen.dart';
-import 'package:fm_dictionary/features/home/presentation/screens/stats_screen.dart';
+import 'package:fm_dictionary/features/home/presentation/screens/streak_screen.dart';
 import 'package:fm_dictionary/features/info/presentation/screens/static_content_screen.dart';
 import 'package:fm_dictionary/features/learning/presentation/providers/quiz_provider.dart';
 import 'package:fm_dictionary/features/learning/quiz_configuration_screen.dart';
 import 'package:fm_dictionary/features/learning/review_screen.dart';
-import 'package:fm_dictionary/features/library/library_screen.dart';
-import 'package:fm_dictionary/features/search/search_screen.dart';
+import 'package:fm_dictionary/features/roadmap/presentation/providers/roadmap_provider.dart';
+import 'package:fm_dictionary/features/roadmap/presentation/screen/roadmap_screen.dart';
+import 'package:fm_dictionary/features/search/presentation/providers/search_provider.dart';
+import 'package:fm_dictionary/features/search/presentation/screens/search_screen.dart';
+import 'package:fm_dictionary/features/search/presentation/screens/word_detail_screen.dart';
 import 'package:provider/provider.dart';
 import 'data/services/database/database_service.dart';
 import 'data/services/ai_speech/text_to_speech/speech_service.dart';
@@ -74,6 +77,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
         ChangeNotifierProvider(create: (_) => QuizProvider()),
+        ChangeNotifierProvider(create: (_) => SearchProvider()),
+        ChangeNotifierProvider(create:  (_) => RoadmapProvider()),
       ],
       // 2. Tiếp theo là EasyLocalization để xử lý đa ngôn ngữ
       child: EasyLocalization(
@@ -134,22 +139,44 @@ class MyApp extends StatelessWidget {
               ? AppRoutes.welcome
               : AppRoutes.main,
           routes: {
+            // Core & Welcome
             AppRoutes.welcome: (context) => const WelcomeScreen(),
             AppRoutes.main: (context) => const MainNavigation(),
+            // Auth Module
             AppRoutes.login: (context) => const LoginScreen(),
             AppRoutes.register: (context) => const RegisterScreen(),
             AppRoutes.profile: (context) => const ProfileScreen(),
             AppRoutes.forgotPassword: (context) => const ForgotPasswordScreen(),
             AppRoutes.changePassword: (context) => const ChangePasswordScreen(),
+            // Home & Stats Module
             AppRoutes.stats: (context) => const StatsScreen(),
             AppRoutes.menu: (context) => const MenuScreen(),
+             // Learning Module
             AppRoutes.quizConfig: (context) =>
                 const QuizConfigurationScreen(initialTopic: 'All'),
             AppRoutes.review: (context) => const SmartReviewScreen(),
-            AppRoutes.library: (context) => const LibraryScreen(),
+
+             // Library & Search Module
+            AppRoutes.library: (context) => const RoadmapScreen(),
             AppRoutes.search: (context) => const SearchScreen(),
+            AppRoutes.wordDetail: (context) {
+              final args =
+                  ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+              if (args == null || !args.containsKey('word')) {
+                return Scaffold(
+                  appBar: AppBar(title: const Text('Error')),
+                  body: const Center(child: Text('No word data provided!')),
+                );
+              }
+
+              final word = args['word'];
+              return WordDetailScreen(word: word);
+            },
+            // History & Saved Module
             AppRoutes.history: (context) =>  HistoryScreen(),
             AppRoutes.saved: (context) => const SavedWordsScreen(),
+
             AppRoutes.settings: (context) => const SettingsScreen(),
             AppRoutes.staticContent: (context) {
               // Lấy arguments và ép kiểu về Map

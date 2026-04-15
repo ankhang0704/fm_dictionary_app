@@ -1,6 +1,7 @@
 // file: lib/features/history/presentation/screens/history_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fm_dictionary/core/constants/app_routes.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../data/services/database/database_service.dart';
 import '../../../../data/services/database/word_service.dart';
@@ -89,6 +90,10 @@ class HistoryScreen extends StatelessWidget {
                     word.topic,
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.wordDetail,
+                        arguments: {'word': word});
+                  },
                 ),
               );
             },

@@ -1,7 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 import '../../../../data/models/word_model.dart';
 import '../../../../data/services/database/database_service.dart';
 import '../../../../data/services/database/word_service.dart';
@@ -216,12 +218,17 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
                         'Học ngay',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      onPressed: () => Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (_) => const StudyScreen(topic: 'Review'),
-                        ),
-                      ),
+                      onPressed: () {
+                        final words = context
+                            .read<HomeProvider>()
+                            .getWordsByTopicName('Review');
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                            builder: (_) => StudyScreen(words: words),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),

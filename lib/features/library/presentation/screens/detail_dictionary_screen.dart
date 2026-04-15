@@ -2,24 +2,25 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fm_dictionary/core/constants/app_routes.dart';
+import 'package:fm_dictionary/core/constants/constants.dart';
+import 'package:fm_dictionary/data/models/word_model.dart';
+import 'package:fm_dictionary/data/services/database/database_service.dart';
+import 'package:fm_dictionary/data/services/database/word_service.dart';
+import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
+import 'package:fm_dictionary/features/learning/study_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../data/models/word_model.dart';
-import '../../data/services/database/database_service.dart';
-import '../../data/services/database/word_service.dart';
-import '../../core/constants/constants.dart';
-import '../learning/study_screen.dart';
-import '../learning/quiz_configuration_screen.dart';
-import '../search/word_detail_screen.dart';
+import 'package:provider/provider.dart';
 
-class TopicDetailScreen extends StatefulWidget {
+class DictionaryDetailScreen extends StatefulWidget {
   final String topic;
-  const TopicDetailScreen({super.key, required this.topic});
+  const DictionaryDetailScreen({super.key, required this.topic});
 
   @override
-  State<TopicDetailScreen> createState() => _TopicDetailScreenState();
+  State<DictionaryDetailScreen> createState() => _DictionaryDetailScreenState();
 }
 
-class _TopicDetailScreenState extends State<TopicDetailScreen> {
+class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
   String _searchQuery = "";
   final WordService _wordService = WordService();
   final ScrollController _scrollController = ScrollController();
@@ -83,13 +84,15 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                               icon: CupertinoIcons.play_arrow_solid,
                               label: 'topic.study'.tr(),
                               color: AppConstants.accentColor,
-                              onTap: () => Navigator.push(
-                                context,
-                                CupertinoPageRoute(
-                                  builder: (_) =>
-                                      StudyScreen(topic: widget.topic),
-                                ),
-                              ),
+                              onTap: () {
+                                final words = context.read<HomeProvider>().getWordsByTopicName(widget.topic);
+                                Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                    builder: (_) => StudyScreen(words: words),
+                                  ),
+                                );
+                              }
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -118,13 +121,10 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                                   );
                                   return;
                                 }
-                                Navigator.push(
+                                Navigator.pushNamed(
                                   context,
-                                  CupertinoPageRoute(
-                                    builder: (_) => QuizConfigurationScreen(
-                                      initialTopic: widget.topic,
-                                    ),
-                                  ),
+                                  AppRoutes.quizConfig,
+                                  arguments: widget.topic,
                                 );
                               },
                             ),
@@ -442,10 +442,13 @@ class _WordListTile extends StatelessWidget {
           color: AppConstants.textLight,
           size: 18,
         ),
-        onTap: () => Navigator.push(
-          context,
-          CupertinoPageRoute(builder: (_) => WordDetailScreen(word: word)),
-        ),
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            AppRoutes.wordDetail,
+            arguments: {'word': word},
+          );
+        },
       ),
     );
   }

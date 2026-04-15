@@ -66,6 +66,7 @@ dependencies:
   firebase_core: ^4.6.0
   connectivity_plus: ^7.0.0
   image_picker: ^1.0.7
+  fl_chart: ^1.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
