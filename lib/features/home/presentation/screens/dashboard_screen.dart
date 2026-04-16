@@ -7,6 +7,7 @@ import 'package:fm_dictionary/core/widgets/common/app_avatar.dart';
 import 'package:fm_dictionary/core/widgets/common/home_search_bar.dart';
 import 'package:fm_dictionary/data/models/word_model.dart';
 import 'package:fm_dictionary/data/services/database/database_service.dart';
+import 'package:fm_dictionary/features/roadmap/presentation/providers/roadmap_provider.dart';
 import 'package:fm_dictionary/features/saved/presentation/screens/saved_words_screen.dart';
 import 'package:fm_dictionary/features/settings/presentation/providers/notification_provider.dart';
 import 'package:provider/provider.dart';
@@ -65,10 +66,9 @@ class DashboardScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       const HomeSearchBar(), // Nhúng SearchScreen vào đây luôn để tận dụng lại logic và UI
-                      // 4. TOPICS (New Update)
-                      _buildTopicsBento(
+                      // 4. CURRENT JOURNEY (New Update)
+                      _buildCurrentJourneyBento(
                         context,
-                        home.recommendedTopics,
                         isDark,
                       ),
                       const SizedBox(height: 24),
@@ -147,6 +147,10 @@ class DashboardScreen extends StatelessWidget {
     HomeProvider home,
     bool isDark,
   ) {
+    final studied = home.wordsStudiedToday;
+    final target = home.dailyGoalTarget;
+    final isDone = studied >= target;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -165,12 +169,18 @@ class DashboardScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Daily Goal",
+                  "Mục tiêu ngày",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                const Text(
-                  "You're almost there...",
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                Text(
+                  isDone
+                      ? "Tuyệt vời, bạn đã đạt mục tiêu!"
+                      : "Đã học $studied / $target từ",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDone ? AppConstants.successColor : Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton(
@@ -181,32 +191,51 @@ class DashboardScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    final List<Word> wordsToStudy = home
-                        .getWordsForNextLesson();
-                    if (wordsToStudy.isEmpty) {
-                      // Thông báo nếu không có từ nào để học
+                    // LOGIC CONTINUE LEARNING SIÊU CHUẨN
+                    final roadmap = context.read<RoadmapProvider>();
+                    RoadmapLesson? targetLesson;
+
+                    // Quét toàn bộ lộ trình, tìm Bài học ĐẦU TIÊN chưa đạt 80%
+                    for (var chapter in roadmap.chapters) {
+                      for (var lesson in chapter.lessons) {
+                        if (roadmap.getLessonProgress(lesson.globalIndex) <
+                            0.8) {
+                          targetLesson = lesson;
+                          break;
+                        }
+                      }
+                      if (targetLesson != null) break;
+                    }
+
+                    if (targetLesson == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                            "Chúc mừng! Bạn đã học hết tất cả các từ.",
+                            "Chúc mừng! Bạn đã hoàn thành toàn bộ lộ trình!",
                           ),
                         ),
                       );
                       return;
                     }
 
+                    // Chuyển thẳng vào StudyScreen với cờ isFromRoadmap = true
                     Navigator.push(
                       context,
                       CupertinoPageRoute(
                         builder: (_) => StudyScreen(
-                          words: wordsToStudy,
-                        ), // Dùng tham số words mới
+                          words: targetLesson!.words,
+                          isFromRoadmap:
+                              true, // Rất quan trọng để tính Gamification
+                        ),
                       ),
                     );
                   },
                   child: const Text(
-                    "Continue Learning",
-                    style: TextStyle(color: Colors.white),
+                    "Tiếp tục học",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -216,6 +245,7 @@ class DashboardScreen extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _buildQuizBento(BuildContext context, bool isDark) {
     return _bentoBox(
@@ -397,43 +427,87 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTopicsBento(
-    BuildContext context,
-    List<String> topics,
-    bool isDark,
-  ) {
+  // XÓA HÀM _buildTopicsBento VÀ THAY BẰNG KHỐI NÀY: CURRENT JOURNEY BENTO
+  Widget _buildCurrentJourneyBento(BuildContext context, bool isDark) {
+    final roadmap = context.watch<RoadmapProvider>();
+
+    // Tìm chặng đang học dở
+    RoadmapChapter? currentChapter;
+    int completedLessons = 0;
+
+    for (var chapter in roadmap.chapters) {
+      bool isChapterDone = true;
+      int doneCount = 0;
+      for (var lesson in chapter.lessons) {
+        if (roadmap.getLessonProgress(lesson.globalIndex) >= 0.8) {
+          doneCount++;
+        } else {
+          isChapterDone = false;
+        }
+      }
+      if (!isChapterDone) {
+        currentChapter = chapter;
+        completedLessons = doneCount;
+        break;
+      }
+    }
+
+    // Nếu học xong hết thì hiển thị Chặng cuối
+    currentChapter ??= roadmap.chapters.last;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark ? AppConstants.darkCardColor : Colors.white,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppConstants.accentColor.withValues(alpha: 0.2),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          const Text(
-            "New Update",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppConstants.accentColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              CupertinoIcons.map_pin_ellipse,
+              color: AppConstants.accentColor,
+              size: 30,
+            ),
           ),
-          const SizedBox(height: 12),
-          ...topics.map(
-            (t) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(CupertinoIcons.book, size: 18),
-              title: Text(t, style: const TextStyle(fontSize: 14)),
-              trailing: const Icon(Icons.chevron_right, size: 16),
-              onTap: () {
-                final words = context.read<HomeProvider>().getWordsByTopicName(t);
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(
-                    builder: (_) => StudyScreen(
-                      words: words,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Chặng hiện tại: ${currentChapter.title}",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "Đã hoàn thành $completedLessons/${currentChapter.lessons.length} bài",
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: completedLessons / currentChapter.lessons.length,
+                    minHeight: 6,
+                    backgroundColor: Colors.grey.withValues(alpha: 0.2),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppConstants.accentColor,
                     ),
                   ),
-                );
-              } 
-             
+                ),
+              ],
             ),
           ),
         ],

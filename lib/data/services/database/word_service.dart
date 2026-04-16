@@ -270,31 +270,26 @@ class WordService {
   }
   // === TÍNH NĂNG LỊCH SỬ (HISTORY) ===
   List<Word> getHistoryWords() {
-    List<Word> historyList = [];
+    List<Map<String, dynamic>> tempHistory = [];
 
     for (var wordId in _progressBox.keys) {
       final progress = getWordProgress(wordId as String);
       final int lr = progress['lr'] as int;
       final int ua = progress['ua'] ?? 0;
-
+      final int latestTime = lr > ua ? lr : ua;
       // Nếu từ này đã từng được tương tác (lr hoặc ua > 0)
       if (lr > 0 || ua > 0) {
         final word = _wordBox.get(wordId);
         if (word != null) {
-          historyList.add(word);
+          tempHistory.add({'word': word, 'time': latestTime});
         }
       }
     }
     // Sắp xếp giảm dần (Từ học gần nhất lên đầu)
-    historyList.sort((a, b) {
-      final pA = getWordProgress(a.id);
-      final pB = getWordProgress(b.id);
-      final timeA = pA['lr'] > pA['ua'] ? pA['lr'] : pA['ua'];
-      final timeB = pB['lr'] > pB['ua'] ? pB['lr'] : pB['ua'];
-      return (timeB as int).compareTo(timeA as int);
-    });
+    tempHistory.sort((a, b) => (b['time'] as int).compareTo(a['time'] as int));
 
-    return historyList;
+    return tempHistory.take(100).map((item) => item['word'] as Word).toList();
+    ;
   }
   // Hàm lưu điểm phát âm 
   Future<void> updatePronunciationScore(String wordId, double newScore) async {
