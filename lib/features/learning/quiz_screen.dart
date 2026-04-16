@@ -333,6 +333,8 @@ class _QuizScreenState extends State<QuizScreen> {
                           // Gọi Check Badge trước khi thoát
                           final gamification = context
                               .read<GamificationProvider>();
+                          final roadmap = context.read<RoadmapProvider>();
+                          final currentContext = context; // Scaffold context
                           gamification.checkAndUnlockBadges(
                             score: provider.score,
                             maxScore: provider.questions.length,
@@ -340,12 +342,67 @@ class _QuizScreenState extends State<QuizScreen> {
                           );
                           // Xử lý Database State
                           // 1. Lưu state
-                          context.read<RoadmapProvider>().refresh();
+                          roadmap.refresh();
                           _quizProvider.clearQuiz();
                           // 2. Đóng dialog trước
                           Navigator.of(dialogContext).pop();
                           // 3. Thoát màn Quiz sau
                           Navigator.of(context).pop();
+                           Future.delayed(const Duration(milliseconds: 300), () {
+                            if (gamification.recentlyUnlocked.isNotEmpty &&
+                                currentContext.mounted) {
+                              for (var badge in gamification.recentlyUnlocked) {
+                                ScaffoldMessenger.of(
+                                  currentContext,
+                                ).showSnackBar(
+                                  SnackBar(
+                                    content: Row(
+                                      children: [
+                                        Icon(
+                                          badge.icon,
+                                          color: Colors.amber,
+                                          size: 30,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                "Huy hiệu mới: ${badge.title}",
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              Text(
+                                                badge.description,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.white70,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    backgroundColor: AppConstants.accentColor,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    margin: const EdgeInsets.all(16),
+                                    duration: const Duration(seconds: 4),
+                                  ),
+                                );
+                              }
+                              gamification.clearRecentlyUnlocked();
+                            }
+                          });
                         } else {
                           final words = provider.questions
                               .map((q) => q.wordObj)

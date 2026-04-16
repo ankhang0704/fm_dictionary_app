@@ -319,4 +319,19 @@ class WordService {
       await markAsLearned(w.id); 
     }
   }
+  int getWordsStudiedCount(DateTime date) {
+    final progressBox = Hive.box(DatabaseService.progressBoxName);
+    final startOfDay = DateTime(
+      date.year,
+      date.month,
+      date.day,
+    ).millisecondsSinceEpoch;
+
+    // Dùng .where để lọc, hiệu quả hơn và sạch hơn
+    return progressBox.values.where((value) {
+      if (value is! List || value.length <= 4) return false;
+      final int updatedAt = value[4] as int;
+      return updatedAt >= startOfDay;
+    }).length;
+  }
 }

@@ -2,6 +2,8 @@
 
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/data/services/database/database_service.dart';
+import 'package:hive/hive.dart';
 import '../../../../data/models/word_model.dart';
 import '../../../../data/services/database/word_service.dart';
 import '../../../../core/constants/constants.dart';
@@ -15,14 +17,14 @@ class HomeProvider extends ChangeNotifier {
   String _quote = "";
   String get quote => _quote;
 
-  int _dailyGoal = 20;
-  int get dailyGoal => _dailyGoal;
+  final int _dailyGoalTarget   = 20;
+  int get dailyGoalTarget => _dailyGoalTarget;
 
   int _wordsLearnedToday = 0;
   int get wordsLearnedToday => _wordsLearnedToday;
 
   double get dailyProgressPercent =>
-      _dailyGoal == 0 ? 0 : (_wordsLearnedToday / _dailyGoal).clamp(0.0, 1.0);
+      dailyGoalTarget == 0 ? 0 : (wordsLearnedToday / dailyGoalTarget).clamp(0.0, 1.0);
 
   Word? _wordOfTheDay;
   Word? get wordOfTheDay => _wordOfTheDay;
@@ -60,7 +62,7 @@ class HomeProvider extends ChangeNotifier {
 
     // 3. Tính số từ đã học hôm nay (Mock logic - bạn có thể tinh chỉnh trong WordService sau)
     // Tạm thời set random hoặc lấy số liệu thật từ WordService
-    _wordsLearnedToday = 8; // VD: Đã học 8/20 từ
+    _wordsLearnedToday = _wordService.getWordsStudiedCount(DateTime.now());
 
     // 4. Lấy 2 chủ đề chưa học
     final allTopics = _wordService.getAllTopics();
@@ -106,7 +108,15 @@ class HomeProvider extends ChangeNotifier {
   int getReviewCount() {
     return _wordService.getWordsToReview().length;
   }
+  // 1. TÍNH SỐ TỪ ĐÃ HỌC TRONG NGÀY HÔM NAY
+  int _wordsStudiedToday = 0;
+  int get wordsStudiedToday => _wordsStudiedToday;
 
+  // Gọi hàm này trong initDashboard hoặc refresh
+  void updateDailyProgress() {
+    _wordsStudiedToday = _wordService.getWordsStudiedCount(DateTime.now());
+    notifyListeners();
+  }
   // Reload lại data khi user đi học về
   void refresh() {
     _initDashboard();
