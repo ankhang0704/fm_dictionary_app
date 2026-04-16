@@ -146,18 +146,35 @@ class LearningRoadmapScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text("Chủ đề chính: ${lesson.dominantTopic}", style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 32),
+            
+            // NÚT 1: HỌC FLASHCARD -> Nối vào StudyScreen với cờ isFromRoadmap = true
             _actionBtn(
               context, "Học Flashcard", CupertinoIcons.book, AppConstants.accentColor, 
               () {
-                // Sửa lại StudyScreen để nhận List<Word> thay vì String topic
-                // Navigator.push(context, CupertinoPageRoute(builder: (_) => StudyScreen(words: lesson.words)));
+                Navigator.pop(context); // Đóng BottomSheet
+                Navigator.push(
+                  context, 
+                  CupertinoPageRoute(
+                    builder: (_) => StudyScreen(
+                      words: lesson.words, 
+                      isFromRoadmap: true // Cờ quan trọng
+                    )
+                  )
+                );
               }
             ),
             const SizedBox(height: 16),
+            
+            // NÚT 2: THI VƯỢT CẤP (LÀM QUIZ) -> Nối thẳng vào Quiz với cờ isFromRoadmap = true
             _actionBtn(
-              context, "Làm Quiz ôn tập", CupertinoIcons.checkmark_shield, Colors.blue, 
+              context, "Thi vượt cấp (80%)", CupertinoIcons.checkmark_shield, Colors.blue, 
               () {
-                context.read<QuizProvider>().initQuiz(lesson.words, QuizMode.viToEn);
+                Navigator.pop(context); // Đóng BottomSheet
+                context.read<QuizProvider>().initQuiz(
+                  lesson.words, 
+                  QuizMode.viToEn, 
+                  isFromRoadmap: true // Cờ quan trọng
+                );
                 Navigator.push(context, CupertinoPageRoute(builder: (_) => const QuizScreen()));
               }
             ),

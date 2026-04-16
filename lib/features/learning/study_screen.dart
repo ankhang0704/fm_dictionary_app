@@ -18,9 +18,8 @@ class StudyScreen extends StatefulWidget {
   const StudyScreen({
     super.key,
     required this.words,
-     this.isFromRoadmap = false,
+    this.isFromRoadmap = false,
   });
-
 
   @override
   State<StudyScreen> createState() => _StudyScreenState();
@@ -31,7 +30,7 @@ class _StudyScreenState extends State<StudyScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-       context.read<LearningProvider>().loadWordsFromLesson(widget.words);
+      context.read<LearningProvider>().loadWordsFromLesson(widget.words);
     });
   }
 
@@ -54,9 +53,13 @@ class _StudyScreenState extends State<StudyScreen> {
 
     if (isDone && mounted) {
       // LUỒNG MỚI: Học xong 10 từ -> Khởi tạo Quiz và Chuyển ngay sang QuizScreen
-     if (widget.isFromRoadmap) {
+      if (widget.isFromRoadmap) {
         // Luồng Roadmap: Chuyển sang Quiz
-        context.read<QuizProvider>().initQuiz(widget.words, QuizMode.viToEn);
+        context.read<QuizProvider>().initQuiz(
+          widget.words,
+          QuizMode.viToEn,
+          isFromRoadmap: true,
+        );
         Navigator.pushReplacement(
           context,
           CupertinoPageRoute(builder: (_) => const QuizScreen()),

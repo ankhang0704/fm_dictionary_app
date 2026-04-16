@@ -59,8 +59,8 @@ class AuthSyncService {
   Future<User?> loginWithEmail(String email, String password) async {
     try {
       UserCredential credential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
+        email: email.trim(),
+        password: password.trim(),
       );
 
       User? user = credential.user;
@@ -70,6 +70,10 @@ class AuthSyncService {
       }
       return user;
     } on FirebaseAuthException catch (e) {
+      debugPrint("Firebase Auth Error Code: ${e.code}");
+      debugPrint("Firebase Auth Error Message: ${e.message}");
+
+      // Ném lỗi ra cho UI
       throw Exception(_handleAuthError(e.code));
     }
   }
@@ -172,15 +176,11 @@ class AuthSyncService {
       );
 
       Map<String, dynamic> cloudProgress = {};
-      List<dynamic> cloudSavedWords = [];
 
       if (docSnapshot.exists) {
         final data = docSnapshot.data()!;
         if (data.containsKey('progress')) {
           cloudProgress = data['progress'] as Map<String, dynamic>;
-        }
-        if (data.containsKey('saved_words')) {
-          cloudSavedWords = data['saved_words'] as List<dynamic>;
         }
       }
 
@@ -200,6 +200,9 @@ class AuthSyncService {
             ? (cData[5] as num).toDouble()
             : 0.0;
         final int cPc = cData.length > 6 ? (cData[6] as int) : 0;
+        final int cSv = cData.length > 7
+            ? (cData[7] as int)
+            : 0; // <--- LẤY sv TỪ CLOUD
 
         final localRaw = progressBox.get(key);
 
@@ -212,6 +215,7 @@ class AuthSyncService {
             'ua': cUpdatedAt,
             'ps': cPs,
             'pc': cPc,
+            'sv': cSv, // <--- THÊM sv VÀO LOCAL NẾU CHỈ CÓ Ở CLOUD
           };
         } else {
           final localMap = localRaw as Map;
@@ -226,6 +230,7 @@ class AuthSyncService {
               'ua': cUpdatedAt,
               'ps': cPs,
               'pc': cPc,
+              'sv': cSv, // <--- CẬP NHẬT sv TỪ CLOUD NẾU CLOUD MỚI HƠN
             };
           } else if (lUpdatedAt > cUpdatedAt) {
             cloudUpdates[key] = [
@@ -236,6 +241,7 @@ class AuthSyncService {
               lUpdatedAt,
               localMap['ps'] ?? 0.0,
               localMap['pc'] ?? 0,
+              localMap['sv'] ?? 0, // <--- ĐẨY sv LÊN CLOUD NẾU LOCAL MỚI HƠN
             ];
           }
         }
@@ -254,24 +260,9 @@ class AuthSyncService {
             localMap['ua'] ?? 0,
             localMap['ps'] ?? 0.0,
             localMap['pc'] ?? 0,
+            localMap['sv'] ?? 0,
           ];
         }
-      }
-
-      // 2. ĐỒNG BỘ SAVED WORDS (Dùng Set gộp để không mất từ)
-      final savedBox = Hive.box(DatabaseService.saveBoxName);
-      final Set<String> localSavedWords = savedBox.values
-          .map((e) => e.toString())
-          .toSet();
-      final Set<String> cloudSavedSet = cloudSavedWords
-          .map((e) => e.toString())
-          .toSet();
-
-      final Set<String> mergedSavedWords = localSavedWords.union(cloudSavedSet);
-
-      if (mergedSavedWords.length > localSavedWords.length) {
-        await savedBox.clear();
-        await savedBox.addAll(mergedSavedWords.toList());
       }
 
       // 3. ĐẨY LÊN FIREBASE (Chỉ đẩy 1 Document duy nhất)
@@ -281,16 +272,13 @@ class AuthSyncService {
       bool needCommit = false;
       Map<String, dynamic> updatePayload = {};
 
-      if (cloudUpdates.isNotEmpty ||
-          !docSnapshot.exists ||
-          mergedSavedWords.length > cloudSavedWords.length) {
+      if (cloudUpdates.isNotEmpty || !docSnapshot.exists) {
         needCommit = true;
 
         // Payload siêu gọn: Tên, Goal, Từ lưu, và Cụm Progress (mảng số)
         updatePayload = {
           'name': localName,
           'dailyGoal': settings.dailyGoal,
-          'saved_words': mergedSavedWords.toList(),
           'lastSync': DateTime.now()
               .millisecondsSinceEpoch, // Dùng Int epoch thay vì Firebase Timestamp để nhẹ
         };

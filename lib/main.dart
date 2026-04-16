@@ -2,13 +2,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/constants/app_routes.dart';
 import 'package:fm_dictionary/core/utils/loading.dart';
-import 'package:fm_dictionary/data/services/auth/auth_sync_service.dart';
+import 'package:fm_dictionary/data/services/auth_sync/auth_sync_service.dart';
 import 'package:fm_dictionary/data/services/ai_speech/ai_assistant/ai_assistant_service.dart';
 import 'package:fm_dictionary/data/services/notify/notification_service.dart';
 import 'package:fm_dictionary/features/auth/presentation/screens/change_password_screen.dart';
 import 'package:fm_dictionary/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:fm_dictionary/features/auth/presentation/screens/login_screen.dart';
 import 'package:fm_dictionary/features/auth/presentation/screens/register_screen.dart';
+import 'package:fm_dictionary/features/gamification/presentation/providers/gamification_provider.dart';
 import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
 import 'package:fm_dictionary/features/home/presentation/screens/menu_screen.dart';
 import 'package:fm_dictionary/features/home/presentation/screens/streak_screen.dart';
@@ -79,6 +80,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => QuizProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create:  (_) => RoadmapProvider()),
+        ChangeNotifierProvider(create: (_) => GamificationProvider()),
       ],
       // 2. Tiếp theo là EasyLocalization để xử lý đa ngôn ngữ
       child: EasyLocalization(

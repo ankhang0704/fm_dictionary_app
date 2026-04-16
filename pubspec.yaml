@@ -67,6 +67,7 @@ dependencies:
   connectivity_plus: ^7.0.0
   image_picker: ^1.0.7
   fl_chart: ^1.2.0
+  confetti: ^0.8.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

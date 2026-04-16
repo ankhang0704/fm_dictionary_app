@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/constants/constants.dart';
-import 'package:fm_dictionary/data/services/auth/auth_sync_service.dart';
+import 'package:fm_dictionary/data/services/auth_sync/auth_sync_service.dart';
 
 Future<void> handleSync(BuildContext context) async {
     showDialog(

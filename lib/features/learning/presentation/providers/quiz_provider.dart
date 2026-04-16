@@ -16,6 +16,8 @@ class QuizProvider extends ChangeNotifier {
   String? _selectedAnswer;
   bool _isFinished = false;
   QuizMode _currentMode = QuizMode.enToVi;
+  bool _isFromRoadmap = false;
+  bool get isFromRoadmap => _isFromRoadmap;
 
   // Getters
   List<QuizQuestion> get questions => _questions;
@@ -29,8 +31,9 @@ class QuizProvider extends ChangeNotifier {
       _questions.isNotEmpty ? _questions[_currentIndex] : null;
 
   /// Khởi tạo bài Quiz từ màn hình Config
-  void initQuiz(List<Word> targetWords, QuizMode mode) {
+  void initQuiz(List<Word> targetWords, QuizMode mode, {bool isFromRoadmap = false}) {
     _currentMode = mode;
+    _isFromRoadmap = isFromRoadmap; // Gán cờ
     // Dùng Service để xào bài (Tránh xử lý nặng ở UI)
     _questions = _quizService.generateQuiz(
       targetWords: targetWords,
@@ -69,36 +72,45 @@ class QuizProvider extends ChangeNotifier {
 
     // Chuyển câu hỏi sau 1.2s
     Future.delayed(const Duration(milliseconds: 1200), () async {
+      // 1. Kiểm tra an toàn (Safety check)
+      // Trong Provider không có 'mounted', nhưng có thể kiểm tra xem danh sách câu hỏi còn không
+      if (_questions.isEmpty) return;
+
       if (_currentIndex < _questions.length - 1) {
+        // LUỒNG CHƯA KẾT THÚC: Chuyển sang câu tiếp theo
         _currentIndex++;
         _selectedAnswer = null;
         _playAudioIfListeningMode();
+        notifyListeners(); // Cập nhật để UI vẽ câu mới
       } else {
+        // LUỒNG KẾT THÚC: Xử lý lưu trữ
         _isFinished = true;
+        notifyListeners(); // Gọi ngay để UI hiện Loading hoặc màn hình Kết quả ngay lập tức
 
-        // --- LOGIC MỚI: LƯU KẾT QUẢ QUIZ VÀO DATABASE ---
-        final bool isPassed =
-            _score >= (_questions.length * 0.8); // Pass nếu >= 80%
-        final List<Word> wordsInQuiz = _questions
-            .map((q) => q.wordObj)
-            .toList();
+        if (_isFromRoadmap) {
+          final bool isPassedResult = _score >= (_questions.length * 0.8);
+          final List<Word> wordsInQuiz = _questions.map((q) => q.wordObj).toList();
 
-        // Gọi WordService để cập nhật tiến độ cho toàn bộ từ trong bài test
-        if (isPassed) {
-          // Đánh dấu toàn bộ list từ của level này là ĐÃ THUỘC (Mastered)
-          await _wordService.massMasterWords(
-            _questions.map((q) => q.wordObj).toList(),
-          );
+          // Thực hiện lưu DB ngầm
+          if (isPassedResult) {
+            await _wordService.massMasterWords(wordsInQuiz);
+          }
+          await _wordService.saveQuizProgress(wordsInQuiz, isPassedResult);
+          
+          // Notify thêm lần nữa sau khi DB đã lưu xong nếu cần cập nhật huy hiệu/tiến độ
+          notifyListeners();
         }
-        await _wordService.saveQuizProgress(wordsInQuiz, isPassed);
       }
-      notifyListeners();
     });
   }
-
   /// Reset dọn dẹp bộ nhớ
   void clearQuiz() {
-    _questions.clear();
-    _isFinished = false;
+    _questions = []; 
+    _currentIndex = 0;
+    _score = 0;
+    _isFinished = false; // Reset ngay lập tức
+    _selectedAnswer = null;
+    // Không notify ở đây nếu bạn chuẩn bị gọi initQuiz ngay sau đó để tránh nháy màn hình
+    notifyListeners(); 
   }
 }

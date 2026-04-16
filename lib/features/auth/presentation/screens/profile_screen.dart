@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fm_dictionary/features/auth/presentation/widgets/delete_account_section.dart';
 import 'package:fm_dictionary/features/auth/presentation/widgets/profile_header.dart';
 import 'package:fm_dictionary/features/auth/presentation/widgets/profile_settings_list.dart';
+import 'package:fm_dictionary/features/gamification/presentation/widgets/badges_bento.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
@@ -43,6 +44,9 @@ class ProfileScreen extends StatelessWidget {
                   // Box 2: Thống kê
                   const StatisticsSectionBento(),
                   const SizedBox(height: 16),
+                  // BOX MỚI: BỘ SƯU TẬP HUY HIỆU (Thêm vào đây)
+                  const BadgesBento(),
+                  const SizedBox(height: 16),
 
                   // Box 3: Cài đặt tài khoản
                   buildSettingsBento(context, user),
@@ -58,6 +62,4 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
-
-
 }

@@ -1,16 +1,56 @@
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fm_dictionary/features/gamification/presentation/providers/gamification_provider.dart';
 import 'package:fm_dictionary/features/learning/presentation/providers/quiz_provider.dart';
+import 'package:fm_dictionary/features/roadmap/presentation/providers/roadmap_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../data/services/features/quiz_service.dart';
 
-class QuizScreen extends StatelessWidget {
+class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key});
+
+  @override
+  State<QuizScreen> createState() => _QuizScreenState();
+}
+
+class _QuizScreenState extends State<QuizScreen> {
+  bool _isDialogActive = false;
+  late QuizProvider _quizProvider;
+  late ConfettiController _confettiController;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
+    // Lắng nghe sự thay đổi từ Provider
+    _quizProvider = context.read<QuizProvider>();
+    _quizProvider.addListener(_onQuizStateChanged);
+  }
+
+  @override
+  void dispose() {
+    // Quan trọng: Phải tháo listener khi thoát màn hình
+    _quizProvider.removeListener(_onQuizStateChanged);
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  void _onQuizStateChanged() {
+    final provider = context.read<QuizProvider>();
+    if (_quizProvider.isFinished && !_isDialogActive && mounted) {
+      _isDialogActive = true;
+      _showResultDialog(context, provider);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final provider = context.watch<QuizProvider>();
 
     return Scaffold(
       backgroundColor: isDark
@@ -35,52 +75,43 @@ class QuizScreen extends StatelessWidget {
             color: isDark ? Colors.white : AppConstants.textPrimary,
           ),
           onPressed: () {
-            context.read<QuizProvider>().clearQuiz();
+            provider.clearQuiz();
             Navigator.pop(context);
           },
         ),
       ),
-      body: Consumer<QuizProvider>(
-        builder: (context, provider, child) {
-          if (provider.questions.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          // NẾU LÀM XONG -> HIỆN POPUP KẾT QUẢ
-          if (provider.isFinished) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _showResultDialog(context, provider);
-            });
-            return const SizedBox.shrink(); // Ẩn giao diện đi trong lúc show Dialog
-          }
-
-          final question = provider.currentQuestion!;
-
-          return SafeArea(
-            child: Column(
-              children: [
-                _buildProgressBar(provider),
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 32,
-                    ),
-                    child: Column(
-                      children: [
-                        _buildQuestionSection(question, provider, isDark),
-                        const SizedBox(height: 48),
-                        _buildOptionsSection(question, provider, isDark),
-                      ],
+      body: (provider.questions.isEmpty && !provider.isFinished)
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
+              child: Column(
+                children: [
+                  _buildProgressBar(provider),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 32,
+                      ),
+                      child: Column(
+                        children: [
+                          _buildQuestionSection(
+                            provider.currentQuestion!,
+                            provider,
+                            isDark,
+                          ),
+                          const SizedBox(height: 48),
+                          _buildOptionsSection(
+                            provider.currentQuestion!,
+                            provider,
+                            isDark,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          );
-        },
-      ),
     );
   }
 
@@ -236,91 +267,177 @@ class QuizScreen extends StatelessWidget {
   void _showResultDialog(BuildContext context, QuizProvider provider) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSuccess = provider.score >= (provider.questions.length * 0.8);
-
+    if (isSuccess) {
+      _confettiController.play();
+      // GỌI LOGIC GAMIFICATION (Đảm bảo SRP)
+      // Tạm comment lại nếu bạn chưa import GamificationProvider vào main.dart
+      context.read<GamificationProvider>().checkAndUnlockBadges(
+        score: provider.score,
+        maxScore: provider.questions.length,
+        isRoadmap: provider.isFromRoadmap,
+      );
+    }
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Dialog(
-        backgroundColor: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isSuccess ? CupertinoIcons.star_circle_fill : CupertinoIcons.flag_circle_fill,
-                size: 80,
-                color: isSuccess ? Colors.amber : AppConstants.errorColor, // Đổi màu rớt cho trực quan
-              ),
-              const SizedBox(height: 24),
-              Text(
-                isSuccess ? "Hoàn thành xuất sắc!" : "Chưa đạt rồi!",
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                isSuccess 
-                  ? "Bạn đã vượt qua bài kiểm tra. Các từ vựng đã được đánh dấu Đã Thuộc!" 
-                  : "Cần tối thiểu 80% để qua bài. Hãy làm lại nhé!",
-                style: TextStyle(color: AppConstants.textSecondary, fontSize: 14),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                "Điểm: ${provider.score} / ${provider.questions.length}",
-                style: TextStyle(
-                  fontSize: 24, fontWeight: FontWeight.bold,
-                  color: isSuccess ? AppConstants.successColor : AppConstants.errorColor,
-                ),
-              ),
-              const SizedBox(height: 32),
-              
-              // NÚT ĐIỀU HƯỚNG
-              SizedBox(
-                width: double.infinity, height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    provider.clearQuiz();
-                    if (isSuccess) {
-                      // Nếu Pass: Đóng Dialog và thoát màn Quiz (Quay về Roadmap)
-                      Navigator.pop(context);
-                      Navigator.pop(context);
-                    } else {
-                      // Nếu Fail: Lựa chọn 1 - Đóng Dialog và Làm lại Quiz ngay lập tức
-                      Navigator.pop(context);
-                      final wordsToRetry = provider.questions.map((q) => q.wordObj).toList();
-                      provider.initQuiz(wordsToRetry, provider.currentMode);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isSuccess ? AppConstants.accentColor : AppConstants.errorColor,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      builder: (dialogContext) => Stack(
+        // SỬ DỤNG STACK ĐỂ HIỆN CONFETTI ĐÈ LÊN DIALOG
+        alignment: Alignment.center,
+        children: [
+          Dialog(
+            backgroundColor: isDark
+                ? AppConstants.darkCardColor
+                : AppConstants.cardColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isSuccess
+                        ? CupertinoIcons.star_circle_fill
+                        : CupertinoIcons.flag_circle_fill,
+                    size: 80,
+                    color: isSuccess ? Colors.amber : AppConstants.errorColor,
                   ),
-                  child: Text(
-                    isSuccess ? "Quay về Lộ trình" : "Làm lại Quiz",
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  const SizedBox(height: 24),
+                  Text(
+                    isSuccess ? "Hoàn thành xuất sắc!" : "Chưa đạt rồi!",
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Điểm: ${provider.score} / ${provider.questions.length}",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: isSuccess
+                          ? AppConstants.successColor
+                          : AppConstants.errorColor,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (isSuccess) {
+                          // Gọi Check Badge trước khi thoát
+                          final gamification = context
+                              .read<GamificationProvider>();
+                          gamification.checkAndUnlockBadges(
+                            score: provider.score,
+                            maxScore: provider.questions.length,
+                            isRoadmap: provider.isFromRoadmap,
+                          );
+                          // Xử lý Database State
+                          // 1. Lưu state
+                          context.read<RoadmapProvider>().refresh();
+                          _quizProvider.clearQuiz();
+                          // 2. Đóng dialog trước
+                          Navigator.of(dialogContext).pop();
+                          // 3. Thoát màn Quiz sau
+                          Navigator.of(context).pop();
+                        } else {
+                          final words = provider.questions
+                              .map((q) => q.wordObj)
+                              .toList();
+                          final mode = provider.currentMode;
+                          final isRoadmap = provider.isFromRoadmap;
+
+                          Navigator.of(dialogContext).pop();
+                          _isDialogActive = false;
+
+                          provider.clearQuiz();
+                          provider.initQuiz(
+                            words,
+                            mode,
+                            isFromRoadmap: isRoadmap,
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isSuccess
+                            ? AppConstants.accentColor
+                            : AppConstants.errorColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        isSuccess ? "Quay về Lộ trình" : "Làm lại Quiz",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (!isSuccess) ...[
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () {
+                        provider.clearQuiz();
+                        Navigator.of(dialogContext).pop();
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text(
+                        "Thoát",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  ],
+                ],
               ),
-              
-              // Nút phụ nếu Fail
-              if (!isSuccess) ...[
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () {
-                    provider.clearQuiz();
-                    Navigator.pop(context); // Đóng Dialog
-                    Navigator.pop(context); // Đóng Quiz -> Về lộ trình để chọn học lại Flashcard
-                  },
-                  child: const Text("Thoát", style: TextStyle(color: Colors.grey)),
-                )
-              ]
-            ],
-          ),
-        ),
+            ),
+          ), // WIDGET BẮN PHÁO HOA
+          if (isSuccess)
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality:
+                    BlastDirectionality.explosive, // Bắn tung tóe 360 độ
+                shouldLoop: false,
+                colors: const [
+                  Colors.green,
+                  Colors.blue,
+                  Colors.pink,
+                  Colors.orange,
+                  Colors.purple,
+                ],
+                createParticlePath: drawStar, // Hàm vẽ hình ngôi sao
+              ),
+            ),
+        ],
       ),
     );
+  }
+
+  // Hàm vẽ hình pháo hoa thành hình ngôi sao (Tùy chọn cho đẹp)
+  Path drawStar(Size size) {
+    double vw = size.width / 2;
+    double vh = size.height / 2;
+    Path path = Path();
+    path.moveTo(vw, 0);
+    path.lineTo(vw * 1.3, vh * 0.7);
+    path.lineTo(size.width, vh * 0.7);
+    path.lineTo(vw * 1.5, vh * 1.3);
+    path.lineTo(vw * 1.7, size.height);
+    path.lineTo(vw, vh * 1.6);
+    path.lineTo(vw * 0.3, size.height);
+    path.lineTo(vw * 0.5, vh * 1.3);
+    path.lineTo(0, vh * 0.7);
+    path.lineTo(vw * 0.7, vh * 0.7);
+    path.close();
+    return path;
   }
 }

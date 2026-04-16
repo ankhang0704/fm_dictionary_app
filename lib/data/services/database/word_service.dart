@@ -222,27 +222,52 @@ class WordService {
 
   // === TÍNH NĂNG LƯU TỪ VỰNG (SAVED WORDS) ===
   bool isWordSaved(String wordId) {
-    return _savedBox.containsKey(wordId);
+    final progressBox = Hive.box(DatabaseService.progressBoxName);
+    final progress = progressBox.get(wordId);
+    if (progress == null) return false;
+    
+    // sv = 1 là đã lưu, 0 là chưa lưu
+    return (progress['sv'] ?? 0) == 1; 
   }
 
   Future<void> toggleSaveWord(String wordId) async {
-    if (isWordSaved(wordId)) {
-      await _savedBox.delete(wordId);
+    final progressBox = Hive.box(DatabaseService.progressBoxName);
+    var progress = progressBox.get(wordId);
+
+    // Nếu từ này chưa từng học (chưa có trong DB), tạo mới map cho nó
+    if (progress == null) {
+      progress = {
+        's': 0, 'wc': 0, 'lr': 0, 'nr': 0, 
+        'ua': DateTime.now().millisecondsSinceEpoch,
+        'ps': 0.0, 'pc': 0, 
+        'sv': 1 // Đánh dấu lưu
+      };
     } else {
-      // Lưu trữ timestamp để sau này sort theo thời gian lưu
-      await _savedBox.put(wordId, DateTime.now().millisecondsSinceEpoch);
+      // Nếu đã có, lật ngược trạng thái sv (0 thành 1, 1 thành 0)
+      int currentSv = progress['sv'] ?? 0;
+      progress['sv'] = currentSv == 1 ? 0 : 1;
+      progress['ua'] = DateTime.now().millisecondsSinceEpoch; // Cập nhật thời gian để Sync
     }
+
+    await progressBox.put(wordId, progress);
   }
 
+ // Hàm lấy danh sách TẤT CẢ các từ đã lưu (Để hiển thị ở màn SavedScreen)
   List<Word> getSavedWords() {
-    List<Word> savedList = [];
-    for (var wordId in _savedBox.keys) {
-      final word = _wordBox.get(wordId);
-      if (word != null) savedList.add(word);
+    final progressBox = Hive.box(DatabaseService.progressBoxName);
+    final wordBox = Hive.box<Word>(DatabaseService.wordBoxName);
+    
+    List<Word> savedWords = [];
+    
+    for (var key in progressBox.keys) {
+      final p = progressBox.get(key) as Map;
+      if ((p['sv'] ?? 0) == 1) {
+        final word = wordBox.get(key);
+        if (word != null) savedWords.add(word);
+      }
     }
-    return savedList;
+    return savedWords;
   }
-
   // === TÍNH NĂNG LỊCH SỬ (HISTORY) ===
   List<Word> getHistoryWords() {
     List<Word> historyList = [];
