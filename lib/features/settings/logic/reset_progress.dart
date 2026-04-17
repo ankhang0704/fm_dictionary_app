@@ -52,6 +52,8 @@ class ResetProgressLogic {
 
               // TỐI ƯU: Chỉ cần xóa toàn bộ dữ liệu trong progress box (Siêu tốc - O(1))
               final progressBox = Hive.box(DatabaseService.progressBoxName);
+              final saveBox = Hive.box(DatabaseService.saveBoxName);
+              await saveBox.clear(); // Xóa luôn từ đã lưu nếu có
               await progressBox.clear();
 
               if (!context.mounted) return;

@@ -184,6 +184,7 @@ class WordService {
 
     return streak;
   }
+
   Future<void> saveQuizProgress(List<Word> wordsInQuiz, bool isPassed) async {
     final int now = DateTime.now().millisecondsSinceEpoch;
 
@@ -215,7 +216,6 @@ class WordService {
         // Không hạ step thẳng tay để đỡ nản, chỉ bắt ôn lại sớm hơn
         progress['nr'] = now;
       }
-
       await _progressBox.put(word.id, progress);
     }
   }
@@ -225,9 +225,9 @@ class WordService {
     final progressBox = Hive.box(DatabaseService.progressBoxName);
     final progress = progressBox.get(wordId);
     if (progress == null) return false;
-    
+
     // sv = 1 là đã lưu, 0 là chưa lưu
-    return (progress['sv'] ?? 0) == 1; 
+    return (progress['sv'] ?? 0) == 1;
   }
 
   Future<void> toggleSaveWord(String wordId) async {
@@ -237,28 +237,29 @@ class WordService {
     // Nếu từ này chưa từng học (chưa có trong DB), tạo mới map cho nó
     if (progress == null) {
       progress = {
-        's': 0, 'wc': 0, 'lr': 0, 'nr': 0, 
+        's': 0, 'wc': 0, 'lr': 0, 'nr': 0,
         'ua': DateTime.now().millisecondsSinceEpoch,
-        'ps': 0.0, 'pc': 0, 
-        'sv': 1 // Đánh dấu lưu
+        'ps': 0.0, 'pc': 0,
+        'sv': 1, // Đánh dấu lưu
       };
     } else {
       // Nếu đã có, lật ngược trạng thái sv (0 thành 1, 1 thành 0)
       int currentSv = progress['sv'] ?? 0;
       progress['sv'] = currentSv == 1 ? 0 : 1;
-      progress['ua'] = DateTime.now().millisecondsSinceEpoch; // Cập nhật thời gian để Sync
+      progress['ua'] =
+          DateTime.now().millisecondsSinceEpoch; // Cập nhật thời gian để Sync
     }
 
     await progressBox.put(wordId, progress);
   }
 
- // Hàm lấy danh sách TẤT CẢ các từ đã lưu (Để hiển thị ở màn SavedScreen)
+  // Hàm lấy danh sách TẤT CẢ các từ đã lưu (Để hiển thị ở màn SavedScreen)
   List<Word> getSavedWords() {
     final progressBox = Hive.box(DatabaseService.progressBoxName);
     final wordBox = Hive.box<Word>(DatabaseService.wordBoxName);
-    
+
     List<Word> savedWords = [];
-    
+
     for (var key in progressBox.keys) {
       final p = progressBox.get(key) as Map;
       if ((p['sv'] ?? 0) == 1) {
@@ -268,6 +269,7 @@ class WordService {
     }
     return savedWords;
   }
+
   // === TÍNH NĂNG LỊCH SỬ (HISTORY) ===
   List<Word> getHistoryWords() {
     List<Map<String, dynamic>> tempHistory = [];
@@ -291,16 +293,17 @@ class WordService {
     return tempHistory.take(100).map((item) => item['word'] as Word).toList();
     ;
   }
-  // Hàm lưu điểm phát âm 
+
+  // Hàm lưu điểm phát âm
   Future<void> updatePronunciationScore(String wordId, double newScore) async {
     Map<String, dynamic> progress = getWordProgress(wordId);
-    
+
     double currentScore = (progress['ps'] ?? 0.0).toDouble();
     int count = (progress['pc'] ?? 0) as int;
 
     // Thuật toán tính trung bình cộng tích lũy
     double updatedScore = ((currentScore * count) + newScore) / (count + 1);
-    
+
     progress['ps'] = updatedScore;
     progress['pc'] = count + 1;
     progress['ua'] = DateTime.now().millisecondsSinceEpoch;
@@ -311,9 +314,10 @@ class WordService {
   // Hàm ép buộc thuộc toàn bộ list từ (Dùng khi pass Quiz 80%)
   Future<void> massMasterWords(List<Word> words) async {
     for (var w in words) {
-      await markAsLearned(w.id); 
+      await markAsLearned(w.id);
     }
   }
+
   int getWordsStudiedCount(DateTime date) {
     final progressBox = Hive.box(DatabaseService.progressBoxName);
     final startOfDay = DateTime(
@@ -324,9 +328,60 @@ class WordService {
 
     // Dùng .where để lọc, hiệu quả hơn và sạch hơn
     return progressBox.values.where((value) {
-      if (value is! List || value.length <= 4) return false;
-      final int updatedAt = value[4] as int;
+      if (value == null || value is! Map) return false;
+
+      final int updatedAt = value['ua'] ?? 0;
       return updatedAt >= startOfDay;
     }).length;
   }
+
+  // Thêm tham số amount vào hàm hiện tại của bạn trong WordService
+  Future<void> addWordsToDailyGoal(List<String> wordIds) async {
+    final box = Hive.box(DatabaseService.saveBoxName); // Dùng tạm box này ok
+
+    final today = DateTime.now();
+    final key = 'stats_ids_${today.year}_${today.month}_${today.day}';
+
+    List<String> existingIds =
+        box.get(key, defaultValue: <String>[])?.cast<String>() ?? [];
+
+    Set<String> uniqueIds = existingIds.toSet();
+    uniqueIds.addAll(wordIds);
+    await box.put(key, uniqueIds.toList()); // Cộng lượng từ mới vào
+    cleanUpOldDailyStats();
+
+  }
+
+  // 2. Hàm lấy số lượng siêu nhanh (Không cần vòng lặp)
+  int getQuickDailyCount() {
+    final box = Hive.box(DatabaseService.saveBoxName);
+    final today = DateTime.now();
+    final key = 'stats_ids_${today.year}_${today.month}_${today.day}';
+
+    // Đếm số lượng ID duy nhất
+    List<String> existingIds =
+        box.get(key, defaultValue: <String>[])?.cast<String>() ?? [];
+    return existingIds.length;
+  }
+  Future<void> cleanUpOldDailyStats() async {
+  final box = Hive.box(DatabaseService.saveBoxName);
+  final keys = box.keys.where((k) => k.toString().startsWith('stats_ids_')).toList();
+  final now = DateTime.now();
+
+  for (var key in keys) {
+    try {
+      final parts = key.toString().split('_'); // Dạng: [stats, ids, YYYY, MM, DD]
+      if (parts.length == 5) {
+        final recordDate = DateTime(int.parse(parts[2]), int.parse(parts[3]), int.parse(parts[4]));
+        
+        // Nếu dữ liệu cũ hơn 7 ngày -> Xóa
+        if (now.difference(recordDate).inDays > 7) {
+          await box.delete(key);
+        }
+      }
+    } catch (_) {
+      // Bỏ qua nếu lỗi parse ngày
+    }
+  }
+}
 }

@@ -3,7 +3,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fm_dictionary/data/models/word_model.dart';
+import 'package:fm_dictionary/data/services/database/word_service.dart';
 import 'package:fm_dictionary/data/services/features/quiz_service.dart';
+import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
 import 'package:fm_dictionary/features/learning/presentation/providers/learning_provider.dart';
 import 'package:fm_dictionary/features/learning/presentation/providers/quiz_provider.dart';
 import 'package:fm_dictionary/features/learning/quiz_screen.dart';
@@ -36,10 +38,21 @@ class _StudyScreenState extends State<StudyScreen> {
 
   void _handleAnkiAction(bool isCorrect, bool isEasy) async {
     final provider = context.read<LearningProvider>();
+    final homeProvider = context.read<HomeProvider>();
+    final wordService = WordService();
+
     final isDone = provider.currentIndex == provider.words.length - 1;
 
+    final String currentWordId = provider.currentWord?.id ?? '';
+    
     bool showCelebration = await provider.processAnswer(isCorrect, isEasy);
 
+    if (currentWordId.isNotEmpty) {
+    await wordService.addWordsToDailyGoal([currentWordId]);
+  }
+    if (mounted) {
+    homeProvider.updateDailyProgress();
+    }
     if (showCelebration && mounted) {
       await Navigator.push(
         context,

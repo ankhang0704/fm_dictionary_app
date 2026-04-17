@@ -2,6 +2,7 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fm_dictionary/features/gamification/presentation/providers/gamification_provider.dart';
+import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
 import 'package:fm_dictionary/features/learning/presentation/providers/quiz_provider.dart';
 import 'package:fm_dictionary/features/roadmap/presentation/providers/roadmap_provider.dart';
 import 'package:provider/provider.dart';
@@ -335,6 +336,7 @@ class _QuizScreenState extends State<QuizScreen> {
                               .read<GamificationProvider>();
                           final roadmap = context.read<RoadmapProvider>();
                           final currentContext = context; // Scaffold context
+                          final home = context.read<HomeProvider>(); 
                           gamification.checkAndUnlockBadges(
                             score: provider.score,
                             maxScore: provider.questions.length,
@@ -344,6 +346,7 @@ class _QuizScreenState extends State<QuizScreen> {
                           // 1. Lưu state
                           roadmap.refresh();
                           _quizProvider.clearQuiz();
+                          home.updateDailyProgress();
                           // 2. Đóng dialog trước
                           Navigator.of(dialogContext).pop();
                           // 3. Thoát màn Quiz sau

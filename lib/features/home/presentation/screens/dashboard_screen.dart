@@ -147,7 +147,7 @@ class DashboardScreen extends StatelessWidget {
     HomeProvider home,
     bool isDark,
   ) {
-    final studied = home.wordsStudiedToday;
+    final studied = home.wordsLearnedToday;
     final target = home.dailyGoalTarget;
     final isDone = studied >= target;
 
@@ -228,7 +228,10 @@ class DashboardScreen extends StatelessWidget {
                               true, // Rất quan trọng để tính Gamification
                         ),
                       ),
-                    );
+                    ).then((_) {
+                      // Sau khi học xong quay về, refresh lại Home để cập nhật tiến độ
+                      home.updateDailyProgress();
+                    });
                   },
                   child: const Text(
                     "Tiếp tục học",

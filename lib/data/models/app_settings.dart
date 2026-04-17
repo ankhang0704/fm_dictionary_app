@@ -29,6 +29,7 @@ class AppSettings extends HiveObject {
   @HiveField(11)
   int notificationMinute;
 
+
   AppSettings({
     this.ttsSpeed = 0.4,
     this.themeMode = 'light',

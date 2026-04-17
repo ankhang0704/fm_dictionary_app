@@ -31,7 +31,11 @@ class QuizProvider extends ChangeNotifier {
       _questions.isNotEmpty ? _questions[_currentIndex] : null;
 
   /// Khởi tạo bài Quiz từ màn hình Config
-  void initQuiz(List<Word> targetWords, QuizMode mode, {bool isFromRoadmap = false}) {
+  void initQuiz(
+    List<Word> targetWords,
+    QuizMode mode, {
+    bool isFromRoadmap = false,
+  }) {
     _currentMode = mode;
     _isFromRoadmap = isFromRoadmap; // Gán cờ
     // Dùng Service để xào bài (Tránh xử lý nặng ở UI)
@@ -89,28 +93,35 @@ class QuizProvider extends ChangeNotifier {
 
         if (_isFromRoadmap) {
           final bool isPassedResult = _score >= (_questions.length * 0.8);
-          final List<Word> wordsInQuiz = _questions.map((q) => q.wordObj).toList();
+          final List<Word> wordsInQuiz = _questions
+              .map((q) => q.wordObj)
+              .toList();
 
-          // Thực hiện lưu DB ngầm
           if (isPassedResult) {
             await _wordService.massMasterWords(wordsInQuiz);
+
+            // LOGIC MỚI: Truyền toàn bộ danh sách ID của Quiz vào
+            final List<String> quizWordIds = wordsInQuiz
+                .map((w) => w.id)
+                .toList();
+            await _wordService.addWordsToDailyGoal(quizWordIds);
           }
           await _wordService.saveQuizProgress(wordsInQuiz, isPassedResult);
-          
-          // Notify thêm lần nữa sau khi DB đã lưu xong nếu cần cập nhật huy hiệu/tiến độ
+
           notifyListeners();
         }
       }
     });
   }
+
   /// Reset dọn dẹp bộ nhớ
   void clearQuiz() {
-    _questions = []; 
+    _questions = [];
     _currentIndex = 0;
     _score = 0;
     _isFinished = false; // Reset ngay lập tức
     _selectedAnswer = null;
     // Không notify ở đây nếu bạn chuẩn bị gọi initQuiz ngay sau đó để tránh nháy màn hình
-    notifyListeners(); 
+    notifyListeners();
   }
 }

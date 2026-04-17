@@ -62,7 +62,7 @@ class HomeProvider extends ChangeNotifier {
 
     // 3. Tính số từ đã học hôm nay (Mock logic - bạn có thể tinh chỉnh trong WordService sau)
     // Tạm thời set random hoặc lấy số liệu thật từ WordService
-    _wordsLearnedToday = _wordService.getWordsStudiedCount(DateTime.now());
+    _wordsLearnedToday = _wordService.getQuickDailyCount();
 
     // 4. Lấy 2 chủ đề chưa học
     final allTopics = _wordService.getAllTopics();
@@ -108,13 +108,10 @@ class HomeProvider extends ChangeNotifier {
   int getReviewCount() {
     return _wordService.getWordsToReview().length;
   }
-  // 1. TÍNH SỐ TỪ ĐÃ HỌC TRONG NGÀY HÔM NAY
-  int _wordsStudiedToday = 0;
-  int get wordsStudiedToday => _wordsStudiedToday;
-
+  //  TÍNH SỐ TỪ ĐÃ HỌC TRONG NGÀY HÔM NAY
   // Gọi hàm này trong initDashboard hoặc refresh
   void updateDailyProgress() {
-    _wordsStudiedToday = _wordService.getWordsStudiedCount(DateTime.now());
+    _wordsLearnedToday = _wordService.getQuickDailyCount();
     notifyListeners();
   }
   // Reload lại data khi user đi học về
