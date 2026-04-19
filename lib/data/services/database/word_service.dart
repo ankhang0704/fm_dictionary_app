@@ -5,7 +5,6 @@ import 'database_service.dart';
 class WordService {
   final _wordBox = Hive.box<Word>(DatabaseService.wordBoxName);
   final _progressBox = Hive.box(DatabaseService.progressBoxName); // Box mới
-  final _savedBox = Hive.box(DatabaseService.saveBoxName);
 
   static const int _msPerDay = 86400000; // Số mili-giây trong 1 ngày
 
@@ -222,11 +221,8 @@ class WordService {
 
   // === TÍNH NĂNG LƯU TỪ VỰNG (SAVED WORDS) ===
   bool isWordSaved(String wordId) {
-    final progressBox = Hive.box(DatabaseService.progressBoxName);
-    final progress = progressBox.get(wordId);
-    if (progress == null) return false;
-
-    // sv = 1 là đã lưu, 0 là chưa lưu
+    final progress = _progressBox.get(wordId);
+    if (progress == null || progress is! Map) return false;
     return (progress['sv'] ?? 0) == 1;
   }
 
@@ -272,26 +268,32 @@ class WordService {
 
   // === TÍNH NĂNG LỊCH SỬ (HISTORY) ===
   List<Word> getHistoryWords() {
-    List<Map<String, dynamic>> tempHistory = [];
+    List<Word> historyList = [];
+    final Map<String, int> lastActivityCache =
+        {}; // Dùng Cache để sort siêu tốc
 
     for (var wordId in _progressBox.keys) {
       final progress = getWordProgress(wordId as String);
       final int lr = progress['lr'] as int;
-      final int ua = progress['ua'] ?? 0;
-      final int latestTime = lr > ua ? lr : ua;
-      // Nếu từ này đã từng được tương tác (lr hoặc ua > 0)
+      final int ua = (progress['ua'] ?? 0) as int;
+
       if (lr > 0 || ua > 0) {
         final word = _wordBox.get(wordId);
         if (word != null) {
-          tempHistory.add({'word': word, 'time': latestTime});
+          historyList.add(word);
+          // Cache lại thời gian hoạt động cuối cùng của từ này
+          lastActivityCache[wordId] = lr > ua ? lr : ua;
         }
       }
     }
-    // Sắp xếp giảm dần (Từ học gần nhất lên đầu)
-    tempHistory.sort((a, b) => (b['time'] as int).compareTo(a['time'] as int));
 
-    return tempHistory.take(100).map((item) => item['word'] as Word).toList();
-    ;
+    // Sort O(1) read thay vì gọi Hive liên tục
+    historyList.sort(
+      (a, b) => (lastActivityCache[b.id] ?? 0).compareTo(
+        lastActivityCache[a.id] ?? 0,
+      ),
+    );
+    return historyList;
   }
 
   // Hàm lưu điểm phát âm
@@ -319,18 +321,15 @@ class WordService {
   }
 
   int getWordsStudiedCount(DateTime date) {
-    final progressBox = Hive.box(DatabaseService.progressBoxName);
     final startOfDay = DateTime(
       date.year,
       date.month,
       date.day,
     ).millisecondsSinceEpoch;
 
-    // Dùng .where để lọc, hiệu quả hơn và sạch hơn
-    return progressBox.values.where((value) {
-      if (value == null || value is! Map) return false;
-
-      final int updatedAt = value['ua'] ?? 0;
+    return _progressBox.values.where((value) {
+      if (value is! Map) return false; // An toàn tuyệt đối
+      final int updatedAt = (value['ua'] ?? 0) as int;
       return updatedAt >= startOfDay;
     }).length;
   }

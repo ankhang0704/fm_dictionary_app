@@ -44,8 +44,8 @@ class RoadmapProvider extends ChangeNotifier {
       List<Word> allWords = wordBox.values.toList();
       
       // 1. Sắp xếp toàn bộ từ vựng theo Topic để các từ liên quan nằm gần nhau
-      allWords.sort((a, b) => a.topic.compareTo(b.topic));
-
+      // allWords.sort((a, b) => a.topic.compareTo(b.topic));
+      allWords.sort((a, b) => a.id.compareTo(b.id));
       List<RoadmapLesson> allLessons = [];
       int globalIndexCounter = 0;
 
@@ -99,9 +99,11 @@ class RoadmapProvider extends ChangeNotifier {
 
     // Đếm số từ đã học của bài trước
     int learnedCount = prevLesson.words.where((w) => _wordService.isWordLearned(w.id)).length;
-    
+    // LOGIC MỚI:
+    int requiredToPass = (prevLesson.words.length * 0.8).floor();
+    if (requiredToPass == 0 && prevLesson.words.isNotEmpty) requiredToPass = 1;
     // Yêu cầu học 8/10 từ (80%) để qua bài
-    return learnedCount >= (prevLesson.words.length * 0.8);
+    return learnedCount >= requiredToPass;
   }
 
   // Tính tiến độ của 1 bài học nhỏ (0.0 -> 1.0)

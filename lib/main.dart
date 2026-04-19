@@ -22,6 +22,7 @@ import 'package:fm_dictionary/features/roadmap/presentation/screen/roadmap_scree
 import 'package:fm_dictionary/features/search/presentation/providers/search_provider.dart';
 import 'package:fm_dictionary/features/search/presentation/screens/search_screen.dart';
 import 'package:fm_dictionary/features/search/presentation/screens/word_detail_screen.dart';
+import 'package:fm_dictionary/features/settings/presentation/providers/settings_provider.dart';
 import 'package:provider/provider.dart';
 import 'data/services/database/database_service.dart';
 import 'data/services/ai_speech/text_to_speech/speech_service.dart';
@@ -38,7 +39,7 @@ import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/learning/presentation/providers/learning_provider.dart';
 import 'features/settings/presentation/providers/notification_provider.dart';
 import 'features/auth/presentation/screens/profile_screen.dart';
-import 'features/settings/settings_screen.dart';
+import 'features/settings/presentation/screens/settings_screen.dart';
 import 'features/history/presentation/screens/history_screen.dart';
 import 'features/saved/presentation/screens/saved_words_screen.dart';
 
@@ -81,6 +82,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create:  (_) => RoadmapProvider()),
         ChangeNotifierProvider(create: (_) => GamificationProvider()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
       // 2. Tiếp theo là EasyLocalization để xử lý đa ngôn ngữ
       child: EasyLocalization(

@@ -81,7 +81,17 @@ class TtsService {
 
   Future<void> stop() async {
     _debounceTimer?.cancel();
+    _debounceTimer = null;
+
+    // GIẢI PHÓNG HÀNG ĐỢI - CHỐNG HUNG FUTURE (MEMORY LEAK)
+    if (_currentSpeakCompleter != null &&
+        !_currentSpeakCompleter!.isCompleted) {
+      _currentSpeakCompleter!.completeError(
+        StateError('TTS stopped before completion'),
+      );
+    }
     _currentSpeakCompleter = null;
+
     await _engine.stop();
   }
 

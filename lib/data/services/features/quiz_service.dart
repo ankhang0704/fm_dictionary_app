@@ -23,13 +23,14 @@ class QuizService {
   final Random _random = Random();
 
   /// Hàm cốt lõi: Tạo bộ câu hỏi (Chạy ngầm tách biệt khỏi UI)
+  /// Hàm cốt lõi: Tạo bộ câu hỏi (Chạy ngầm tách biệt khỏi UI)
   List<QuizQuestion> generateQuiz({
     required List<Word> targetWords,
     required QuizMode mode,
   }) {
     List<QuizQuestion> questions = [];
-    // Lấy toàn bộ từ vựng làm kho "Đáp án nhiễu" (Distractors)
-    final allWords = _wordService.getRandomWords(9999);
+    // Lấy toàn bộ từ vựng làm kho "Đáp án nhiễu" (Global Pool)
+    final allGlobalWords = _wordService.getRandomWords(9999);
 
     for (var word in targetWords) {
       // 1. Xác định Đáp án đúng
@@ -37,15 +38,18 @@ class QuizService {
           ? word.word
           : word.meaning;
 
-      // 2. Tìm 3 đáp án sai (nhiễu)
-      List<String> distractors = [];
-      allWords.shuffle();
+      // 2. Tìm 3 đáp án sai (nhiễu) từ Global Pool
+      // Lọc bỏ từ hiện tại để tránh trùng đáp án
+      var possibleDistractors = allGlobalWords
+          .where((w) => w.id != word.id)
+          .toList();
+      possibleDistractors.shuffle();
 
-      for (var w in allWords) {
-        if (w.id != word.id && distractors.length < 3) {
-          distractors.add((mode == QuizMode.viToEn) ? w.word : w.meaning);
-        }
-      }
+      // Lấy chính xác 3 đáp án sai
+      List<String> distractors = possibleDistractors
+          .take(3)
+          .map((w) => (mode == QuizMode.viToEn) ? w.word : w.meaning)
+          .toList();
 
       // 3. Trộn đáp án đúng và sai
       List<String> finalOptions = [correctAnswer, ...distractors];

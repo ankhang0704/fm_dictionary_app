@@ -267,7 +267,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
   void _showResultDialog(BuildContext context, QuizProvider provider) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isSuccess = provider.score >= (provider.questions.length * 0.8);
+     final isSuccess = provider.score >= provider.passThreshold;
     if (isSuccess) {
       _confettiController.play();
       // GỌI LOGIC GAMIFICATION (Đảm bảo SRP)

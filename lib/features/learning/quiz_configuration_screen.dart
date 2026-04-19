@@ -45,15 +45,12 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
     }
 
     final maxWords = _currentWordsPool.length;
-    if (maxWords < 4) {
-      _questionCount = maxWords;
-    } else {
-      if (_questionCount > maxWords && _questionCount != 9999) {
-        _questionCount = 10;
-      }
-      if (_questionCount == 10 && maxWords < 10) {
-        _questionCount = 9999;
-      }
+    // BỎ HẾT LOGIC CHECK < 4. Chỉ cần check logic hiển thị số lượng
+    if (_questionCount > maxWords && _questionCount != 9999) {
+      _questionCount = maxWords > 10 ? 10 : 9999;
+    }
+    if (_questionCount == 10 && maxWords < 10) {
+      _questionCount = 9999;
     }
   }
 
@@ -201,7 +198,7 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final maxWords = _currentWordsPool.length;
-    final bool isNotEnoughWords = maxWords < 4;
+    final bool isEmptyWords = maxWords == 0;
 
     return Scaffold(
       backgroundColor: isDark
@@ -241,7 +238,7 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
                 ),
                 const SizedBox(height: 24),
                 _SectionHeader(title: 'quiz_config.select_count'.tr()),
-                if (isNotEnoughWords)
+                if (isEmptyWords)
                   _NotEnoughWordsWarning(maxWords: maxWords)
                 else
                   _CountSelector(
@@ -260,7 +257,7 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
             ),
           ),
           _StickyBottomAction(
-            isNotEnoughWords: isNotEnoughWords,
+            isNotEnoughWords: isEmptyWords,
             onPressed: _startQuiz,
           ),
         ],

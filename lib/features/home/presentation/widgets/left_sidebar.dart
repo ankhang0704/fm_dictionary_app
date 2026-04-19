@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fm_dictionary/data/services/database/database_service.dart';
 import 'package:fm_dictionary/features/info/presentation/screens/static_content_screen.dart';
-import 'package:fm_dictionary/features/settings/settings_screen.dart';
+import 'package:fm_dictionary/features/settings/presentation/screens/settings_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:package_info_plus/package_info_plus.dart';

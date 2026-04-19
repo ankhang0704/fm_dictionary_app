@@ -26,6 +26,10 @@ class QuizProvider extends ChangeNotifier {
   String? get selectedAnswer => _selectedAnswer;
   bool get isFinished => _isFinished;
   QuizMode get currentMode => _currentMode;
+  int get passThreshold {
+    int threshold = (_questions.length * 0.8).floor();
+    return threshold > 0 ? threshold : 1; // Đảm bảo tối thiểu phải đúng 1 câu
+  }
 
   QuizQuestion? get currentQuestion =>
       _questions.isNotEmpty ? _questions[_currentIndex] : null;
@@ -92,7 +96,7 @@ class QuizProvider extends ChangeNotifier {
         notifyListeners(); // Gọi ngay để UI hiện Loading hoặc màn hình Kết quả ngay lập tức
 
         if (_isFromRoadmap) {
-          final bool isPassedResult = _score >= (_questions.length * 0.8);
+          final bool isPassedResult = _score >= passThreshold; 
           final List<Word> wordsInQuiz = _questions
               .map((q) => q.wordObj)
               .toList();

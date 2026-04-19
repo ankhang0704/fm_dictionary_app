@@ -1,43 +1,27 @@
-// file: lib/screens/settings/settings_screen.dart
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fm_dictionary/core/constants/constants.dart';
+import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
+import 'package:provider/provider.dart';
+
 import 'package:fm_dictionary/features/settings/logic/reset_progress.dart';
 import 'package:fm_dictionary/features/settings/logic/show_langague.dart';
 import 'package:fm_dictionary/features/settings/widgets/section_settings.dart';
-import '../../data/models/app_settings.dart';
-import '../../data/services/database/database_service.dart';
-import '../../data/services/ui_management/theme_manager.dart';
-import '../../core/constants/constants.dart';
+// Import Provider vừa tạo
+import 'package:fm_dictionary/features/settings/presentation/providers/settings_provider.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  late AppSettings _settings;
-
-  @override
-  void initState() {
-    super.initState();
-    _settings = DatabaseService.getSettings();
-  }
-
-  void _updateSettings() async {
-    await DatabaseService.saveSettings(_settings);
-    setState(() {});
-  }
-
-  void _showNameDialog() {
-    final controller = TextEditingController(text: _settings.userName);
+  void _showNameDialog(BuildContext context) {
+    final provider = context.read<SettingsProvider>();
+    final controller = TextEditingController(text: provider.settings.userName);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: isDark
             ? AppConstants.darkCardColor
             : AppConstants.cardColor,
@@ -66,7 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'settings.cancel'.tr(),
               style: TextStyle(color: AppConstants.textSecondary),
@@ -84,9 +68,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             onPressed: () {
-              _settings.userName = controller.text.trim();
-              _updateSettings();
-              Navigator.pop(context);
+              provider.updateName(controller.text.trim());
+              Navigator.pop(dialogContext);
             },
             child: Text('settings.save'.tr()),
           ),
@@ -95,12 +78,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  
-  
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final provider = context.watch<SettingsProvider>();
+
+    if (provider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final settings = provider.settings;
 
     return Scaffold(
       backgroundColor: isDark
@@ -112,7 +99,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           style: AppConstants.headingStyle.copyWith(
             fontSize: 24,
             color: isDark ? Colors.white : AppConstants.textPrimary,
-            fontStyle: FontStyle.normal,
           ),
         ),
         centerTitle: true,
@@ -126,6 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
         children: [
+          // 1. PROFILE SECTION
           SectionHeader(title: 'settings.profile'.tr()),
           SettingsGroup(
             children: [
@@ -133,20 +120,94 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: CupertinoIcons.person,
                 title: 'settings.profile_name'.tr(),
                 trailing: Text(
-                  _settings.userName,
+                  settings.userName,
                   style: const TextStyle(
                     color: AppConstants.accentColor,
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                   ),
                 ),
-                onTap: _showNameDialog,
+                onTap: () => _showNameDialog(context),
               ),
             ],
           ),
           const SizedBox(height: 24),
 
-          SectionHeader(title: 'settings.language'.tr().toUpperCase()),
+          // 2. DAILY GOAL SECTION (TÍNH NĂNG MỚI)
+          SectionHeader(
+            title: 'Mục tiêu học tập',
+          ), // Bạn có thể sửa thành .tr()
+          SettingsGroup(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          CupertinoIcons.flame_fill,
+                          size: 22,
+                          color: Colors.deepOrange,
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          'Mục tiêu hàng ngày', // Bạn có thể sửa thành .tr()
+                          style: AppConstants.bodyStyle.copyWith(
+                            fontSize: 16,
+                            color: isDark
+                                ? Colors.white
+                                : AppConstants.textPrimary,
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppConstants.accentColor.withValues(
+                              alpha: 0.1,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${settings.dailyGoal} từ',
+                            style: const TextStyle(
+                              color: AppConstants.accentColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Slider.adaptive(
+                      value: settings.dailyGoal.toDouble(),
+                      min: 5,
+                      max: 100,
+                      divisions: 19, // Bước nhảy 5 từ (5, 10, 15... 100)
+                      activeColor: AppConstants.accentColor,
+                      inactiveColor: Colors.grey.withValues(alpha: 0.2),
+                      onChanged: (val) {
+                        provider.updateDailyGoal(val.toInt());
+                        context.read<HomeProvider>().refreshDailyGoal();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // 3. APPEARANCE & LANGUAGE SECTION
+          SectionHeader(title: 'settings.appearance'.tr()),
           SettingsGroup(
             children: [
               SettingsTile(
@@ -175,53 +236,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 onTap: () => ShowLanguageLogic.showLanguagePicker(context),
               ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          SectionHeader(title: 'settings.appearance'.tr()),
-          SettingsGroup(
-            children: [
               SettingsTile(
-                icon: _settings.themeMode == 'dark'
+                icon: settings.themeMode == 'dark'
                     ? CupertinoIcons.moon_stars_fill
                     : CupertinoIcons.sun_max_fill,
-                iconColor: _settings.themeMode == 'dark'
+                iconColor: settings.themeMode == 'dark'
                     ? Colors.amber
                     : AppConstants.accentColor,
                 title: 'settings.dark_mode'.tr(),
                 trailing: Switch.adaptive(
-                  value: _settings.themeMode == 'dark',
-                  // ignore: deprecated_member_use
+                  value: settings.themeMode == 'dark',
                   activeColor: AppConstants.accentColor,
-                  onChanged: (bool value) {
-                    _settings.themeMode = value ? 'dark' : 'light';
-                    ThemeManager.updateTheme(_settings.themeMode);
-                    _updateSettings();
-                  },
+                  onChanged: (bool value) => provider.toggleTheme(value),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 24),
 
+          // 4. AUDIO & AI SECTION
           SectionHeader(title: 'settings.audio'.tr()),
           SettingsGroup(
             children: [
               SettingsTile(
                 icon: CupertinoIcons.mic_fill,
                 iconColor: Colors.deepPurple,
-                title: 'settings.hard_mode'
-                    .tr(), // Bạn nhớ thêm key này vào file dịch thuật nhé (VD: "Chấm điểm khắt khe")
-                subtitle: 'settings.hard_mode_desc'
-                    .tr(), // "Yêu cầu phát âm chính xác cao"
+                title: 'settings.hard_mode'.tr(),
+                subtitle: 'settings.hard_mode_desc'.tr(),
                 trailing: Switch.adaptive(
-                  value: _settings.isHardMode,
-                  activeThumbColor: AppConstants.accentColor,
-                  onChanged: (bool value) {
-                    _settings.isHardMode = value;
-                    _updateSettings();
-                  },
+                  value: settings.isHardMode,
+                  activeColor: AppConstants.accentColor,
+                  onChanged: (bool value) => provider.toggleHardMode(value),
                 ),
               ),
               Padding(
@@ -262,7 +307,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            '${_settings.ttsSpeed.toStringAsFixed(1)}x',
+                            '${settings.ttsSpeed.toStringAsFixed(1)}x',
                             style: const TextStyle(
                               color: AppConstants.accentColor,
                               fontWeight: FontWeight.bold,
@@ -273,16 +318,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Slider.adaptive(
-                      value: _settings.ttsSpeed,
+                      value: settings.ttsSpeed,
                       min: 0.1,
                       max: 1.5,
                       divisions: 10,
                       activeColor: AppConstants.accentColor,
                       inactiveColor: Colors.grey.withValues(alpha: 0.2),
-                      onChanged: (val) {
-                        _settings.ttsSpeed = val;
-                        _updateSettings();
-                      },
+                      onChanged: (val) => provider.updateTtsSpeed(val),
                     ),
                   ],
                 ),
@@ -291,6 +333,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
 
+          // 5. DANGER ZONE
           SettingsGroup(
             children: [
               SettingsTile(
@@ -309,6 +352,3 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
-
-
-

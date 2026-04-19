@@ -64,9 +64,6 @@ class NotificationService {
       final settings = DatabaseService.getSettings();
       isEnabled.value = settings.isNotificationEnabled;
       reminderTime.value = TimeOfDay(hour: settings.notificationHour, minute: settings.notificationMinute);
-       if (isEnabled.value) {
-        scheduleDailyReminder(reminderTime.value!);
-      }
   
       // Load giờ hẹn từ SharedPreferences
       debugPrint('✅ Init NotificationService v21 thành công');
@@ -76,22 +73,32 @@ class NotificationService {
   }
    Future<void> toggleNotification(bool value) async {
     final settings = DatabaseService.getSettings();
-    
+
     if (value) {
-      // 1. Nếu muốn Bật: Xin quyền hệ thống trước
+      // 1. Xin quyền và kiểm tra kết quả ngay lập tức
       await requestPermissions();
-      // 2. Đặt lịch hẹn
-      await scheduleDailyReminder(reminderTime.value ?? const TimeOfDay(hour: 20, minute: 0));
+      final isGranted = await Permission.notification.isGranted;
+
+      // NẾU NGƯỜI DÙNG TỪ CHỐI -> HỦY BỎ VIỆC BẬT
+      if (!isGranted) {
+        debugPrint('⚠️ Người dùng từ chối quyền, không thể bật thông báo!');
+        isEnabled.value = false; // Trả công tắc về OFF
+        return; // Dừng hàm lại ngay
+      }
+
+      // 2. Nếu đã cho phép thì mới Đặt lịch
+      await scheduleDailyReminder(
+        reminderTime.value ?? const TimeOfDay(hour: 20, minute: 0),
+      );
     } else {
-      // 1. Nếu muốn Tắt: Hủy tất cả lịch hẹn trên hệ thống
       await _flutterLocalNotificationsPlugin.cancelAll();
     }
 
-    // 2. Lưu trạng thái vào Hive
+    // Chỉ lưu khi mọi thứ thành công
     isEnabled.value = value;
     settings.isNotificationEnabled = value;
     await DatabaseService.saveSettings(settings);
-    
+
     debugPrint('🔔 Thông báo đã được ${value ? "BẬT" : "TẮT"}');
   }
   /// Xin quyền bằng API tích hợp sẵn của v21 (Không cần permission_handler)

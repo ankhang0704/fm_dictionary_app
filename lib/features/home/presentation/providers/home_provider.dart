@@ -17,7 +17,7 @@ class HomeProvider extends ChangeNotifier {
   String _quote = "";
   String get quote => _quote;
 
-  final int _dailyGoalTarget   = 20;
+  int _dailyGoalTarget   = 20;
   int get dailyGoalTarget => _dailyGoalTarget;
 
   int _wordsLearnedToday = 0;
@@ -38,7 +38,15 @@ class HomeProvider extends ChangeNotifier {
   HomeProvider() {
     _initDashboard();
   }
+  void refreshDailyGoal() {
+    final settings = DatabaseService.getSettings();
+    _dailyGoalTarget = settings.dailyGoal;
 
+    // Nếu bạn có hàm tính lại % Progress (VD: _learnedToday / _dailyGoal), hãy gọi nó ở đây
+    // _calculateProgress();
+
+    notifyListeners(); // Báo cho Home Screen vẽ lại vòng tròn Progress
+  }
   Future<void> _initDashboard() async {
     _isLoading = true;
     notifyListeners();
@@ -114,6 +122,7 @@ class HomeProvider extends ChangeNotifier {
     _wordsLearnedToday = _wordService.getQuickDailyCount();
     notifyListeners();
   }
+  
   // Reload lại data khi user đi học về
   void refresh() {
     _initDashboard();

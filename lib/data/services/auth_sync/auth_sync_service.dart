@@ -174,7 +174,6 @@ class AuthSyncService {
       final docSnapshot = await docRef.get(
         const GetOptions(source: Source.server),
       );
-
       Map<String, dynamic> cloudProgress = {};
 
       if (docSnapshot.exists) {
@@ -189,7 +188,6 @@ class AuthSyncService {
       Map<String, List<dynamic>> cloudUpdates = {};
       Set<String> processedKeys = {};
 
-      // 1. ĐỒNG BỘ PROGRESS (So sánh theo Timestamp integer)
       for (var entry in cloudProgress.entries) {
         final key = entry.key;
         processedKeys.add(key);
@@ -200,13 +198,13 @@ class AuthSyncService {
             ? (cData[5] as num).toDouble()
             : 0.0;
         final int cPc = cData.length > 6 ? (cData[6] as int) : 0;
-        final int cSv = cData.length > 7
-            ? (cData[7] as int)
-            : 0; // <--- LẤY sv TỪ CLOUD
+        final int cSv = cData.length > 7 ? (cData[7] as int) : 0;
 
         final localRaw = progressBox.get(key);
 
-        if (localRaw == null) {
+        // VÁ LỖI ÉP KIỂU (TYPE SAFETY)
+        // Nếu không có data HOẶC data bị hỏng (không phải Map) -> Cập nhật lại từ Cloud
+        if (localRaw == null || localRaw is! Map) {
           localUpdates[key] = {
             's': cData[0],
             'wc': cData[1],
@@ -215,10 +213,10 @@ class AuthSyncService {
             'ua': cUpdatedAt,
             'ps': cPs,
             'pc': cPc,
-            'sv': cSv, // <--- THÊM sv VÀO LOCAL NẾU CHỈ CÓ Ở CLOUD
+            'sv': cSv,
           };
         } else {
-          final localMap = localRaw as Map;
+          final localMap = localRaw; // Đã chắc chắn là Map
           final int lUpdatedAt = localMap['ua'] ?? 0;
 
           if (cUpdatedAt > lUpdatedAt) {
@@ -230,7 +228,7 @@ class AuthSyncService {
               'ua': cUpdatedAt,
               'ps': cPs,
               'pc': cPc,
-              'sv': cSv, // <--- CẬP NHẬT sv TỪ CLOUD NẾU CLOUD MỚI HƠN
+              'sv': cSv,
             };
           } else if (lUpdatedAt > cUpdatedAt) {
             cloudUpdates[key] = [
@@ -241,32 +239,30 @@ class AuthSyncService {
               lUpdatedAt,
               localMap['ps'] ?? 0.0,
               localMap['pc'] ?? 0,
-              localMap['sv'] ?? 0, // <--- ĐẨY sv LÊN CLOUD NẾU LOCAL MỚI HƠN
+              localMap['sv'] ?? 0,
             ];
           }
         }
       }
 
-      // Các từ có ở Local mà Cloud chưa có
       for (var key in progressBox.keys) {
         final String strKey = key.toString();
         if (!processedKeys.contains(strKey)) {
-          final localMap = progressBox.get(key) as Map;
-          cloudUpdates[strKey] = [
-            localMap['s'],
-            localMap['wc'],
-            localMap['lr'],
-            localMap['nr'],
-            localMap['ua'] ?? 0,
-            localMap['ps'] ?? 0.0,
-            localMap['pc'] ?? 0,
-            localMap['sv'] ?? 0,
-          ];
+          final localRaw = progressBox.get(key);
+          if (localRaw is Map) {
+            cloudUpdates[strKey] = [
+              localRaw['s'],
+              localRaw['wc'],
+              localRaw['lr'],
+              localRaw['nr'],
+              localRaw['ua'] ?? 0,
+              localRaw['ps'] ?? 0.0,
+              localRaw['pc'] ?? 0,
+              localRaw['sv'] ?? 0,
+            ];
+          }
         }
       }
-
-      // 3. ĐẨY LÊN FIREBASE (Chỉ đẩy 1 Document duy nhất)
-      if (localUpdates.isNotEmpty) await progressBox.putAll(localUpdates);
 
       final batch = _firestore.batch();
       bool needCommit = false;
@@ -274,26 +270,29 @@ class AuthSyncService {
 
       if (cloudUpdates.isNotEmpty || !docSnapshot.exists) {
         needCommit = true;
-
-        // Payload siêu gọn: Tên, Goal, Từ lưu, và Cụm Progress (mảng số)
         updatePayload = {
           'name': localName,
           'dailyGoal': settings.dailyGoal,
-          'lastSync': DateTime.now()
-              .millisecondsSinceEpoch, // Dùng Int epoch thay vì Firebase Timestamp để nhẹ
+          'lastSync': DateTime.now().millisecondsSinceEpoch,
         };
-
         if (cloudUpdates.isNotEmpty) {
           updatePayload['progress'] = cloudUpdates;
         }
-
         batch.set(docRef, updatePayload, SetOptions(merge: true));
       }
 
+      // VÁ LỖI BẢO TOÀN DỮ LIỆU KHI MẤT MẠNG (ATOMIC SYNC)
+      // Chạy Firebase Batch Commit trước!
       if (needCommit) {
-        await batch.commit();
-        debugPrint("Đồng bộ tối ưu thành công!");
+        await batch.commit(); // Đẩy lên Firebase
       }
+
+      // NẾU Firebase THÀNH CÔNG (Không văng catch), mới được ghi vào máy!
+      if (localUpdates.isNotEmpty) {
+        await progressBox.putAll(localUpdates);
+      }
+
+      debugPrint("Đồng bộ tối ưu thành công!");
 
       final timeString = DateFormat(
         'HH:mm - dd/MM/yyyy',
