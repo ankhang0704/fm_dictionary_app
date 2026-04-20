@@ -10,8 +10,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../database/database_service.dart';
 
 class AuthSyncService {
-  AuthSyncService._();
-  static final AuthSyncService instance = AuthSyncService._();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -21,18 +19,19 @@ class AuthSyncService {
     'Chưa đồng bộ',
   );
   StreamSubscription<User?>? _authSubscription;
-  
+
   // Khởi tạo và lắng nghe trạng thái đăng nhập
   Future<void> init() async {
     _authSubscription = _auth.authStateChanges().listen((user) {
-    currentUser.value = user;
-  });
+      currentUser.value = user;
+    });
 
     final prefs = await SharedPreferences.getInstance();
     lastSyncTime.value = prefs.getString('last_sync_time') ?? 'Chưa đồng bộ';
   }
+
   Future<void> dispose() async {
-  await _authSubscription?.cancel();
+    await _authSubscription?.cancel();
   }
   // --- AUTH LOGIC ---
 
@@ -135,6 +134,7 @@ class AuthSyncService {
   Future<void> signOut() async {
     try {
       await _auth.signOut();
+      dispose();
       // Nếu bạn muốn xóa dữ liệu Hive khi logout thì thêm ở đây
     } catch (e) {
       debugPrint("Lỗi đăng xuất: $e");
@@ -292,11 +292,15 @@ class AuthSyncService {
       // VÁ LỖI BẢO TOÀN DỮ LIỆU KHI MẤT MẠNG (ATOMIC SYNC)
       // Chạy Firebase Batch Commit trước!
       // ✅ SỬA — Wrap cả hai trong một atomic operation với rollback flag
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('sync_in_progress', true);
+
       try {
         if (needCommit) await batch.commit();
         if (localUpdates.isNotEmpty) await progressBox.putAll(localUpdates);
+        await prefs.setBool('sync_in_progress', false);
       } catch (e) {
-        // Log để retry lần sau
+        // sync_in_progress = true còn lại → app biết cần retry khi mở lại
         debugPrint('❌ Partial sync failure: $e');
         rethrow;
       }
@@ -306,7 +310,6 @@ class AuthSyncService {
       final timeString = DateFormat(
         'HH:mm - dd/MM/yyyy',
       ).format(DateTime.now());
-      final prefs = await SharedPreferences.getInstance();
       await prefs.setString('last_sync_time', timeString);
       lastSyncTime.value = timeString;
     } on FirebaseException catch (e) {

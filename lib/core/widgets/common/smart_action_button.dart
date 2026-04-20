@@ -1,75 +1,120 @@
+// lib/core/widgets/common/smart_action_button.dart
+
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../constants/constants.dart';
+
+// Assuming these are correctly imported in your actual project:
+// import 'package:your_app/core/theme/app_colors.dart';
+// import 'package:your_app/core/theme/app_layout.dart';
+// import 'package:your_app/core/theme/app_typography.dart';
 
 class SmartActionButton extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color color;
-  final Color iconColor;
-  final VoidCallback onTap;
+  final String text;
+  final VoidCallback? onPressed;
+  final bool isLoading;
+  final bool isGlass;
+  final Color? color;
 
   const SmartActionButton({
     super.key,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.color,
-    required this.iconColor,
-    required this.onTap,
+    required this.text,
+    required this.onPressed,
+    this.isLoading = false,
+    this.isGlass = false,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    // final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+    // Determine text and spinner color based on glass state
+    // Glass: Slate 800, Solid: White
+    final Color contentColor = isGlass 
+        ? const Color(0xFF1E293B) // AppColors.textPrimary 
+        : Colors.white;
+
+    // Default solid background color if not provided
+    final Color solidBgColor = color ?? const Color(0xFF1E293B); // AppColors.textPrimary
+
+    // Reusable inner content (Text or Spinner)
+    final Widget innerContent = isLoading
+        ? SizedBox(
+            width: 24.0,
+            height: 24.0,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation<Color>(contentColor),
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(16),
+          )
+        : Text(
+            text,
+            style: const TextStyle(
+              fontFamily: 'Quicksand',
+              fontWeight: FontWeight.bold,
+              fontSize: 20, // Fallback for AppTypography.heading3
+            ).copyWith(color: contentColor),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis, // Zero Pixel Overflow Policy
+          );
+
+    final double buttonHeight = 56.0;
+    final BorderRadius buttonRadius = BorderRadius.circular(16.0); // AppLayout.buttonRadius
+
+    if (isGlass) {
+      return ClipRRect(
+        borderRadius: buttonRadius,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
+          child: Container(
+            height: buttonHeight,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.25),
+              borderRadius: buttonRadius,
+              border: Border.all(
+                color: Colors.white.withValues(alpha:0.5),
+                width: 1.0,
               ),
-              child: Icon(icon, color: iconColor),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: isLoading ? null : onPressed,
+                borderRadius: buttonRadius,
+                child: Center(
+                  // FittedBox ensures text shrinks instead of overflowing if translated text is too long
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: innerContent,
                     ),
                   ),
-                  Text(
-                    subtitle,
-                    style: AppConstants.subHeadingStyle.copyWith(letterSpacing: 0),
-                  ),
-                ],
+                ),
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.grey),
-          ],
+          ),
+        ),
+      );
+    }
+
+    // Solid Button
+    return SizedBox(
+      height: buttonHeight,
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: solidBgColor,
+          foregroundColor: contentColor,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: buttonRadius,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: innerContent,
         ),
       ),
     );

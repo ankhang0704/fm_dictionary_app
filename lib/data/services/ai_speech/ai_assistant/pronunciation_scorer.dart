@@ -47,7 +47,17 @@ class PronunciationScorer {
         level: 'excellent',
       );
     }
-
+    final paddedSpoken = ' $cleanSpoken ';
+    final paddedTarget = ' $cleanTarget ';
+    
+    if (paddedSpoken.contains(paddedTarget)) {
+      return PronunciationResult(
+        score: isHardMode ? 95 : 100, // HardMode trừ 5 điểm tội đọc thừa chữ
+        feedback: "Tốt! Bạn đã phát âm chuẩn từ này.",
+        level: 'excellent',
+        closestWord: cleanTarget,
+      );
+    }
     // 3. Tìm từ gần đúng nhất (Whisper hay thêm từ rác)
     final words = cleanSpoken.split(RegExp(r'\s+'));
     double bestScore = 0;

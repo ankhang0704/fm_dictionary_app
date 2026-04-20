@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../constants/constants.dart'; // Import hằng số của bạn
+import '../../../../core/constants/constants.dart'; // Import hằng số của bạn
 
 class StreakCelebrationScreen extends StatelessWidget {
   final int streakCount;

@@ -11,7 +11,7 @@ import 'package:fm_dictionary/features/learning/presentation/providers/quiz_prov
 import 'package:fm_dictionary/features/learning/quiz_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/constants.dart';
-import '../../../../core/widgets/common/steak_celebration.dart';
+import '../gamification/presentation/widgets/steak_celebration.dart';
 
 class StudyScreen extends StatefulWidget {
   final List<Word> words;

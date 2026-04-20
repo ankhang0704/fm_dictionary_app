@@ -9,28 +9,23 @@ class FlutterTtsEngine implements TtsEngine {
 
   @override
   Future<void> warmUp() async {
-    if (_isWarm) return;
+  if (_isWarm) return;
+  try {
     final completer = Completer<void>();
     _tts.setCompletionHandler(() {
-      if (!completer.isCompleted) {
-        completer.complete();
-      }
+      if (!completer.isCompleted) completer.complete();
     });
     await _tts.setVolume(0.0);
     await _tts.speak(' ');
-    await completer.future.timeout(
-      const Duration(seconds: 2),
-      onTimeout: () {
-        // Nếu quá 2s mà tts chưa đọc xong, ta ép nó complete luôn để đi tiếp
-        if (!completer.isCompleted) {
-          completer.complete();
-        }
-      },
-    );
-    _tts.setCompletionHandler(() {});
+    await completer.future.timeout(const Duration(seconds: 2), onTimeout: () {
+      if (!completer.isCompleted) completer.complete();
+    });
+  } finally {
+    _tts.setCompletionHandler(() {}); // luôn chạy dù timeout hay exception
     await _tts.setVolume(1.0);
     _isWarm = true;
   }
+}
 
   @override
   Future<void> speak(String text, {String? accent, double? speed}) async {

@@ -138,7 +138,7 @@ class LearningProvider extends ChangeNotifier {
     } else {
       await _wordService.updateProgress(currentWord!.id, true);
     }
-
+  
     loadLearningData(); 
 
     bool showCelebration = (_currentStreak > streakBefore && _currentStreak > 0);

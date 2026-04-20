@@ -1,64 +1,27 @@
-// file: lib/utils/constants.dart
 import 'package:flutter/material.dart';
+// Note: Ensure you have the 'google_fonts' package in your pubspec.yaml
+
+/// Centralized Design System Constants for the English Learning App
+class AppStyles {
+  // Prevent instantiation
+  AppStyles._();
+
+  static const String appName = 'FM Dictionary';
+}
+/// 4. Animations
+class AppAnimations {
+  AppAnimations._();
+
+  // Standard Durations
+  static const Duration short = Duration(milliseconds: 200);
+  static const Duration medium = Duration(milliseconds: 400);
+
+  // Standard Curves
+  /// Recommended curve for smooth, natural glass interactions and Bento card scaling
+  static const Curve glassInteractionCurve = Curves.easeInOutCubic;
+}
 
 class AppConstants {
-  static const String appName = 'FM Dictionary';
-
-  // Colors
-  static const Color primaryColor = Color(0xFF1A1A1A);
-  static const Color accentColor = Color(0xFFF27D26);
-  static const Color backgroundColor = Color(0xFFFDFCF9);
-  static const Color darkBgColor = Color(0xFF121212);
-  static const Color darkCardColor = Color(0xFF1E1E1E);
-  static const Color cardColor = Colors.white;
-  static const Color textPrimary = Color(0xFF1A1A1A);
-  static const Color textSecondary = Colors.grey;
-  static const Color textLight = Color(0xFF9E9E9E);
-  static const Color successColor = Color(0xFF4CAF50);
-  static const Color errorColor = Color(0xFFF44336);
-
-  // Fonts
-  static const String bodyFont = 'Inter';
-  static const String displayFont = 'Playfair Display';
-
-  // Text Styles
-  static const TextStyle headingStyle = TextStyle(
-    fontSize: 28,
-    fontWeight: FontWeight.bold,
-    fontFamily: displayFont,
-    fontStyle: FontStyle.normal,
-  );
-
-  static const TextStyle subHeadingStyle = TextStyle(
-    fontSize: 12,
-    letterSpacing: 2,
-    color: textSecondary,
-    fontWeight: FontWeight.bold,
-  );
-
-  static const TextStyle wordStyle = TextStyle(
-    fontSize: 36,
-    fontWeight: FontWeight.bold,
-    fontFamily: displayFont,
-    letterSpacing: -0.5,
-  );
-
-  static const TextStyle bodyStyle = TextStyle(
-    fontSize: 16,
-    fontFamily: bodyFont,
-    color: textPrimary,
-  );
-
-  // Layout
-  static const double defaultPadding = 24.0;
-  static const double cardRadius = 32.0;
-  static const double buttonRadius = 20.0;
-  static const double inputRadius = 16.0;
-
-  // Animations
-  static const Duration flipDuration = Duration(milliseconds: 400);
-  static const Duration defaultAnimationDuration = Duration(milliseconds: 300);
-
  // Topic Icons Mapping - Extended for FM & Sustainability
   static const Map<String, IconData> topicIcons = {
     // --- General & Building Services ---

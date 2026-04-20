@@ -11,26 +11,29 @@ class TtsService {
   TtsService._internal();
 
   // ─── Engine (có thể inject engine khác sau này) ───────────────────────────
-  late TtsEngine _engine;
+  late TtsEngine? _engine;
 
   // ─── Debounce: hủy lệnh cũ trước khi phát mới ────────────────────────────
   Timer? _debounceTimer;
   Completer<void>? _currentSpeakCompleter;
   static const _debounceMs = 80; // ms chờ trước khi thực sự phát
-
+  Completer<void>? _warmUpCompleter;
   // ─── Vòng đời ─────────────────────────────────────────────────────────────
   bool _isInitialized = false;
 
   /// Gọi 1 lần duy nhất trong main() — warm-up hardware audio
   Future<void> init({TtsEngine? engine}) async {
-    if (_isInitialized) return;
-    _engine = engine ?? FlutterTtsEngine();
-
-    // warmUp() chạy trong background, không block UI
-    // Dùng compute() hoặc Future.microtask() để đảm bảo không jank
-    unawaited(_engine.warmUp());
-    _isInitialized = true;
-  }
+  if (_isInitialized) return;
+  _engine = engine ?? FlutterTtsEngine();
+  _warmUpCompleter = Completer<void>();
+  _engine?.warmUp().then((_) {
+    if (!_warmUpCompleter!.isCompleted) _warmUpCompleter!.complete();
+  }).catchError((e) {
+    debugPrint('warmUp error: $e');
+    if (!_warmUpCompleter!.isCompleted) _warmUpCompleter!.complete(); // failsafe
+  });
+  _isInitialized = true;
+}
   
 
   // ─── Core API ─────────────────────────────────────────────────────────────
@@ -40,6 +43,7 @@ class TtsService {
   Future<void> speak(String text, {String? accent}) async {
     if (!_isInitialized) {
       debugPrint('⚠️ TtsService chưa init, tự khởi động...');
+       await _warmUpCompleter?.future;
       await init();
     }
 
@@ -49,7 +53,7 @@ class TtsService {
     // 2. Hủy lệnh speak đang chạy (nếu có)
     if (_currentSpeakCompleter != null &&
         !_currentSpeakCompleter!.isCompleted) {
-      await _engine.stop();
+      await _engine?.stop();
     }
 
     // 3. Tạo Completer mới để track lần phát này
@@ -66,7 +70,7 @@ class TtsService {
         final settings = DatabaseService.getSettings();
         // speak() trên flutter_tts là synchronous về UI thread,
         // nhưng audio rendering nằm trên native thread → không jank
-        await _engine.speak(
+        await _engine?.speak(
           text,
           accent: accent ?? settings.defaultAccent,
           speed: settings.ttsSpeed,
@@ -95,20 +99,19 @@ class TtsService {
     }
     _currentSpeakCompleter = null;
 
-    await _engine.stop();
+    await _engine?.stop();
   }
 
   /// Gọi khi Widget bị dispose (rời khỏi màn hình)
   /// → giải phóng Audio Session, tránh RAM leak
   Future<void> release() async {
     await stop();
-    await _engine.dispose();
+    await _engine?.dispose();
     // Warm lại khi quay về (lazy)
+    _engine = null;
     _isInitialized = false;
+    _warmUpCompleter = null;
   }
 }
 
-// Helper: fire-and-forget mà không gây warning "unawaited_futures"
-void unawaited(Future<void> future) {
-  future.ignore();
-}
+
