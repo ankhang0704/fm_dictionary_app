@@ -146,7 +146,9 @@ class WordService {
   List<String> getAllTopics() {
     return _wordBox.values.map((w) => w.topic).toSet().toList();
   }
-
+  List<Word> getAllWords() {
+    return _wordBox.values.toList();
+  }
   bool isWordLearned(String wordId) {
     final progress = getWordProgress(wordId);
     return (progress[ProgressKeys.step] as int) >=

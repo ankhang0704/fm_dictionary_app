@@ -1,6 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:fm_dictionary/features/gamification/presentation/widgets/glass_badge_widget.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/constants/constants.dart';
+
+// --- CORE UI ---
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+
+// --- PROVIDERS ---
 import '../providers/gamification_provider.dart';
 
 class BadgesBento extends StatelessWidget {
@@ -8,90 +14,59 @@ class BadgesBento extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final gamification = context.watch<GamificationProvider>();
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
+          child: Row(
             children: [
-              const Icon(Icons.military_tech, color: Colors.amber, size: 24),
-              const SizedBox(width: 8),
+              const Icon(
+                CupertinoIcons.rosette,
+                color: AppColors.warning,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
               Text(
                 "Bộ sưu tập Huy hiệu",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : AppConstants.textPrimary,
+                style: AppTypography.heading3.copyWith(
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          // Hiển thị danh sách dạng Grid 
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4, // 4 Huy hiệu 1 hàng ngang
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.75, // Chỉnh tỷ lệ hình chữ nhật
-            ),
-            itemCount: gamification.badges.length,
-            itemBuilder: (context, index) {
-              final badge = gamification.badges[index];
-              return _buildBadgeItem(badge, isDark);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBadgeItem(BadgeModel badge, bool isDark) {
-    return Column(
-      children: [
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: badge.isUnlocked 
-                ? AppConstants.accentColor.withValues(alpha: 0.15) 
-                : Colors.grey.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: badge.isUnlocked ? AppConstants.accentColor : Colors.transparent,
-              width: 2,
-            ),
-          ),
-          child: Icon(
-            badge.icon,
-            color: badge.isUnlocked ? Colors.amber : Colors.grey.withValues(alpha: 0.4),
-            size: 28,
-          ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          badge.title,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            color: badge.isUnlocked 
-                ? (isDark ? Colors.white : AppConstants.textPrimary) 
-                : Colors.grey,
+
+        // The Badge Grid (Atomic units)
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4, // 4 Badges per row
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio:
+                0.75, // Tall vertical aspect ratio for name & date
           ),
+          itemCount: gamification.badges.length,
+          itemBuilder: (context, index) {
+            final badge = gamification.badges[index];
+
+            // Legacy Logic Mapping:
+            // - title maps to badgeName
+            // - icon maps to icon
+            // - isUnlocked maps to isUnlocked
+            return GlassBadgeWidget(
+              badgeName: badge.title,
+              icon: badge.icon,
+              isUnlocked: badge.isUnlocked,
+              // If you have a timestamp in your model, pass it here
+              dateUnlocked: badge.isUnlocked ? "Đã đạt" : null,
+            );
+          },
         ),
       ],
     );

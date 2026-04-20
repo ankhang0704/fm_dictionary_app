@@ -1,17 +1,23 @@
-// lib/features/home/presentation/screens/menu_screen.dart
-
-import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
-import 'package:fm_dictionary/core/constants/constants.dart';
+import 'package:flutter/material.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+// --- CORE UI & THEME ---
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/app_layout.dart';
+import '../../../../core/constants/app_routes.dart';
+import '../../../../core/widgets/common/smart_action_button.dart';
+import '../../../../core/widgets/common/app_avatar.dart';
+import '../../../../core/utils/status_navigator.dart';
+
+// --- PROVIDERS / SERVICES ---
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../data/services/database/database_service.dart';
-import '../../../../core/constants/app_routes.dart';
-import '../../../../core/utils/status_navigator.dart';
-import '../../../../core/widgets/common/app_avatar.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
@@ -23,162 +29,253 @@ class MenuScreen extends StatelessWidget {
     final settings = DatabaseService.getSettings();
     final currentLocale = context.locale.languageCode;
 
-    return Scaffold(
-      appBar: AppBar(title: Text("sidebar.settings".tr()), centerTitle: true),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        physics: const BouncingScrollPhysics(),
-        children: [
-          // 1. ACCOUNT BENTO BOX
-          _buildMenuBox(context, [
-            ListTile(
-              leading: AppAvatar(
-                localPath: settings.userAvatarPath,
-                networkUrl: user?.photoURL,
-                radius: 20,
-              ),
-              title: Text(
-                user?.displayName ?? 'sidebar.guest'.tr(),
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(user?.email ?? 'sidebar.login_desc'.tr()),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
+    return Container(
+      // MESH GRADIENT BACKGROUND INTEGRATION
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.meshBlue, AppColors.meshPurple],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack(
+          children: [
+            // Glass Overlay for the whole screen
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(color: Colors.black.withValues(alpha:0.1)),
             ),
-            const Divider(indent: 70),
-            _menuItem(
-              CupertinoIcons.arrow_2_circlepath,
-              'sidebar.sync'.tr(),
-              () => _handleSync(context),
-            ),
-          ]),
 
-          const SizedBox(height: 16),
+            SafeArea(
+              child: Column(
+                children: [
+                  // --- TOP: PROFILE QUICK-VIEW ---
+                  _buildProfileHeader(context, user, settings, auth),
 
-          // 2. APP INFO & CONTENT BENTO BOX (Kế thừa từ LeftSidebar)
-          _buildMenuBox(context, [
-            _menuItem(
-              CupertinoIcons.chat_bubble_text,
-              'sidebar.feedback'.tr(),
-              () => _navigateToStatic(
-                context,
-                'sidebar.feedback'.tr(),
-                'feedback_$currentLocale.md',
-              ),
-            ),
-            _menuItem(
-              CupertinoIcons.share,
-              'sidebar.share'.tr(),
-              () => _navigateToStatic(
-                context,
-                'sidebar.share'.tr(),
-                'share_$currentLocale.md',
-              ),
-            ),
-            _menuItem(
-              CupertinoIcons.shield_lefthalf_fill,
-              'sidebar.privacy'.tr(),
-              () => _navigateToStatic(
-                context,
-                'sidebar.privacy'.tr(),
-                'privacy_$currentLocale.md',
-              ),
-            ),
-            _menuItem(
-              CupertinoIcons.doc_text,
-              'sidebar.terms'.tr(),
-              () => _navigateToStatic(
-                context,
-                'sidebar.terms'.tr(),
-                'terms_$currentLocale.md',
-              ),
-            ),
-            _menuItem(
-              CupertinoIcons.info_circle,
-              'sidebar.about'.tr(),
-              () => _navigateToStatic(
-                context,
-                'sidebar.about'.tr(),
-                'about_$currentLocale.md',
-              ),
-            ),
-          ]),
+                  // --- MIDDLE: NAVIGATION ITEMS ---
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.all(AppLayout.defaultPadding),
+                      child: Column(
+                        children: [
+                          // Group 1: Learning Tools
+                          _buildBentoSection([
+                            _buildNavItem(
+                              context,
+                              CupertinoIcons.arrow_2_circlepath,
+                              'sidebar.sync'.tr(),
+                              () => _handleSync(context),
+                              iconColor: AppColors.meshMint,
+                            ),
+                            _buildNavItem(
+                              context,
+                              CupertinoIcons.clock_fill,
+                              'sidebar.history'.tr(),
+                              () => Navigator.pushNamed(
+                                context,
+                                AppRoutes.history,
+                              ),
+                            ),
+                            _buildNavItem(
+                              context,
+                              CupertinoIcons.star_fill,
+                              'sidebar.saved'.tr(),
+                              () =>
+                                  Navigator.pushNamed(context, AppRoutes.saved),
+                            ),
+                          ]),
+                          const SizedBox(height: 16),
 
-          const SizedBox(height: 16),
-
-          // 3. SETTINGS BENTO BOX
-          _buildMenuBox(context, [
-            _menuItem(
-              CupertinoIcons.gear_solid,
-              'sidebar.settings'.tr(),
-              () => Navigator.pushNamed(context, AppRoutes.settings),
-            ),
-          ]),
-
-          const SizedBox(height: 32),
-
-          // 4. FOOTER: LOGOUT & VERSION
-          Column(
-            children: [
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  backgroundColor: Colors.red.withOpacity(0.1),
-                  foregroundColor: Colors.red,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                          // Group 2: App & Legal
+                          _buildBentoSection([
+                            _buildNavItem(
+                              context,
+                              CupertinoIcons.gear_solid,
+                              'sidebar.settings'.tr(),
+                              () => Navigator.pushNamed(
+                                context,
+                                AppRoutes.settings,
+                              ),
+                            ),
+                            _buildNavItem(
+                              context,
+                              CupertinoIcons.chat_bubble_text,
+                              'sidebar.feedback'.tr(),
+                              () => _navigateToStatic(
+                                context,
+                                'sidebar.feedback'.tr(),
+                                'feedback_$currentLocale.md',
+                              ),
+                            ),
+                            _buildNavItem(
+                              context,
+                              CupertinoIcons.shield_fill,
+                              'sidebar.privacy'.tr(),
+                              () => _navigateToStatic(
+                                context,
+                                'sidebar.privacy'.tr(),
+                                'privacy_$currentLocale.md',
+                              ),
+                            ),
+                            _buildNavItem(
+                              context,
+                              CupertinoIcons.info_circle_fill,
+                              'sidebar.about'.tr(),
+                              () => _navigateToStatic(
+                                context,
+                                'sidebar.about'.tr(),
+                                'about_$currentLocale.md',
+                              ),
+                            ),
+                          ]),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                icon: const Icon(CupertinoIcons.square_arrow_right),
-                label: Text(
-                  user != null ? "sidebar.logout".tr() : "sidebar.login".tr(),
-                ),
-                onPressed: () => user != null
-                    ? auth.logout()
-                    : Navigator.pushNamed(context, AppRoutes.login),
+
+                  // --- BOTTOM: LOGOUT & VERSION ---
+                  _buildFooter(context, auth, user),
+                ],
               ),
-              const SizedBox(height: 16),
-              FutureBuilder<PackageInfo>(
-                future: PackageInfo.fromPlatform(),
-                builder: (context, snapshot) {
-                  return Text(
-                    'Version ${snapshot.data?.version ?? '1.0.0'}',
-                    style: const TextStyle(color: Colors.grey, fontSize: 13),
-                  );
-                },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // WIDGET BUILDERS
+  // ===========================================================================
+
+  Widget _buildProfileHeader(
+    BuildContext context,
+    dynamic user,
+    dynamic settings,
+    AuthProvider auth,
+  ) {
+    return Padding(
+      padding: EdgeInsets.all(AppLayout.defaultPadding),
+      child: GlassBentoCard(
+        onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
+        child: Row(
+          children: [
+            AppAvatar(
+              localPath: settings.userAvatarPath,
+              networkUrl: user?.photoURL,
+              radius: 30,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      user?.displayName ?? 'sidebar.guest'.tr(),
+                      style: AppTypography.heading3,
+                    ),
+                  ),
+                  Text(
+                    user?.email ?? 'sidebar.login_desc'.tr(),
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "Edit Profile",
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.meshBlue,
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-            ],
+            ),
+            const Icon(
+              CupertinoIcons.chevron_right,
+              color: AppColors.textSecondary,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBentoSection(List<Widget> items) {
+    return GlassBentoCard(onTap: null, child: Column(children: items));
+  }
+
+  Widget _buildNavItem(
+    BuildContext context,
+    IconData icon,
+    String title,
+    VoidCallback onTap, {
+    Color? iconColor,
+  }) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: (iconColor ?? AppColors.textPrimary).withValues(alpha:0.1),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 20, color: iconColor ?? AppColors.textPrimary),
+      ),
+      title: Text(title, style: AppTypography.bodyLarge),
+      trailing: const Icon(
+        CupertinoIcons.chevron_right,
+        size: 14,
+        color: AppColors.textSecondary,
+      ),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildFooter(BuildContext context, AuthProvider auth, dynamic user) {
+    return Padding(
+      padding: EdgeInsets.all(AppLayout.defaultPadding),
+      child: Column(
+        children: [
+          SmartActionButton(
+            text: user != null ? "sidebar.logout".tr() : "sidebar.login".tr(),
+            isGlass: true,
+            isLoading: false,
+            onPressed: () => user != null
+                ? auth.logout()
+                : Navigator.pushNamed(context, AppRoutes.login),
+          ),
+          const SizedBox(height: 16),
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snapshot) {
+              return Text(
+                'Version ${snapshot.data?.version ?? '1.0.0'}',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  // --- HELPER WIDGETS ---
-
-  Widget _buildMenuBox(BuildContext context, List<Widget> children) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
-      ),
-      child: Column(children: children),
-    );
-  }
-
-  Widget _menuItem(IconData icon, String title, VoidCallback onTap) {
-    return ListTile(
-      leading: Icon(icon, size: 22),
-      title: Text(title, style: const TextStyle(fontSize: 15)),
-      trailing: const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
-      onTap: onTap,
-    );
-  }
-
-  // --- LOGIC HANDLING (Kế thừa từ Sidebar cũ) ---
+  // ===========================================================================
+  // LEGACY LOGIC INTEGRATION
+  // ===========================================================================
 
   void _navigateToStatic(BuildContext context, String title, String fileName) {
     Navigator.pushNamed(
@@ -188,86 +285,52 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-   Future<void> _handleSync(BuildContext context) async {
+  Future<void> _handleSync(BuildContext context) async {
     final authProvider = context.read<AuthProvider>();
-
-    // BƯỚC 1: KIỂM TRA TRƯỚC KHI CHẠY (PRE-CHECK)
     if (authProvider.currentUser == null) {
       _showLoginRequiredDialog(context);
       return;
     }
 
-    // BƯỚC 2: HIỂN THỊ LOADING NẾU ĐÃ ĐĂNG NHẬP
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator.adaptive()),
-    );
-
     try {
       await authProvider.syncData();
-      
       if (!context.mounted) return;
-      // Đóng Loading Dialog
-      Navigator.of(context, rootNavigator: true).pop();
-
-      // Hiện thông báo thành công dùng chung
       StatusNavigator.showSuccess(
-        context,
+        context: context,
         title: "Sync Successful",
-        message: "Your learning progress has been successfully synced with the cloud.",
+        message: "Progress has been synced with the cloud.",
       );
     } catch (e) {
       if (!context.mounted) return;
-      // Đóng Loading Dialog
-      Navigator.of(context, rootNavigator: true).pop();
-
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_getFriendlyErrorMessage(e)),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
       );
     }
   }
 
-  // Hàm bổ sung: Hiện Dialog yêu cầu đăng nhập thay vì Snackbar đơn điệu
   void _showLoginRequiredDialog(BuildContext context) {
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      builder: (ctx) => CupertinoAlertDialog(
         title: const Text("Yêu cầu đăng nhập"),
-        content: const Text("Bạn cần đăng nhập để sử dụng tính năng đồng bộ đám mây và bảo vệ tiến trình học tập."),
+        content: const Text(
+          "Bạn cần đăng nhập để sử dụng tính năng đồng bộ đám mây.",
+        ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
+            child: const Text("Để sau"),
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("Để sau", style: TextStyle(color: Colors.grey)),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppConstants.primaryColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: const Text("Đăng nhập"),
             onPressed: () {
-              Navigator.pop(ctx); // Đóng dialog
-              Navigator.pushNamed(context, AppRoutes.login); // Nhảy sang trang Login
+              Navigator.pop(ctx);
+              Navigator.pushNamed(context, AppRoutes.login);
             },
-            child: const Text("Đăng nhập ngay", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
-  }
-
-  String _getFriendlyErrorMessage(dynamic error) {
-    final errorString = error.toString().toLowerCase();
-    if (errorString.contains('network') || errorString.contains('socket')) {
-      return "Network connection error. Check your internet.";
-    } else if (errorString.contains('not_logged_in')) {
-      return "Please login to sync data.";
-    }
-    return "System Error: ${error.toString()}";
   }
 }

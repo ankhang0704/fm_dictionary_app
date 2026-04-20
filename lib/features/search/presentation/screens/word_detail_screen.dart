@@ -1,120 +1,323 @@
-// file: lib/features/search/word_detail_screen.dart
-import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
-import 'package:fm_dictionary/core/constants/constants.dart';
-import 'package:fm_dictionary/data/models/word_model.dart';
-import 'package:fm_dictionary/data/services/ai_speech/text_to_speech/speech_service.dart';
+import 'package:flutter/material.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
 
+// --- CORE / THEMES ---
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/app_layout.dart';
 
-class WordDetailScreen extends StatelessWidget {
+// --- MODELS / SERVICES ---
+import '../../../../data/models/word_model.dart';
+import '../../../../data/services/ai_speech/text_to_speech/speech_service.dart';
+
+class WordDetailScreen extends StatefulWidget {
   final Word word;
   const WordDetailScreen({super.key, required this.word});
 
   @override
+  State<WordDetailScreen> createState() => _WordDetailScreenState();
+}
+
+class _WordDetailScreenState extends State<WordDetailScreen> {
+  // Legacy TTS Service
+  final TtsService _ttsService = TtsService();
+
+  // Local state for bookmark logic
+  bool _isSaved = false;
+
+  @override
   Widget build(BuildContext context) {
-    final TtsService ttsService = TtsService();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Scaffold(
-      backgroundColor: isDark ? AppConstants.darkBgColor : AppConstants.backgroundColor,
-      appBar: AppBar(
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(color: AppConstants.accentColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
-          child: Text(word.topic.toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppConstants.accentColor, letterSpacing: 1.5)),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // BENTO 1: TỪ VÀ PHÁT ÂM
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-              ),
-              child: Column(
-                children: [
-                  Text(word.word, style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (word.phoneticUS.isNotEmpty) _buildSpeakBtn('US', word.phoneticUS, () => ttsService.speak(word.word, accent: 'en-US'), isDark),
-                      const SizedBox(width: 12),
-                      if (word.phoneticUK.isNotEmpty) _buildSpeakBtn('UK', word.phoneticUK, () => ttsService.speak(word.word, accent: 'en-GB'), isDark),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // BENTO 2: Ý NGHĨA
-            const Text(' Ý nghĩa', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey)),
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-              ),
-              child: Text(word.meaning, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            ),
-            const SizedBox(height: 20),
-
-            // BENTO 3: VÍ DỤ
-            const Text(' Ví dụ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey)),
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppConstants.accentColor.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppConstants.accentColor.withValues(alpha: 0.2)),
-              ),
-              child: Text(
-                "\"${word.example}\"",
-                style: const TextStyle(fontSize: 18, fontStyle: FontStyle.italic, height: 1.5),
-              ),
-            ),
+    return Container(
+      // GLOBAL DESIGN SYSTEM: Mesh Gradient Background
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.meshBlue,
+            AppColors.meshPurple,
+            AppColors.meshMint,
           ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: _buildGlassHeader(context),
+        body: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.all(AppLayout.defaultPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // BENTO 1: HERO CARD (Word & Meaning)
+              _buildHeroCard(),
+              const SizedBox(height: 16),
+
+              // BENTO 2: PRONUNCIATION ROW (US & UK)
+              _buildPronunciationRow(),
+              const SizedBox(height: 16),
+
+              // BENTO 3: EXPLANATION / CONTEXT
+              if (widget.word.example.isNotEmpty) ...[
+                _buildContextCard(),
+                const SizedBox(height: 32),
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildSpeakBtn(String label, String ipa, VoidCallback onTap, bool isDark) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(16),
+  // ===========================================================================
+  // WIDGET BUILDERS
+  // ===========================================================================
+
+  PreferredSizeWidget _buildGlassHeader(BuildContext context) {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(kToolbarHeight),
+      child: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: AppBar(
+            backgroundColor: Colors.white.withValues(alpha:0.1),
+            elevation: 0,
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(
+                CupertinoIcons.back,
+                color: AppColors.textPrimary,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              "Chi tiết từ",
+              style: AppTypography.heading2.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+            actions: [
+              // Saved Word (Bookmark) Toggle
+              IconButton(
+                icon: Icon(
+                  _isSaved
+                      ? CupertinoIcons.bookmark_solid
+                      : CupertinoIcons.bookmark,
+                  color: _isSaved ? AppColors.meshMint : AppColors.textPrimary,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isSaved = !_isSaved;
+                  });
+                  // TODO: Add logic here to save/remove word from database via SavedProvider
+                },
+              ),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Container(color: Colors.white.withValues(alpha:0.2), height: 1),
+            ),
+          ),
         ),
-        child: Row(
-          children: [
-            Text(label, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-            const SizedBox(width: 8),
-            Text(ipa, style: const TextStyle(fontWeight: FontWeight.w500)),
-            const SizedBox(width: 8),
-            const Icon(CupertinoIcons.speaker_2_fill, size: 16, color: AppConstants.accentColor),
-          ],
-        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroCard() {
+    return GlassBentoCard(
+      onTap: null,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          // TOP RIGHT: Topic Badge
+          Align(
+            alignment: Alignment.topRight,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha:0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withValues(alpha:0.2)),
+              ),
+              child: Text(
+                widget.word.topic.toUpperCase(),
+                style: AppTypography.bodyMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ),
+
+          // CENTER CONTENT: Word & Meaning
+          Padding(
+            padding: const EdgeInsets.only(
+              top: 28.0,
+              bottom: 8.0,
+              left: 8.0,
+              right: 8.0,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ZERO OVERFLOW: Dynamically scale down extremely long words
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    widget.word.word,
+                    style: AppTypography.heading1.copyWith(
+                      fontSize: 42,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  widget.word.meaning,
+                  style: AppTypography.heading3.copyWith(
+                    color: AppColors.success,
+                    fontSize: 22,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPronunciationRow() {
+    final hasUS = widget.word.phoneticUS.isNotEmpty;
+    final hasUK = widget.word.phoneticUK.isNotEmpty;
+
+    if (!hasUS && !hasUK) return const SizedBox.shrink();
+
+    return Row(
+      children: [
+        if (hasUS)
+          Expanded(
+            child: _buildPronunciationCard(
+              title: "🇺🇸 US",
+              ipa: widget.word.phoneticUS,
+              onSpeak: () =>
+                  _ttsService.speak(widget.word.word, accent: 'en-US'),
+            ),
+          ),
+
+        if (hasUS && hasUK) const SizedBox(width: 16),
+
+        if (hasUK)
+          Expanded(
+            child: _buildPronunciationCard(
+              title: "🇬🇧 UK",
+              ipa: widget.word.phoneticUK,
+              onSpeak: () =>
+                  _ttsService.speak(widget.word.word, accent: 'en-GB'),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildPronunciationCard({
+    required String title,
+    required String ipa,
+    required VoidCallback onSpeak,
+  }) {
+    return GlassBentoCard(
+      onTap: onSpeak, // Entire card is tappable for quick access
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            title,
+            style: AppTypography.bodyMedium.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // ZERO OVERFLOW: IPA Transcriptions can sometimes be long
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              ipa,
+              style: AppTypography.ipaText.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Prominent Glass Speaker Button
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.meshBlue.withValues(alpha:0.2),
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.meshBlue.withValues(alpha:0.4)),
+            ),
+            child: const Icon(
+              CupertinoIcons.speaker_2_fill,
+              color: AppColors.textPrimary,
+              size: 24,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContextCard() {
+    return GlassBentoCard(
+      onTap: null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                CupertinoIcons.lightbulb_fill,
+                color: AppColors.warning,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "Giải thích & Ngữ cảnh",
+                style: AppTypography.heading3.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Example Text block
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha:0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withValues(alpha:0.2)),
+            ),
+            child: Text(
+              "\"${widget.word.example}\"",
+              style: AppTypography.bodyLarge.copyWith(
+                fontStyle: FontStyle.italic,
+                height: 1.5,
+              ),
+              softWrap: true,
+            ),
+          ),
+        ],
       ),
     );
   }

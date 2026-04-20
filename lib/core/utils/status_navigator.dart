@@ -66,4 +66,23 @@ class StatusNavigator {
       ),
     );
   }
+  static Future<void> showEmailVerification({
+    required BuildContext context,
+    required String email,
+    String buttonText = 'Go to Login',
+    VoidCallback? onAction,
+  }) {
+    return Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => GenericStatusScreen(
+          statusType: StatusType.info, // Dùng icon info hoặc success tùy bro
+          title: "Verify Your Email",
+          description:
+              "We have sent a verification link to $email. Please check your inbox to continue.",
+          buttonText: buttonText,
+          onAction: onAction,
+        ),
+      ),
+    );
+  }
 }

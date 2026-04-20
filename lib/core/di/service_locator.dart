@@ -12,7 +12,6 @@ import 'package:get_it/get_it.dart';
 // --- Imaginary Imports ---
 // Services
 
-
 // Providers
 
 final sl = GetIt.instance;
@@ -22,52 +21,36 @@ Future<void> init() async {
   // ! CORE SERVICES (Registered as Lazy Singletons)
   // These are instantiated only once when they are first requested.
   // ---------------------------------------------------------------------------
-  
-  sl.registerLazySingleton<DatabaseService>(
-    () => DatabaseService(),
-  );
-  
-  sl.registerLazySingleton<AiAssistantService>(
-    () => AiAssistantService(),
-  );
-  
-  sl.registerLazySingleton<TtsService>(
-    () => TtsService(),
-  );
-  
-  sl.registerLazySingleton<AuthSyncService>(
-    () => AuthSyncService(),
-  );
 
+  sl.registerLazySingleton<DatabaseService>(() => DatabaseService());
+  sl.registerLazySingleton<AuthSyncService>(() => AuthSyncService());
+
+  sl.registerLazySingleton<AiAssistantService>(() => AiAssistantService());
+
+  sl.registerLazySingleton<TtsService>(() => TtsService());
 
   // ---------------------------------------------------------------------------
   // ! STATE MANAGEMENT / PROVIDERS (Registered as Factories)
   // These are instantiated fresh every time they are injected/requested.
   // Assume dependencies (if any) are resolved via sl().
   // ---------------------------------------------------------------------------
-  
+
   sl.registerFactory<AuthProvider>(
     () => AuthProvider(
       // Example of injecting a service:
       // authSyncService: sl(),
     ),
   );
-  
-  sl.registerFactory<HomeProvider>(
-    () => HomeProvider(),
-  );
-  
+
+  sl.registerFactory<HomeProvider>(() => HomeProvider());
+
   sl.registerFactory<LearningProvider>(
     () => LearningProvider(
       // databaseService: sl(),
     ),
   );
-  
-  sl.registerFactory<GamificationProvider>(
-    () => GamificationProvider(),
-  );
-  
-  sl.registerFactory<StreakProvider>(
-    () => StreakProvider(),
-  );
+
+  sl.registerFactory<GamificationProvider>(() => GamificationProvider());
+
+  sl.registerFactory<StreakProvider>(() => StreakProvider());
 }

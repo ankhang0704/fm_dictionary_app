@@ -32,5 +32,6 @@ class AppRoutes {
 
   // Settings & Info
   static const String settings = '/settings';
-  static const String staticContent = '/static-content'; 
+  static const String staticContent = '/static-content';
+
 }

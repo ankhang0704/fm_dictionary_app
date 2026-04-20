@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/constants/progress_keys.dart';
+import 'package:fm_dictionary/core/di/service_locator.dart';
 import '../../../../data/models/word_model.dart';
 import '../../../../data/services/database/word_service.dart';
 import '../../../../data/services/ai_speech/text_to_speech/speech_service.dart';
@@ -53,7 +54,7 @@ class LearningProvider extends ChangeNotifier {
 
   LearningProvider() {
     loadLearningData();
-    AiAssistantService.instance.initModel();
+    sl<AiAssistantService>().initModel();
   }
 
   void loadWords(String topic) {
@@ -122,7 +123,7 @@ class LearningProvider extends ChangeNotifier {
     _pronunciationScore = null;
     _isRecording = false;
     _isAnalyzing = false;
-    AiAssistantService.instance.disposeSession();
+    sl<AiAssistantService>().disposeSession();
   }
 
   // --- Logic Anki (Xử lý kết quả) ---
@@ -174,8 +175,7 @@ class LearningProvider extends ChangeNotifier {
       _timeRemaining = 5;
       _isRecording = true;
       notifyListeners();
-
-      await AiAssistantService.instance.startRecording();
+      await sl<AiAssistantService>().startRecording();
 
       _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
         if (!_isRecording) {
@@ -204,7 +204,7 @@ class LearningProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final text = await AiAssistantService.instance.stopAndTranscribe();
+      final text = await sl<AiAssistantService>().stopAndTranscribe();
       if (text != null) {
         final result = PronunciationScorer.evaluate(text, currentWord!.word);
         _spokenText = text;
@@ -224,7 +224,7 @@ class LearningProvider extends ChangeNotifier {
   @override
   void dispose() {
     _recordingTimer?.cancel();
-    AiAssistantService.instance.disposeSession();
+    sl<AiAssistantService>().disposeSession();
     super.dispose();
   }
 }

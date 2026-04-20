@@ -1,18 +1,26 @@
 import 'dart:ui';
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+import 'package:fm_dictionary/data/models/word_model.dart';
 import 'package:fm_dictionary/features/learning/presentation/providers/quiz_provider.dart';
 import 'package:provider/provider.dart';
-import '../../data/models/word_model.dart';
-import '../../data/services/database/word_service.dart';
-import '../../core/constants/constants.dart';
-import 'quiz_screen.dart';
-import '../../data/services/features/quiz_service.dart'; // THÊM DÒNG NÀY
+
+// --- CORE / THEMES ---
+import '../../../../core/constants/constants.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/app_layout.dart';
+import '../../../../core/widgets/common/smart_action_button.dart';
+
+// --- MODELS / PROVIDERS / SERVICES ---
+import '../../../../data/services/database/word_service.dart';
+import '../../../../data/services/features/quiz_service.dart'; // Assumed location of QuizMode enum
 
 class QuizConfigurationScreen extends StatefulWidget {
-  final String initialTopic;
-  const QuizConfigurationScreen({super.key, this.initialTopic = 'All'});
+  final String? initialTopic;
+
+  const QuizConfigurationScreen({super.key, this.initialTopic});
 
   @override
   State<QuizConfigurationScreen> createState() =>
@@ -20,387 +28,243 @@ class QuizConfigurationScreen extends StatefulWidget {
 }
 
 class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
-  final WordService _wordService = WordService();
   late String _selectedTopic;
-  int _questionCount = 10;
-  QuizMode _selectedMode = QuizMode.enToVi;
+  int _selectedCount = 10;
+  QuizMode _selectedMode = QuizMode.viToEn; // Default mode
 
-  List<Word> _currentWordsPool = [];
+  final WordService _wordService = WordService();
+
+  final List<int> _questionCounts = [10, 20, 50, -1]; // -1 represents "All"
+
+  final List<Map<String, dynamic>> _modes = [
+    {
+      'mode': QuizMode.enToVi,
+      'title': 'Anh -> Việt',
+      'subtitle': 'Đoán nghĩa tiếng Việt',
+      'icon': CupertinoIcons.arrow_right_arrow_left_square,
+    },
+    {
+      'mode': QuizMode.viToEn,
+      'title': 'Việt -> Anh',
+      'subtitle': 'Dịch từ tiếng Việt',
+      'icon': CupertinoIcons.arrow_left_right_square_fill,
+    },
+    {
+      'mode': QuizMode.listening,
+      'title': 'Nghe (Listening)',
+      'subtitle': 'Nghe và chọn từ đúng',
+      'icon': CupertinoIcons.headphones,
+    },
+  ];
 
   @override
   void initState() {
     super.initState();
-    _selectedTopic = widget.initialTopic;
-    _updateWordsPool();
-    debugPrint("Topic nhận được: ${widget.initialTopic}");
-  }
-
-  void _updateWordsPool() {
-    if (_selectedTopic == 'All') {
-      _currentWordsPool = _wordService.getRandomWords(9999);
-    } else if (_selectedTopic == 'Review') {
-      _currentWordsPool = _wordService.getWordsToReview();
-    } else {
-      _currentWordsPool = _wordService.getWordsByTopic(_selectedTopic);
-    }
-
-    final maxWords = _currentWordsPool.length;
-    // BỎ HẾT LOGIC CHECK < 4. Chỉ cần check logic hiển thị số lượng
-    if (_questionCount > maxWords && _questionCount != 9999) {
-      _questionCount = maxWords > 10 ? 10 : 9999;
-    }
-    if (_questionCount == 10 && maxWords < 10) {
-      _questionCount = 9999;
-    }
-  }
-
-  void _startQuiz() {
-    List<Word> targetWords = List.from(_currentWordsPool);
-    targetWords.shuffle();
-
-    if (_questionCount != 9999) {
-      targetWords = targetWords.take(_questionCount).toList();
-    }
-
-    context.read<QuizProvider>().initQuiz(targetWords, _selectedMode);
-
-    Navigator.push(
-      context,
-      CupertinoPageRoute(builder: (_) => const QuizScreen()),
-    );
-  }
-
-  String _getTopicDisplayName(String topic) {
-    if (topic == 'All') return 'quiz_config.topic_all'.tr();
-    if (topic == 'Review') return 'quiz_config.topic_review'.tr();
-    return topic;
-  }
-
-  void _showTopicPicker() {
-    final topics = ['All', 'Review', ..._wordService.getAllTopics()];
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return Container(
-          decoration: BoxDecoration(
-            color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppConstants.cardRadius),
-            ),
-          ),
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.7,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'quiz_config.select_topic'.tr(),
-                style: AppConstants.headingStyle.copyWith(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : AppConstants.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Flexible(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: topics.length,
-                  itemBuilder: (context, index) {
-                    final topic = topics[index];
-                    final isSelected = _selectedTopic == topic;
-                    return InkWell(
-                      onTap: () {
-                        setState(() {
-                          _selectedTopic = topic;
-                          _updateWordsPool();
-                        });
-                        Navigator.pop(context);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 16,
-                        ),
-                        color: isSelected
-                            ? AppConstants.accentColor.withValues(alpha: 0.1)
-                            : Colors.transparent,
-                        child: Row(
-                          children: [
-                            Icon(
-                              topic == 'Review'
-                                  ? CupertinoIcons.refresh_thick
-                                  : topic == 'All'
-                                  ? CupertinoIcons
-                                        .square_grid_2x2_fill // Icon cho All
-                                  : AppConstants.topicIcons[topic] ??
-                                        CupertinoIcons
-                                            .tag_fill, // Lấy từ constants
-                              size: 22,
-                              color: isSelected
-                                  ? AppConstants.accentColor
-                                  : AppConstants.textSecondary,
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Text(
-                                _getTopicDisplayName(topic),
-                                style: AppConstants.bodyStyle.copyWith(
-                                  fontSize: 16,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  color: isSelected
-                                      ? AppConstants.accentColor
-                                      : (isDark
-                                            ? Colors.white
-                                            : AppConstants.textPrimary),
-                                ),
-                              ),
-                            ),
-                            if (isSelected)
-                              const Icon(
-                                CupertinoIcons.checkmark_alt,
-                                color: AppConstants.accentColor,
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
-        );
-      },
-    );
+    _selectedTopic = widget.initialTopic ?? 'All';
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final maxWords = _currentWordsPool.length;
-    final bool isEmptyWords = maxWords == 0;
-
-    return Scaffold(
-      backgroundColor: isDark
-          ? AppConstants.darkBgColor
-          : AppConstants.backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'quiz_config.config_title'.tr(),
-          style: AppConstants.headingStyle.copyWith(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: isDark ? Colors.white : AppConstants.textPrimary,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: IconThemeData(
-          color: isDark ? Colors.white : AppConstants.textPrimary,
+    return Container(
+      // GLOBAL DESIGN SYSTEM: Mesh Gradient Background
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.meshBlue,
+            AppColors.meshPurple,
+            AppColors.meshMint,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
       ),
-      body: Stack(
-        children: [
-          SafeArea(
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppConstants.defaultPadding,
-              ),
-              children: [
-                const SizedBox(height: 12),
-                _SectionHeader(title: 'quiz_config.select_topic'.tr()),
-                _TopicTile(
-                  topicName: _getTopicDisplayName(_selectedTopic),
-                  rawTopic: _selectedTopic,
-                  onTap: _showTopicPicker,
-                ),
-                const SizedBox(height: 24),
-                _SectionHeader(title: 'quiz_config.select_count'.tr()),
-                if (isEmptyWords)
-                  _NotEnoughWordsWarning(maxWords: maxWords)
-                else
-                  _CountSelector(
-                    maxWords: maxWords,
-                    selectedCount: _questionCount,
-                    onChanged: (val) => setState(() => _questionCount = val),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: _buildGlassHeader(context),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.all(AppLayout.defaultPadding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // SECTION 1: TOPIC SELECTION
+                      _buildSectionTitle("Chủ đề từ vựng"),
+                      const SizedBox(height: 12),
+                      _buildTopicSelectionCard(),
+                      const SizedBox(height: 24),
+
+                      // SECTION 2: NUMBER OF QUESTIONS
+                      _buildSectionTitle("Số lượng câu hỏi"),
+                      const SizedBox(height: 12),
+                      _buildQuestionCountSection(),
+                      const SizedBox(height: 24),
+
+                      // SECTION 3: MODE SELECTION
+                      _buildSectionTitle("Chế độ kiểm tra"),
+                      const SizedBox(height: 12),
+                      _buildModeSelectionSection(),
+                      const SizedBox(height: 40),
+                    ],
                   ),
-                const SizedBox(height: 24),
-                _SectionHeader(title: 'quiz_config.select_mode'.tr()),
-                _ModeSelector(
-                  selectedMode: _selectedMode,
-                  onChanged: (val) => setState(() => _selectedMode = val),
                 ),
-                const SizedBox(height: 120),
+              ),
+
+              // BOTTOM ACTION
+              _buildBottomAction(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // WIDGET BUILDERS
+  // ===========================================================================
+
+  PreferredSizeWidget _buildGlassHeader(BuildContext context) {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(kToolbarHeight),
+      child: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: AppBar(
+            backgroundColor: Colors.white.withValues(alpha:0.1),
+            elevation: 0,
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(
+                CupertinoIcons.back,
+                color: AppColors.textPrimary,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              "Cài đặt bài kiểm tra",
+              style: AppTypography.heading2.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Container(color: Colors.white.withValues(alpha:0.2), height: 1),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: AppTypography.heading3.copyWith(color: AppColors.textPrimary),
+    );
+  }
+
+  Widget _buildTopicSelectionCard() {
+    return GlassBentoCard(
+      onTap: _showTopicPickerBottomSheet,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.meshPurple.withValues(alpha:0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              AppConstants.topicIcons[_selectedTopic] ??
+                  CupertinoIcons.book_fill,
+              color: AppColors.meshPurple,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Đang chọn",
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _selectedTopic == 'All' ? "Tất cả từ vựng" : _selectedTopic,
+                  style: AppTypography.heading3.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
-          _StickyBottomAction(
-            isNotEnoughWords: isEmptyWords,
-            onPressed: _startQuiz,
+          const SizedBox(width: 8),
+          const Icon(
+            CupertinoIcons.chevron_down,
+            color: AppColors.textSecondary,
+            size: 20,
           ),
         ],
       ),
     );
   }
-}
 
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  const _SectionHeader({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 10),
-      child: Text(
-        title.toUpperCase(),
-        style: AppConstants.bodyStyle.copyWith(
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-          color: AppConstants.textSecondary,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
-  }
-}
-
-class _TopicTile extends StatelessWidget {
-  final String topicName;
-  final VoidCallback onTap;
-  final String rawTopic;
-
-  const _TopicTile({
-    required this.topicName,
-    required this.onTap,
-    required this.rawTopic,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // Xác định Icon dựa trên rawTopic
-    IconData topicIcon;
-    if (rawTopic == 'Review') {
-      topicIcon = CupertinoIcons.refresh_thick;
-    } else if (rawTopic == 'All') {
-      topicIcon = CupertinoIcons.square_grid_2x2_fill;
-    } else {
-      topicIcon = AppConstants.topicIcons[rawTopic] ?? CupertinoIcons.book_fill;
-    }
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppConstants.inputRadius),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
-          borderRadius: BorderRadius.circular(AppConstants.inputRadius),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              topicIcon,
-              color: Colors.blueAccent,
-              size: 22,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                topicName,
-                style: AppConstants.bodyStyle.copyWith(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : AppConstants.textPrimary,
-                ),
-              ),
-            ),
-            Icon(
-              CupertinoIcons.chevron_up_chevron_down,
-              size: 16,
-              color: AppConstants.textSecondary,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CountSelector extends StatelessWidget {
-  final int maxWords;
-  final int selectedCount;
-  final ValueChanged<int> onChanged;
-
-  const _CountSelector({
-    required this.maxWords,
-    required this.selectedCount,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final List<int> options = [];
-    if (maxWords >= 10) options.add(10);
-    if (maxWords >= 20) options.add(20);
-    if (maxWords >= 50) options.add(50);
-    options.add(9999);
-
+  Widget _buildQuestionCountSection() {
     return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: options.map((count) {
-        final isSelected = selectedCount == count;
-        final label = count == 9999
-            ? "${'quiz_config.all'.tr()}($maxWords)"
-            : "$count";
+      spacing: 12,
+      runSpacing: 12,
+      children: _questionCounts.map((count) {
+        final bool isSelected = _selectedCount == count;
+        final String label = count == -1 ? "Tất cả" : "$count Câu";
 
-        return InkWell(
-          onTap: () => onChanged(count),
-          borderRadius: BorderRadius.circular(12),
-          child: AnimatedContainer(
-            duration: AppConstants.defaultAnimationDuration,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        return GestureDetector(
+          onTap: () => setState(() => _selectedCount = count),
+          child: Container(
+            width:
+                (MediaQuery.of(context).size.width -
+                    (AppLayout.defaultPadding * 2) -
+                    36) /
+                4, // 4 items per row
             decoration: BoxDecoration(
-              color: isSelected ? AppConstants.accentColor : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
+              color: isSelected
+                  ? AppColors.meshBlue.withValues(alpha:0.3)
+                  : Colors.white.withValues(alpha:0.1),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected
-                    ? AppConstants.accentColor
-                    : Colors.grey.withValues(alpha: 0.3),
-                width: 1.5,
+                    ? AppColors.meshBlue
+                    : Colors.white.withValues(alpha:0.2),
+                width: isSelected ? 2 : 1,
               ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: AppColors.meshBlue.withValues(alpha:0.3),
+                        blurRadius: 10,
+                      ),
+                    ]
+                  : [],
             ),
-            child: Text(
-              label,
-              style: AppConstants.bodyStyle.copyWith(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.white : AppConstants.textSecondary,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            alignment: Alignment.center,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                style: AppTypography.bodyLarge.copyWith(
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected
+                      ? AppColors.textPrimary
+                      : AppColors.textSecondary,
+                ),
               ),
             ),
           ),
@@ -408,215 +272,234 @@ class _CountSelector extends StatelessWidget {
       }).toList(),
     );
   }
-}
 
-class _ModeSelector extends StatelessWidget {
-  final QuizMode selectedMode;
-  final ValueChanged<QuizMode> onChanged;
-
-  const _ModeSelector({required this.selectedMode, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildModeSelectionSection() {
     return Column(
-      children: [
-        _ModeCard(
-          title: 'quiz_config.mode_en_vi'.tr(),
-          icon: CupertinoIcons.arrow_right_arrow_left,
-          isSelected: selectedMode == QuizMode.enToVi,
-          onTap: () => onChanged(QuizMode.enToVi),
-        ),
-        const SizedBox(height: 12),
-        _ModeCard(
-          title: 'quiz_config.mode_vi_en'.tr(),
-          icon: CupertinoIcons.arrow_left_right_square,
-          isSelected: selectedMode == QuizMode.viToEn,
-          onTap: () => onChanged(QuizMode.viToEn),
-        ),
-        const SizedBox(height: 12),
-        _ModeCard(
-          title: 'quiz_config.mode_listening'.tr(),
-          icon: CupertinoIcons.headphones,
-          isSelected: selectedMode == QuizMode.listening,
-          onTap: () => onChanged(QuizMode.listening),
-        ),
-      ],
-    );
-  }
-}
+      children: _modes.map((modeData) {
+        final mode = modeData['mode'] as QuizMode;
+        final bool isSelected = _selectedMode == mode;
 
-class _ModeCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _ModeCard({
-    required this.title,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: AppConstants.defaultAnimationDuration,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppConstants.accentColor.withValues(alpha: 0.1)
-              : (isDark ? AppConstants.darkCardColor : AppConstants.cardColor),
-          borderRadius: BorderRadius.circular(AppConstants.inputRadius),
-          border: Border.all(
-            color: isSelected
-                ? AppConstants.accentColor
-                : Colors.grey.withValues(alpha: 0.1),
-            width: 2,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: isSelected
-                  ? AppConstants.accentColor
-                  : AppConstants.textSecondary,
-              size: 22,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                title,
-                style: AppConstants.bodyStyle.copyWith(
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                  fontSize: 14,
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: GestureDetector(
+            onTap: () => setState(() => _selectedMode = mode),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.meshMint.withValues(alpha:0.2)
+                    : Colors.white.withValues(alpha:0.1),
+                borderRadius: BorderRadius.circular(
+                  AppLayout.bentoBorderRadius,
+                ),
+                border: Border.all(
                   color: isSelected
-                      ? AppConstants.accentColor
-                      : (isDark ? Colors.white : AppConstants.textPrimary),
+                      ? AppColors.meshMint
+                      : Colors.white.withValues(alpha:0.15),
+                  width: isSelected ? 2 : 1,
                 ),
               ),
-            ),
-            if (isSelected)
-              const Icon(
-                CupertinoIcons.checkmark_alt_circle_fill,
-                color: AppConstants.accentColor,
-                size: 22,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NotEnoughWordsWarning extends StatelessWidget {
-  final int maxWords;
-  const _NotEnoughWordsWarning({required this.maxWords});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppConstants.errorColor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(AppConstants.inputRadius),
-        border: Border.all(
-          color: AppConstants.errorColor.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            CupertinoIcons.exclamationmark_circle_fill,
-            color: AppConstants.errorColor,
-            size: 22,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'quiz_config.not_enough_words'.tr(args: [maxWords.toString()]),
-              style: AppConstants.bodyStyle.copyWith(
-                color: AppConstants.errorColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StickyBottomAction extends StatelessWidget {
-  final bool isNotEnoughWords;
-  final VoidCallback onPressed;
-
-  const _StickyBottomAction({
-    required this.isNotEnoughWords,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: EdgeInsets.fromLTRB(
-              AppConstants.defaultPadding,
-              16,
-              AppConstants.defaultPadding,
-              MediaQuery.of(context).padding.bottom + 16,
-            ),
-            decoration: BoxDecoration(
-              color:
-                  (isDark
-                          ? AppConstants.darkBgColor
-                          : AppConstants.backgroundColor)
-                      .withValues(alpha: 0.8),
-              border: Border(
-                top: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
-              ),
-            ),
-            child: SizedBox(
-              width: double.infinity,
-              height: 58,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isNotEnoughWords
-                      ? Colors.grey
-                      : AppConstants.accentColor,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppConstants.buttonRadius,
+              child: GlassBentoCard(
+                onTap:
+                    null, // Tap handled by outer GestureDetector to avoid nested tap issues
+                child: Row(
+                  children: [
+                    Icon(
+                      modeData['icon'] as IconData,
+                      color: isSelected
+                          ? AppColors.meshMint
+                          : AppColors.textSecondary,
+                      size: 28,
                     ),
-                  ),
-                ),
-                onPressed: isNotEnoughWords ? null : onPressed,
-                child: Text(
-                  'quiz_config.start_btn'.tr().toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.5,
-                  ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            modeData['title'] as String,
+                            style: AppTypography.heading3.copyWith(
+                              color: isSelected
+                                  ? AppColors.textPrimary
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            modeData['subtitle'] as String,
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isSelected)
+                      const Icon(
+                        CupertinoIcons.checkmark_circle_fill,
+                        color: AppColors.meshMint,
+                      ),
+                  ],
                 ),
               ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildBottomAction() {
+    return Padding(
+      padding: EdgeInsets.all(AppLayout.defaultPadding),
+      child: SmartActionButton(
+        text: "Bắt đầu kiểm tra 🚀",
+        isGlass: false,
+        isLoading: false,
+        onPressed: () {
+          // 1. Fetch Words Based on Topic
+          List words = _selectedTopic == 'All'
+              ? _wordService.getAllWords()
+              : _wordService.getWordsByTopic(_selectedTopic);
+
+          // Validation
+          if (words.length < 4) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Cần ít nhất 4 từ vựng để tạo bài kiểm tra!'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+            return;
+          }
+
+          // 2. Slice words based on selected count
+          words.shuffle();
+          if (_selectedCount != -1 && words.length > _selectedCount) {
+            words = words.sublist(0, _selectedCount);
+          }
+
+          // 3. Initialize Provider State
+          context.read<QuizProvider>().initQuiz(
+            words.cast<Word>(),
+            _selectedMode,
+            isFromRoadmap: false,
+          );
+
+          // 4. Navigate to actual Quiz Screen
+          // Assuming AppRoutes.quiz exists in your routes map
+          Navigator.pushNamed(
+            context,
+            '/quiz_play',
+          ); // Ensure exact route matches your app_routes.dart
+        },
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // INTERACTION / BOTTOM SHEET
+  // ===========================================================================
+
+  void _showTopicPickerBottomSheet() {
+    // Generate topic list dynamically from WordService
+    final allWords = _wordService.getAllWords();
+    final Set<String> topicSet = {'All'};
+    for (var w in allWords) {
+      topicSet.add(w.topic);
+    }
+    final topics = topicSet.toList();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppLayout.bentoBorderRadius),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.6,
+            padding: const EdgeInsets.all(AppLayout.defaultPadding),
+            decoration: BoxDecoration(
+              color: AppColors.meshBlue.withValues(alpha:0.15),
+              border: Border(
+                top: BorderSide(
+                  color: Colors.white.withValues(alpha:0.3),
+                  width: 1.5,
+                ),
+              ),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha:0.5),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  "Chọn chủ đề",
+                  style: AppTypography.heading2.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.separated(
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: topics.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final topic = topics[index];
+                      final isSelected = _selectedTopic == topic;
+
+                      return ListTile(
+                        onTap: () {
+                          setState(() => _selectedTopic = topic);
+                          Navigator.pop(context);
+                        },
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        tileColor: isSelected
+                            ? Colors.white.withValues(alpha:0.2)
+                            : Colors.transparent,
+                        leading: Icon(
+                          AppConstants.topicIcons[topic] ??
+                              CupertinoIcons.book_fill,
+                          color: isSelected
+                              ? AppColors.meshMint
+                              : AppColors.textSecondary,
+                        ),
+                        title: Text(
+                          topic == 'All' ? 'Tất cả từ vựng' : topic,
+                          style: AppTypography.bodyLarge.copyWith(
+                            color: isSelected
+                                ? AppColors.textPrimary
+                                : AppColors.textSecondary,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? const Icon(
+                                CupertinoIcons.checkmark_alt,
+                                color: AppColors.meshMint,
+                              )
+                            : null,
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ),

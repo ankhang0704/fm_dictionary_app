@@ -1,17 +1,27 @@
 import 'dart:math';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
-import 'package:fm_dictionary/data/models/word_model.dart';
-import 'package:fm_dictionary/data/services/database/word_service.dart';
-import 'package:fm_dictionary/data/services/features/quiz_service.dart';
+import 'package:flutter/material.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+import 'package:fm_dictionary/features/gamification/presentation/widgets/steak_celebration.dart';
 import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
 import 'package:fm_dictionary/features/learning/presentation/providers/learning_provider.dart';
 import 'package:fm_dictionary/features/learning/presentation/providers/quiz_provider.dart';
-import 'package:fm_dictionary/features/learning/quiz_screen.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/constants/constants.dart';
-import '../gamification/presentation/widgets/steak_celebration.dart';
+
+// --- CORE UI & THEME ---
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/app_layout.dart';
+import '../../../../core/widgets/common/smart_action_button.dart';
+
+// --- PROVIDERS & MODELS ---
+import '../../../../data/models/word_model.dart';
+import '../../../../data/services/database/word_service.dart';
+import '../../../../data/services/features/quiz_service.dart';
+
+// --- SCREENS ---
+import 'quiz_screen.dart';
 
 class StudyScreen extends StatefulWidget {
   final List<Word> words;
@@ -31,43 +41,39 @@ class _StudyScreenState extends State<StudyScreen> {
   @override
   void initState() {
     super.initState();
+    // Legacy Logic: Load words into provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LearningProvider>().loadWordsFromLesson(widget.words);
     });
   }
 
+  // --- LEGACY BUSINESS LOGIC MAPPING ---
   void _handleAnkiAction(bool isCorrect, bool isEasy) async {
     final provider = context.read<LearningProvider>();
     final homeProvider = context.read<HomeProvider>();
     final wordService = WordService();
 
     final isDone = provider.currentIndex == provider.words.length - 1;
-
     final String currentWordId = provider.currentWord?.id ?? '';
-    
+
+    // Process Repetition Logic
     bool showCelebration = await provider.processAnswer(isCorrect, isEasy);
 
     if (currentWordId.isNotEmpty) {
-    await wordService.addWordsToDailyGoal([currentWordId]);
-  }
-    if (mounted) {
-    homeProvider.updateDailyProgress();
-    }
-    if (showCelebration && mounted) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          fullscreenDialog: true,
-          builder: (context) =>
-              StreakCelebrationScreen(streakCount: provider.currentStreak),
-        ),
-      );
+      await wordService.addWordsToDailyGoal([currentWordId]);
     }
 
+    if (mounted) homeProvider.updateDailyProgress();
+
+    // Streak Celebration Logic
+    if (showCelebration && mounted) {
+      // Không cần Navigator.push, chỉ gọi thẳng hàm này thôi
+      StreakCelebrationDialog.show(context, streakDays: provider.currentStreak);
+    }
+
+    // Completion / Roadmap Logic
     if (isDone && mounted) {
-      // LUỒNG MỚI: Học xong 10 từ -> Khởi tạo Quiz và Chuyển ngay sang QuizScreen
       if (widget.isFromRoadmap) {
-        // Luồng Roadmap: Chuyển sang Quiz
         context.read<QuizProvider>().initQuiz(
           widget.words,
           QuizMode.viToEn,
@@ -78,7 +84,6 @@ class _StudyScreenState extends State<StudyScreen> {
           CupertinoPageRoute(builder: (_) => const QuizScreen()),
         );
       } else {
-        // Luồng Dictionary (Tự do): Chỉ đơn giản là thoát ra ngoài
         Navigator.pop(context);
       }
     }
@@ -86,495 +91,386 @@ class _StudyScreenState extends State<StudyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      // MESH GRADIENT BACKGROUND
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.meshBlue,
+            AppColors.meshPurple,
+            AppColors.meshMint,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Consumer<LearningProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading) {
+              return const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              );
+            }
+            if (provider.words.isEmpty) return _buildEmptyState();
+            return Stack(
+              children: [
+                SafeArea(
+                  child: Column(
+                    children: [
+                      // GLASS HEADER
+                      _buildGlassHeader(provider),
 
-    return Scaffold(
-      backgroundColor: isDark
-          ? AppConstants.darkBgColor
-          : AppConstants.backgroundColor,
-      body: Consumer<LearningProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (provider.words.isEmpty) {
-            return _buildEmptyState(context);
-          }
-
-          return Stack(
-            children: [
-              SafeArea(
-                child: Column(
-                  children: [
-                    _buildHeader(provider, isDark),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                        child: GestureDetector(
-                          onTap: provider.toggleFlip,
-                          child: _buildFlipAnimation(provider, isDark),
+                      // MAIN FLASHCARD AREA
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(
+                            AppLayout.defaultPadding,
+                          ),
+                          child: _buildFlipCard(provider),
                         ),
                       ),
-                    ),
-                    _buildBottomControls(provider, isDark),
-                    const SizedBox(height: 20),
-                  ],
+
+                      // FOOTER NAVIGATION
+                      _buildFooterNav(provider),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
-              ),
-              if (provider.isRecording) _buildRecordingOverlay(provider),
-            ],
-          );
-        },
+
+                // RECORDING OVERLAY (5s COUNTDOWN)
+                if (provider.isRecording) _buildRecordingOverlay(provider),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildHeader(LearningProvider provider, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            icon: Icon(
-              CupertinoIcons.xmark,
-              color: isDark ? Colors.white : AppConstants.textPrimary,
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppConstants.accentColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '${provider.currentIndex + 1} / ${provider.words.length}',
-              style: const TextStyle(
-                color: AppConstants.accentColor,
-                fontWeight: FontWeight.bold,
+  // ===========================================================================
+  // WIDGET BUILDERS
+  // ===========================================================================
+
+  Widget _buildGlassHeader(LearningProvider provider) {
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          color: Colors.white.withValues(alpha: 0.1),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(
+                  CupertinoIcons.xmark,
+                  color: AppColors.textPrimary,
+                ),
+                onPressed: () => Navigator.pop(context),
               ),
-            ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${provider.currentIndex + 1} / ${provider.words.length}',
+                  style: AppTypography.bodyLarge.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  provider.isCurrentWordSaved
+                      ? CupertinoIcons.bookmark_solid
+                      : CupertinoIcons.bookmark,
+                  color: provider.isCurrentWordSaved
+                      ? AppColors.error
+                      : AppColors.textPrimary,
+                ),
+                onPressed: provider.toggleSave,
+              ),
+            ],
           ),
-          IconButton(
-            icon: Icon(
-              provider.isCurrentWordSaved
-                  ? CupertinoIcons.bookmark_solid
-                  : CupertinoIcons.bookmark,
-              color: provider.isCurrentWordSaved
-                  ? AppConstants.errorColor
-                  : (isDark ? Colors.white : AppConstants.textPrimary),
-            ),
-            onPressed: provider.toggleSave,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFlipCard(LearningProvider provider) {
+    return GestureDetector(
+      onTap: provider.toggleFlip,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 600),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          final rotate = Tween(begin: pi, end: 0.0).animate(animation);
+          return AnimatedBuilder(
+            animation: rotate,
+            builder: (context, child) {
+              final isBack = (child!.key == const ValueKey(true));
+              var value = isBack ? min(rotate.value, pi / 2) : rotate.value;
+              return Transform(
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, 0.001)
+                  ..rotateY(value),
+                alignment: Alignment.center,
+                child: child,
+              );
+            },
+            child: child,
+          );
+        },
+        child: provider.isFlipped
+            ? _buildBackFace(provider)
+            : _buildFrontFace(provider),
+      ),
+    );
+  }
+
+  // --- FRONT FACE: ENGLISH ---
+  Widget _buildFrontFace(LearningProvider provider) {
+    final word = provider.currentWord!;
+    return GlassBentoCard(
+      key: const ValueKey(false),
+      onTap: null, // Tap handled by outer switcher
+      child: Stack(
+        children: [
+          // TOP RIGHT: TOPIC TAG
+          Align(
+            alignment: Alignment.topRight,
+            child: _buildTopicTag(word.topic),
+          ),
+
+          Column(
+            children: [
+              const SizedBox(height: 32),
+              // WORD CENTERED (ZERO OVERFLOW)
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  word.word,
+                  style: AppTypography.heading1.copyWith(fontSize: 48),
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // PRONUNCIATION ROW (50-50 SPLIT)
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildPronunciationItem(
+                      'US',
+                      word.phoneticUS,
+                      () => provider.playAudio('en-US'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildPronunciationItem(
+                      'UK',
+                      word.phoneticUK,
+                      () => provider.playAudio('en-GB'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+
+              // MICROPHONE BUTTON
+              _buildMicButton(provider),
+              const SizedBox(height: 20),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFlipAnimation(LearningProvider provider, bool isDark) {
-    return AnimatedSwitcher(
-      duration: AppConstants.flipDuration,
-      transitionBuilder: (Widget child, Animation<double> animation) {
-        final rotate = Tween(begin: pi, end: 0.0).animate(animation);
-        return AnimatedBuilder(
-          animation: rotate,
-          builder: (context, child) {
-            final isBack = (child!.key == const ValueKey(true));
-            var value = isBack ? min(rotate.value, pi / 2) : rotate.value;
-            return Transform(
-              transform: Matrix4.identity()
-                ..setEntry(3, 2, 0.001)
-                ..rotateY(value),
-              alignment: Alignment.center,
-              child: child,
-            );
-          },
-          child: child,
-        );
-      },
-      child: provider.isFlipped
-          ? _buildBackCard(provider, isDark)
-          : _buildFrontCard(provider, isDark),
+  // --- BACK FACE: MEANING & ANKI ---
+  Widget _buildBackFace(LearningProvider provider) {
+    final word = provider.currentWord!;
+    return GlassBentoCard(
+      key: const ValueKey(true),
+      onTap: null,
+      child: Stack(
+        children: [
+          Align(
+            alignment: Alignment.topRight,
+            child: _buildTopicTag(word.topic),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 32),
+              Text(
+                word.meaning,
+                style: AppTypography.heading2.copyWith(
+                  color: AppColors.success,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                word.example,
+                style: AppTypography.bodyLarge.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+
+              // ANKI ACTION ROW
+              Row(
+                children: [
+                  Expanded(
+                    child: SmartActionButton(
+                      text: "Quên",
+                      color: AppColors.error,
+                      onPressed: () => _handleAnkiAction(false, false),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: SmartActionButton(
+                      text: "Nhớ",
+                      color: AppColors.meshBlue,
+                      onPressed: () => _handleAnkiAction(true, false),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: SmartActionButton(
+                      text: "Dễ",
+                      color: AppColors.success,
+                      onPressed: () => _handleAnkiAction(true, true),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  // --- BENTO FRONT CARD ---
-  Widget _buildFrontCard(LearningProvider provider, bool isDark) {
-    final word = provider.currentWord!;
-    return Container(
-      key: const ValueKey(false),
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-        boxShadow: isDark
-            ? []
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-      ),
-
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppConstants.accentColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              word.topic.toUpperCase(),
-              style: const TextStyle(
-                color: AppConstants.accentColor,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.5,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Center(
+  // --- RECORDING OVERLAY ---
+  Widget _buildRecordingOverlay(LearningProvider provider) {
+    return Positioned.fill(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Container(
+          color: Colors.black.withValues(alpha: 0.5),
+          child: Center(
+            child: GlassBentoCard(
+              onTap: null,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    word.word,
-                    style: TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : AppConstants.textPrimary,
-                    ),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 120,
+                        height: 120,
+                        child: CircularProgressIndicator(
+                          value: provider.timeRemaining / 5,
+                          strokeWidth: 8,
+                          valueColor: const AlwaysStoppedAnimation(
+                            AppColors.meshMint,
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        CupertinoIcons.mic_fill,
+                        size: 60,
+                        color: Colors.white,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (word.phoneticUS.isNotEmpty)
-                        _buildPhoneticPill(
-                          'US',
-                          word.phoneticUS,
-                          () => provider.playAudio('en-US'),
-                          isDark,
-                        ),
-                      const SizedBox(width: 12),
-                      if (word.phoneticUK.isNotEmpty)
-                        _buildPhoneticPill(
-                          'UK',
-                          word.phoneticUK,
-                          () => provider.playAudio('en-GB'),
-                          isDark,
-                        ),
-                    ],
+                  Text(
+                    "Đang nghe... 00:0${provider.timeRemaining}",
+                    style: AppTypography.heading2,
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: provider.stopRecording,
+                    child: const Text(
+                      "DỪNG",
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-          _buildMicSection(provider, isDark),
-        ],
+        ),
       ),
     );
   }
 
-  // --- BENTO BACK CARD ---
-  Widget _buildBackCard(LearningProvider provider, bool isDark) {
-    final word = provider.currentWord!;
+  // ===========================================================================
+  // SUB-WIDGETS
+  // ===========================================================================
+
+  Widget _buildTopicTag(String topic) {
     return Container(
-      key: const ValueKey(true),
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: isDark ? AppConstants.darkCardColor : AppConstants.cardColor,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: AppConstants.accentColor.withValues(alpha: 0.3),
-          width: 2,
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        topic.toUpperCase(),
+        style: AppTypography.bodyMedium.copyWith(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.2,
         ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'study.meaning'.tr(),
-            style: const TextStyle(
-              color: AppConstants.accentColor,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            word.meaning,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : AppConstants.textPrimary,
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Divider(),
-          ),
-          Text(
-            'study.example'.tr(),
-            style: const TextStyle(
-              color: AppConstants.accentColor,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            word.example,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              fontStyle: FontStyle.italic,
-              color: isDark ? Colors.white70 : AppConstants.textSecondary,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
-  // --- BOTTOM CONTROLS (Next, Back, Anki) ---
-  Widget _buildBottomControls(LearningProvider provider, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        children: [
-          // Nút Lùi / Tới
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                onPressed: provider.currentIndex > 0
-                    ? provider.previousCard
-                    : null,
-                icon: Icon(
-                  CupertinoIcons.arrow_left_circle_fill,
-                  size: 40,
-                  color: provider.currentIndex > 0
-                      ? AppConstants.textSecondary
-                      : Colors.grey.withValues(alpha: 0.2),
-                ),
-              ),
-              Text(
-                'Chạm vào thẻ để lật',
-                style: TextStyle(
-                  color: AppConstants.textSecondary,
-                  fontSize: 13,
-                ),
-              ),
-              IconButton(
-                onPressed: provider.currentIndex < provider.words.length - 1
-                    ? provider.nextCard
-                    : null,
-                icon: Icon(
-                  CupertinoIcons.arrow_right_circle_fill,
-                  size: 40,
-                  color: provider.currentIndex < provider.words.length - 1
-                      ? AppConstants.textSecondary
-                      : Colors.grey.withValues(alpha: 0.2),
-                ),
-              ),
-            ],
-          ),
-
-          // Chỉ hiện 3 nút Anki nếu thẻ ĐÃ LẬT (bắt buộc xem đáp án mới đc đánh giá)
-          if (provider.isFlipped) ...[
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildAnkiBtn(
-                    "Quên",
-                    AppConstants.errorColor,
-                    () => _handleAnkiAction(false, false),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildAnkiBtn(
-                    "Nhớ",
-                    Colors.blue,
-                    () => _handleAnkiAction(true, false),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildAnkiBtn(
-                    "Dễ",
-                    AppConstants.successColor,
-                    () => _handleAnkiAction(true, true),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnkiBtn(String label, Color color, VoidCallback onTap) {
-    return InkWell(
+  Widget _buildPronunciationItem(String label, String ipa, VoidCallback onTap) {
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(color: Colors.white10),
         ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // --- Các widget phụ trợ ---
-  Widget _buildMicSection(LearningProvider provider, bool isDark) {
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: provider.isAnalyzing ? null : provider.startRecording,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? AppConstants.darkBgColor
-                  : AppConstants.backgroundColor,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: provider.isAnalyzing
-                    ? Colors.grey
-                    : AppConstants.accentColor,
-                width: 2,
-              ),
-              boxShadow: provider.isAnalyzing
-                  ? []
-                  : [
-                      BoxShadow(
-                        color: AppConstants.accentColor.withValues(alpha: 0.2),
-                        blurRadius: 15,
-                        spreadRadius: 2,
-                      ),
-                    ],
-            ),
-            child: provider.isAnalyzing
-                ? const SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(
-                    CupertinoIcons.mic_solid,
-                    size: 28,
-                    color: AppConstants.accentColor,
-                  ),
-          ),
-        ),
-
-        // --- PHẦN UI BỊ THIẾU: HIỂN THỊ KẾT QUẢ ĐIỂM ---
-        if (provider.pronunciationScore != null && !provider.isAnalyzing) ...[
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: provider.pronunciationScore! > 80
-                  ? AppConstants.successColor.withValues(alpha: 0.1)
-                  : AppConstants.errorColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  "\"${provider.spokenText}\"",
-                  style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    color: isDark ? Colors.white70 : AppConstants.textPrimary,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  provider.pronunciationScore! > 80
-                      ? "Xuất sắc (${provider.pronunciationScore!.toInt()}%)"
-                      : "Thử lại nhé (${provider.pronunciationScore!.toInt()}%)",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: provider.pronunciationScore! > 80
-                        ? AppConstants.successColor
-                        : AppConstants.errorColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildPhoneticPill(
-    String flag,
-    String text,
-    VoidCallback onTap,
-    bool isDark,
-  ) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
+        child: Column(
           children: [
             Text(
-              flag,
-              style: const TextStyle(
+              label,
+              style: AppTypography.bodyMedium.copyWith(
                 fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: Colors.grey,
+                color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              text,
-              style: TextStyle(
-                color: isDark ? Colors.white : Colors.black,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(width: 6),
+            const SizedBox(height: 4),
+            FittedBox(child: Text(ipa, style: AppTypography.ipaText)),
+            const SizedBox(height: 8),
             const Icon(
               CupertinoIcons.speaker_2_fill,
-              size: 14,
-              color: AppConstants.accentColor,
+              size: 18,
+              color: AppColors.textPrimary,
             ),
           ],
         ),
@@ -582,46 +478,74 @@ class _StudyScreenState extends State<StudyScreen> {
     );
   }
 
-  Widget _buildRecordingOverlay(LearningProvider provider) {
-    return Positioned.fill(
+  Widget _buildMicButton(LearningProvider provider) {
+    return GestureDetector(
+      onTap: provider.isAnalyzing ? null : provider.startRecording,
       child: Container(
-        color: Colors.black.withValues(alpha: 0.9),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                CupertinoIcons.mic_fill,
-                size: 80,
-                color: AppConstants.accentColor,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                "00:0${provider.timeRemaining}",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: provider.stopRecording,
-                child: const Text(
-                  "Dừng ghi âm",
-                  style: TextStyle(color: Colors.redAccent, fontSize: 18),
-                ),
-              ),
-            ],
-          ),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.meshBlue.withValues(alpha: 0.2),
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.meshBlue, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.meshBlue.withValues(alpha: 0.3),
+              blurRadius: 15,
+            ),
+          ],
         ),
+        child: provider.isAnalyzing
+            ? const SizedBox(
+                width: 32,
+                height: 32,
+                child: CircularProgressIndicator(strokeWidth: 3),
+              )
+            : const Icon(
+                CupertinoIcons.mic_fill,
+                size: 32,
+                color: Colors.white,
+              ),
       ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return const Center(
-      child: Text("Tuyệt vời! Bạn đã hoàn thành bài học hôm nay."),
+  Widget _buildFooterNav(LearningProvider provider) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: provider.currentIndex > 0 ? provider.previousCard : null,
+            icon: Icon(
+              CupertinoIcons.arrow_left_circle_fill,
+              size: 48,
+              color: provider.currentIndex > 0 ? Colors.white : Colors.white24,
+            ),
+          ),
+          IconButton(
+            onPressed: provider.currentIndex < provider.words.length - 1
+                ? provider.nextCard
+                : null,
+            icon: Icon(
+              CupertinoIcons.arrow_right_circle_fill,
+              size: 48,
+              color: provider.currentIndex < provider.words.length - 1
+                  ? Colors.white
+                  : Colors.white24,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Text(
+        "Tuyệt vời! Bạn đã hoàn thành bài học.",
+        style: AppTypography.heading2,
+      ),
     );
   }
 }

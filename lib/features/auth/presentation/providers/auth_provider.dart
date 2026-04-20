@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fm_dictionary/core/di/service_locator.dart';
 import '../../../../data/services/auth_sync/auth_sync_service.dart';
 import '../../../../data/services/database/database_service.dart';
 
@@ -10,7 +11,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   // Lấy user realtime từ Service cũ của bạn
-  ValueNotifier<User?> get currentUserNotifier => AuthSyncService.instance.currentUser;
+  ValueNotifier<User?> get currentUserNotifier => sl<AuthSyncService>().currentUser;
   User? get currentUser => currentUserNotifier.value;
 
   void _setLoading(bool value) {
@@ -22,7 +23,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> login(String email, String password) async {
     _setLoading(true);
     try {
-      await AuthSyncService.instance.loginWithEmail(email, password);
+      await sl<AuthSyncService>().loginWithEmail(email, password);
     } finally {
       _setLoading(false);
     }
@@ -31,7 +32,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> register(String email, String password, String name) async {
     _setLoading(true);
     try {
-      await AuthSyncService.instance.registerWithEmail(email: email, password: password, name: name);
+      await sl<AuthSyncService>().registerWithEmail(email: email, password: password, name: name);
     } finally {
       _setLoading(false);
     }
@@ -40,7 +41,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> changePassword(String oldPass, String newPass) async {
     _setLoading(true);
     try {
-      await AuthSyncService.instance.changePassword(currentPassword: oldPass, newPassword: newPass);
+      await sl<AuthSyncService>().changePassword(currentPassword: oldPass, newPassword: newPass);
     } finally {
       _setLoading(false);
     }
@@ -49,7 +50,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> deleteAccount(String password) async {
     _setLoading(true);
     try {
-      await AuthSyncService.instance.deleteAccount(password);
+      await sl<AuthSyncService>().deleteAccount(password);
     } finally {
       _setLoading(false);
     }
@@ -71,7 +72,7 @@ class AuthProvider extends ChangeNotifier {
    Future<void> resetPassword(String email) async {
     _setLoading(true);
     try {
-      await AuthSyncService.instance.resetPassword(email);
+      await sl<AuthSyncService>().resetPassword(email);
     } finally {
       _setLoading(false);
     }
@@ -79,7 +80,7 @@ class AuthProvider extends ChangeNotifier {
     Future<void> logout() async {
     _setLoading(true);
     try {
-      await AuthSyncService.instance.signOut();
+      await sl<AuthSyncService>().signOut();
     } finally {
       _setLoading(false);
     }
@@ -88,6 +89,6 @@ class AuthProvider extends ChangeNotifier {
   // Thêm hàm Đồng bộ dữ liệu
   Future<void> syncData() async {
     // Không dùng _setLoading ở đây vì ta sẽ dùng Dialog ở UI cho thao tác Sync
-    await AuthSyncService.instance.syncDataWithMerge();
+    await sl<AuthSyncService>().syncDataWithMerge();
   }
 }

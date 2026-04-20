@@ -99,7 +99,7 @@ Future<void> _handleDeleteAccount(
 
     // 4. CHUYỂN SANG MÀN HÌNH FEEDBACK CHUNG (Generic Status Screen)
     StatusNavigator.showSuccess(
-      context,
+      context:  context,
       title: "Đã xóa tài khoản",
       message: "Tài khoản và dữ liệu của bạn đã được xóa thành công. Tạm biệt!",
       // Khi ấn "Hoàn tất" nó sẽ tự động bay về trang Login!

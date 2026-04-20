@@ -1,354 +1,432 @@
-import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:fm_dictionary/core/constants/constants.dart';
-import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
-import 'package:provider/provider.dart';
+// import 'dart:ui';
+// import 'package:easy_localization/easy_localization.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter/cupertino.dart';
+// import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+// import 'package:provider/provider.dart';
+// import 'package:package_info_plus/package_info_plus.dart';
 
-import 'package:fm_dictionary/features/settings/logic/reset_progress.dart';
-import 'package:fm_dictionary/features/settings/logic/show_langague.dart';
-import 'package:fm_dictionary/features/settings/widgets/section_settings.dart';
-// Import Provider vừa tạo
-import 'package:fm_dictionary/features/settings/presentation/providers/settings_provider.dart';
+// // --- CORE UI & THEME ---
+// import '../../../../core/theme/app_colors.dart';
+// import '../../../../core/theme/app_typography.dart';
+// import '../../../../core/theme/app_layout.dart';
+// import '../../../../core/widgets/common/smart_action_button.dart';
+// import '../../../../core/widgets/common/app_avatar.dart';
 
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+// // --- PROVIDERS & LOGIC ---
+// import '../../../home/presentation/providers/home_provider.dart';
+// import '../providers/settings_provider.dart';
 
-  void _showNameDialog(BuildContext context) {
-    final provider = context.read<SettingsProvider>();
-    final controller = TextEditingController(text: provider.settings.userName);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: isDark
-            ? AppConstants.darkCardColor
-            : AppConstants.cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.cardRadius / 2),
-        ),
-        title: Text(
-          'settings.edit_name'.tr(),
-          style: TextStyle(
-            color: isDark ? Colors.white : AppConstants.textPrimary,
-          ),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: TextStyle(
-            color: isDark ? Colors.white : AppConstants.textPrimary,
-          ),
-          decoration: InputDecoration(
-            hintText: 'settings.name_hint'.tr(),
-            hintStyle: TextStyle(color: AppConstants.textSecondary),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppConstants.accentColor),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'settings.cancel'.tr(),
-              style: TextStyle(color: AppConstants.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppConstants.accentColor,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  AppConstants.buttonRadius / 2,
-                ),
-              ),
-            ),
-            onPressed: () {
-              provider.updateName(controller.text.trim());
-              Navigator.pop(dialogContext);
-            },
-            child: Text('settings.save'.tr()),
-          ),
-        ],
-      ),
-    );
-  }
+// class SettingsScreen extends StatelessWidget {
+//   const SettingsScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final provider = context.watch<SettingsProvider>();
+//   @override
+//   Widget build(BuildContext context) {
+//     final provider = context.watch<SettingsProvider>();
 
-    if (provider.isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
+//     if (provider.isLoading) {
+//       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+//     }
 
-    final settings = provider.settings;
+//     final settings = provider.settings;
 
-    return Scaffold(
-      backgroundColor: isDark
-          ? AppConstants.darkBgColor
-          : AppConstants.backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'settings.title'.tr(),
-          style: AppConstants.headingStyle.copyWith(
-            fontSize: 24,
-            color: isDark ? Colors.white : AppConstants.textPrimary,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: IconThemeData(
-          color: isDark ? Colors.white : AppConstants.textPrimary,
-        ),
-      ),
-      body: ListView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        children: [
-          // 1. PROFILE SECTION
-          SectionHeader(title: 'settings.profile'.tr()),
-          SettingsGroup(
-            children: [
-              SettingsTile(
-                icon: CupertinoIcons.person,
-                title: 'settings.profile_name'.tr(),
-                trailing: Text(
-                  settings.userName,
-                  style: const TextStyle(
-                    color: AppConstants.accentColor,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-                onTap: () => _showNameDialog(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
+//     return Container(
+//       // GLOBAL DESIGN SYSTEM: Mesh Gradient Background
+//       decoration: const BoxDecoration(
+//         gradient: LinearGradient(
+//           colors: [
+//             AppColors.meshBlue,
+//             AppColors.meshPurple,
+//             AppColors.meshMint,
+//           ],
+//           begin: Alignment.topLeft,
+//           end: Alignment.bottomRight,
+//         ),
+//       ),
+//       child: Scaffold(
+//         backgroundColor: Colors.transparent,
+//         appBar: _buildGlassHeader(context),
+//         body: SingleChildScrollView(
+//           physics: const BouncingScrollPhysics(),
+//           padding: EdgeInsets.all(AppLayout.defaultPadding),
+//           child: Column(
+//             crossAxisAlignment: CrossAxisAlignment.stretch,
+//             children: [
+//               // SECTION 1: PROFILE SUMMARY (HERO CARD)
+//               _buildProfileHero(context, settings.userName),
+//               const SizedBox(height: 24),
 
-          // 2. DAILY GOAL SECTION (TÍNH NĂNG MỚI)
-          SectionHeader(
-            title: 'Mục tiêu học tập',
-          ), // Bạn có thể sửa thành .tr()
-          SettingsGroup(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          CupertinoIcons.flame_fill,
-                          size: 22,
-                          color: Colors.deepOrange,
-                        ),
-                        const SizedBox(width: 16),
-                        Text(
-                          'Mục tiêu hàng ngày', // Bạn có thể sửa thành .tr()
-                          style: AppConstants.bodyStyle.copyWith(
-                            fontSize: 16,
-                            color: isDark
-                                ? Colors.white
-                                : AppConstants.textPrimary,
-                          ),
-                        ),
-                        const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppConstants.accentColor.withValues(
-                              alpha: 0.1,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${settings.dailyGoal} từ',
-                            style: const TextStyle(
-                              color: AppConstants.accentColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Slider.adaptive(
-                      value: settings.dailyGoal.toDouble(),
-                      min: 5,
-                      max: 100,
-                      divisions: 19, // Bước nhảy 5 từ (5, 10, 15... 100)
-                      activeColor: AppConstants.accentColor,
-                      inactiveColor: Colors.grey.withValues(alpha: 0.2),
-                      onChanged: (val) {
-                        provider.updateDailyGoal(val.toInt());
-                        context.read<HomeProvider>().refreshDailyGoal();
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
+//               // SECTION 2: DAILY GOAL (BENTO)
+//               _buildSectionTitle(
+//                 'settings.daily_goal'.tr().isEmpty
+//                     ? "Mục tiêu học tập"
+//                     : 'settings.daily_goal'.tr(),
+//               ),
+//               const SizedBox(height: 12),
+//               _buildDailyGoalCard(context, provider),
+//               const SizedBox(height: 24),
 
-          // 3. APPEARANCE & LANGUAGE SECTION
-          SectionHeader(title: 'settings.appearance'.tr()),
-          SettingsGroup(
-            children: [
-              SettingsTile(
-                icon: CupertinoIcons.globe,
-                iconColor: Colors.blueAccent,
-                title: 'settings.language'.tr(),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      context.locale.languageCode == 'en'
-                          ? 'English'
-                          : 'Tiếng Việt',
-                      style: TextStyle(
-                        color: AppConstants.textSecondary,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      CupertinoIcons.chevron_up_chevron_down,
-                      size: 16,
-                      color: AppConstants.textSecondary,
-                    ),
-                  ],
-                ),
-                onTap: () => ShowLanguageLogic.showLanguagePicker(context),
-              ),
-              SettingsTile(
-                icon: settings.themeMode == 'dark'
-                    ? CupertinoIcons.moon_stars_fill
-                    : CupertinoIcons.sun_max_fill,
-                iconColor: settings.themeMode == 'dark'
-                    ? Colors.amber
-                    : AppConstants.accentColor,
-                title: 'settings.dark_mode'.tr(),
-                trailing: Switch.adaptive(
-                  value: settings.themeMode == 'dark',
-                  activeColor: AppConstants.accentColor,
-                  onChanged: (bool value) => provider.toggleTheme(value),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
+//               // SECTION 3: PREFERENCES (LANGUAGE & THEME)
+//               _buildSectionTitle('settings.appearance'.tr()),
+//               const SizedBox(height: 12),
+//               _buildPreferencesCard(context, provider),
+//               const SizedBox(height: 24),
 
-          // 4. AUDIO & AI SECTION
-          SectionHeader(title: 'settings.audio'.tr()),
-          SettingsGroup(
-            children: [
-              SettingsTile(
-                icon: CupertinoIcons.mic_fill,
-                iconColor: Colors.deepPurple,
-                title: 'settings.hard_mode'.tr(),
-                subtitle: 'settings.hard_mode_desc'.tr(),
-                trailing: Switch.adaptive(
-                  value: settings.isHardMode,
-                  activeColor: AppConstants.accentColor,
-                  onChanged: (bool value) => provider.toggleHardMode(value),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          CupertinoIcons.speedometer,
-                          size: 22,
-                          color: Colors.teal,
-                        ),
-                        const SizedBox(width: 16),
-                        Text(
-                          'settings.tts_speed'.tr(),
-                          style: AppConstants.bodyStyle.copyWith(
-                            fontSize: 16,
-                            color: isDark
-                                ? Colors.white
-                                : AppConstants.textPrimary,
-                          ),
-                        ),
-                        const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppConstants.accentColor.withValues(
-                              alpha: 0.1,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${settings.ttsSpeed.toStringAsFixed(1)}x',
-                            style: const TextStyle(
-                              color: AppConstants.accentColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Slider.adaptive(
-                      value: settings.ttsSpeed,
-                      min: 0.1,
-                      max: 1.5,
-                      divisions: 10,
-                      activeColor: AppConstants.accentColor,
-                      inactiveColor: Colors.grey.withValues(alpha: 0.2),
-                      onChanged: (val) => provider.updateTtsSpeed(val),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
+//               // SECTION 4: AUDIO & AI
+//               _buildSectionTitle('settings.audio'.tr()),
+//               const SizedBox(height: 12),
+//               _buildAudioCard(context, provider),
+//               const SizedBox(height: 24),
 
-          // 5. DANGER ZONE
-          SettingsGroup(
-            children: [
-              SettingsTile(
-                icon: CupertinoIcons.trash,
-                iconColor: AppConstants.errorColor,
-                title: 'settings.reset_btn'.tr(),
-                titleColor: AppConstants.errorColor,
-                subtitle: 'settings.reset_desc'.tr(),
-                onTap: () => ResetProgressLogic.resetProgress(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 40),
-        ],
-      ),
-    );
-  }
-}
+//               // SECTION 5: DANGER ZONE
+//               _buildSectionTitle('DANGER ZONE'),
+//               const SizedBox(height: 12),
+//               _buildDangerZoneCard(context),
+//               const SizedBox(height: 40),
+
+//               // FOOTER: VERSION INFO
+//               _buildFooter(),
+//               const SizedBox(height: 20),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ===========================================================================
+//   // WIDGET BUILDERS
+//   // ===========================================================================
+
+//   PreferredSizeWidget _buildGlassHeader(BuildContext context) {
+//     return PreferredSize(
+//       preferredSize: const Size.fromHeight(kToolbarHeight),
+//       child: ClipRRect(
+//         child: BackdropFilter(
+//           filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+//           child: AppBar(
+//             backgroundColor: Colors.white.withOpacity(0.1),
+//             elevation: 0,
+//             centerTitle: true,
+//             leading: IconButton(
+//               icon: const Icon(
+//                 CupertinoIcons.back,
+//                 color: AppColors.textPrimary,
+//               ),
+//               onPressed: () => Navigator.pop(context),
+//             ),
+//             title: Text(
+//               'settings.title'.tr(),
+//               style: AppTypography.heading2.copyWith(
+//                 color: AppColors.textPrimary,
+//               ),
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildSectionTitle(String title) {
+//     return Padding(
+//       padding: const EdgeInsets.only(left: 8.0),
+//       child: Text(
+//         title.toUpperCase(),
+//         style: AppTypography.heading3.copyWith(
+//           fontSize: 13,
+//           letterSpacing: 1.5,
+//           color: AppColors.textPrimary.withOpacity(0.7),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildProfileHero(BuildContext context, String name) {
+//     return GlassBentoCard(
+//       onTap: null,
+//       child: Row(
+//         children: [
+//           const AppAvatar(radius: 35), // Default avatar placeholder
+//           const SizedBox(width: 16),
+//           Expanded(
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 FittedBox(
+//                   fit: BoxFit.scaleDown,
+//                   child: Text(name, style: AppTypography.heading2),
+//                 ),
+//                 Text(
+//                   'settings.profile_desc'.tr().isEmpty
+//                       ? "Học viên xuất sắc"
+//                       : 'settings.profile_desc'.tr(),
+//                   style: AppTypography.bodyMedium.copyWith(
+//                     color: AppColors.textSecondary,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//           IconButton(
+//             icon: const Icon(
+//               CupertinoIcons.pencil_circle_fill,
+//               color: AppColors.meshBlue,
+//               size: 32,
+//             ),
+//             onPressed: () => _showNameDialog(context),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildDailyGoalCard(BuildContext context, SettingsProvider provider) {
+//     return GlassBentoCard(
+//       onTap: null,
+//       child: Column(
+//         children: [
+//           Row(
+//             children: [
+//               const Icon(CupertinoIcons.flame_fill, color: Colors.deepOrange),
+//               const SizedBox(width: 12),
+//               Text('Mục tiêu hàng ngày', style: AppTypography.bodyLarge),
+//               const const SizedBox(height: 32),
+//               Text(
+//                 '${provider.settings.dailyGoal} từ',
+//                 style: const TextStyle(
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.meshBlue,
+//                 ),
+//               ),
+//             ],
+//           ),
+//           const SizedBox(height: 8),
+//           Slider.adaptive(
+//             value: provider.settings.dailyGoal.toDouble(),
+//             min: 5,
+//             max: 100,
+//             divisions: 19,
+//             activeColor: AppColors.meshBlue,
+//             onChanged: (val) {
+//               provider.updateDailyGoal(val.toInt());
+//               context.read<HomeProvider>().refreshDailyGoal();
+//             },
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildPreferencesCard(
+//     BuildContext context,
+//     SettingsProvider provider,
+//   ) {
+//     return GlassBentoCard(
+//       onTap: null,
+//       child: Column(
+//         children: [
+//           _buildSettingsTile(
+//             icon: CupertinoIcons.globe,
+//             title: 'settings.language'.tr(),
+//             trailing: Text(
+//               context.locale.languageCode == 'en' ? 'English' : 'Tiếng Việt',
+//               style: const TextStyle(color: AppColors.textSecondary),
+//             ),
+//             onTap: () => ShowLanguageLogic.showLanguagePicker(context),
+//           ),
+//           const Divider(color: Colors.white10),
+//           _buildSettingsTile(
+//             icon: provider.settings.themeMode == 'dark'
+//                 ? CupertinoIcons.moon_stars_fill
+//                 : CupertinoIcons.sun_max_fill,
+//             title: 'settings.dark_mode'.tr(),
+//             trailing: Switch.adaptive(
+//               value: provider.settings.themeMode == 'dark',
+//               activeColor: AppColors.meshMint,
+//               onChanged: (bool value) => provider.toggleTheme(value),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildAudioCard(BuildContext context, SettingsProvider provider) {
+//     return GlassBentoCard(
+//       onTap: null,
+//       child: Column(
+//         children: [
+//           _buildSettingsTile(
+//             icon: CupertinoIcons.mic_fill,
+//             title: 'settings.hard_mode'.tr(),
+//             trailing: Switch.adaptive(
+//               value: provider.settings.isHardMode,
+//               activeColor: AppColors.meshMint,
+//               onChanged: (bool value) => provider.toggleHardMode(value),
+//             ),
+//           ),
+//           const Divider(color: Colors.white10),
+//           Padding(
+//             padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
+//             child: Column(
+//               children: [
+//                 Row(
+//                   children: [
+//                     const Icon(
+//                       CupertinoIcons.speedometer,
+//                       size: 20,
+//                       color: AppColors.textSecondary,
+//                     ),
+//                     const SizedBox(width: 12),
+//                     Text(
+//                       'settings.tts_speed'.tr(),
+//                       style: AppTypography.bodyLarge,
+//                     ),
+//                     const const SizedBox(height: 32),
+//                     Text(
+//                       '${provider.settings.ttsSpeed.toStringAsFixed(1)}x',
+//                       style: const TextStyle(fontWeight: FontWeight.bold),
+//                     ),
+//                   ],
+//                 ),
+//                 Slider.adaptive(
+//                   value: provider.settings.ttsSpeed,
+//                   min: 0.1,
+//                   max: 1.5,
+//                   divisions: 10,
+//                   activeColor: AppColors.meshPurple,
+//                   onChanged: (val) => provider.updateTtsSpeed(val),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildDangerZoneCard(BuildContext context) {
+//     return GlassBentoCard(
+//       onTap: null,
+//       child: Column(
+//         children: [
+//           _buildSettingsTile(
+//             icon: CupertinoIcons.trash,
+//             title: 'settings.reset_btn'.tr(),
+//             titleColor: AppColors.error,
+//             onTap: () => ResetProgressLogic.resetProgress(context),
+//           ),
+//           const Divider(color: Colors.white10),
+//           _buildSettingsTile(
+//             icon: CupertinoIcons.square_arrow_right,
+//             title: "Đăng xuất",
+//             titleColor: AppColors.error,
+//             onTap: () {
+//               // TODO: Add logout confirmation and logic
+//             },
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildFooter() {
+//     return FutureBuilder<PackageInfo>(
+//       future: PackageInfo.fromPlatform(),
+//       builder: (context, snapshot) {
+//         return Text(
+//           'Phiên bản ${snapshot.data?.version ?? '1.0.0'}',
+//           textAlign: TextAlign.center,
+//           style: AppTypography.bodyMedium.copyWith(
+//             color: AppColors.textSecondary,
+//             fontSize: 12,
+//           ),
+//         );
+//       },
+//     );
+//   }
+
+//   Widget _buildSettingsTile({
+//     required IconData icon,
+//     required String title,
+//     Widget? trailing,
+//     VoidCallback? onTap,
+//     Color? titleColor,
+//   }) {
+//     return ListTile(
+//       leading: Icon(icon, color: titleColor ?? AppColors.textPrimary, size: 22),
+//       title: Text(
+//         title,
+//         style: AppTypography.bodyLarge.copyWith(color: titleColor),
+//       ),
+//       trailing:
+//           trailing ??
+//           const Icon(
+//             CupertinoIcons.chevron_right,
+//             size: 16,
+//             color: AppColors.textSecondary,
+//           ),
+//       onTap: onTap,
+//     );
+//   }
+
+//   // ===========================================================================
+//   // LEGACY LOGIC: NAME DIALOG
+//   // ===========================================================================
+
+//   void _showNameDialog(BuildContext context) {
+//     final provider = context.read<SettingsProvider>();
+//     final controller = TextEditingController(text: provider.settings.userName);
+
+//     showDialog(
+//       context: context,
+//       builder: (dialogContext) => BackdropFilter(
+//         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+//         child: AlertDialog(
+//           backgroundColor: AppColors.meshBlue.withOpacity(0.2),
+//           shape: RoundedRectangleBorder(
+//             borderRadius: BorderRadius.circular(20),
+//             side: const BorderSide(color: Colors.white24),
+//           ),
+//           title: Text(
+//             'settings.edit_name'.tr(),
+//             style: const TextStyle(color: Colors.white),
+//           ),
+//           content: TextField(
+//             controller: controller,
+//             autofocus: true,
+//             style: const TextStyle(color: Colors.white),
+//             decoration: InputDecoration(
+//               hintText: 'settings.name_hint'.tr(),
+//               hintStyle: const TextStyle(color: Colors.white54),
+//               enabledBorder: const UnderlineInputBorder(
+//                 borderSide: BorderSide(color: Colors.white24),
+//               ),
+//               focusedBorder: const UnderlineInputBorder(
+//                 borderSide: BorderSide(color: AppColors.meshMint),
+//               ),
+//             ),
+//           ),
+//           actions: [
+//             TextButton(
+//               onPressed: () => Navigator.pop(dialogContext),
+//               child: Text(
+//                 'settings.cancel'.tr(),
+//                 style: const TextStyle(color: Colors.white70),
+//               ),
+//             ),
+//             SmartActionButton(
+//               text: 'settings.save'.tr(),
+//               isGlass: false,
+//               onPressed: () {
+//                 provider.updateName(controller.text.trim());
+//                 Navigator.pop(dialogContext);
+//               },
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
