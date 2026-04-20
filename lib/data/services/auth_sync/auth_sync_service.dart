@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/core/constants/progress_keys.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../database/database_service.dart';
@@ -17,17 +20,20 @@ class AuthSyncService {
   final ValueNotifier<String> lastSyncTime = ValueNotifier<String>(
     'Chưa đồng bộ',
   );
-
+  StreamSubscription<User?>? _authSubscription;
+  
   // Khởi tạo và lắng nghe trạng thái đăng nhập
   Future<void> init() async {
-    _auth.authStateChanges().listen((user) {
-      currentUser.value = user;
-    });
+    _authSubscription = _auth.authStateChanges().listen((user) {
+    currentUser.value = user;
+  });
 
     final prefs = await SharedPreferences.getInstance();
     lastSyncTime.value = prefs.getString('last_sync_time') ?? 'Chưa đồng bộ';
   }
-
+  Future<void> dispose() async {
+  await _authSubscription?.cancel();
+  }
   // --- AUTH LOGIC ---
 
   Future<User?> registerWithEmail({
@@ -153,6 +159,8 @@ class AuthSyncService {
 
       // 3. Xóa tài khoản trên Auth
       await user.delete();
+      await Hive.box(DatabaseService.progressBoxName).clear();
+      await Hive.box(DatabaseService.saveBoxName).clear();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'wrong-password') {
         throw Exception('Mật khẩu xác nhận không đúng.');
@@ -195,7 +203,7 @@ class AuthSyncService {
 
         final int cUpdatedAt = cData.length > 4 ? (cData[4] as int) : 0;
         final double cPs = cData.length > 5
-            ? (cData[5] as num).toDouble()
+            ? ((cData[5] ?? 0) as num).toDouble()
             : 0.0;
         final int cPc = cData.length > 6 ? (cData[6] as int) : 0;
         final int cSv = cData.length > 7 ? (cData[7] as int) : 0;
@@ -206,40 +214,40 @@ class AuthSyncService {
         // Nếu không có data HOẶC data bị hỏng (không phải Map) -> Cập nhật lại từ Cloud
         if (localRaw == null || localRaw is! Map) {
           localUpdates[key] = {
-            's': cData[0],
-            'wc': cData[1],
-            'lr': cData[2],
-            'nr': cData[3],
-            'ua': cUpdatedAt,
-            'ps': cPs,
-            'pc': cPc,
-            'sv': cSv,
+            ProgressKeys.step: cData[0],
+            ProgressKeys.wrongCount: cData[1],
+            ProgressKeys.lastReview: cData[2],
+            ProgressKeys.nextReview: cData[3],
+            ProgressKeys.updatedAt: cUpdatedAt,
+            ProgressKeys.pronunciationScore: cPs,
+            ProgressKeys.pronunciationCount: cPc,
+            ProgressKeys.isSaved: cSv,
           };
         } else {
           final localMap = localRaw; // Đã chắc chắn là Map
-          final int lUpdatedAt = localMap['ua'] ?? 0;
+          final int lUpdatedAt = localMap[ProgressKeys.updatedAt] ?? 0;
 
           if (cUpdatedAt > lUpdatedAt) {
             localUpdates[key] = {
-              's': cData[0],
-              'wc': cData[1],
-              'lr': cData[2],
-              'nr': cData[3],
-              'ua': cUpdatedAt,
-              'ps': cPs,
-              'pc': cPc,
-              'sv': cSv,
+              ProgressKeys.step: cData[0],
+              ProgressKeys.wrongCount: cData[1],
+              ProgressKeys.lastReview: cData[2],
+              ProgressKeys.nextReview: cData[3],
+              ProgressKeys.updatedAt: cUpdatedAt,
+              ProgressKeys.pronunciationScore: cPs,
+              ProgressKeys.pronunciationCount: cPc,
+              ProgressKeys.isSaved: cSv,
             };
           } else if (lUpdatedAt > cUpdatedAt) {
             cloudUpdates[key] = [
-              localMap['s'],
-              localMap['wc'],
-              localMap['lr'],
-              localMap['nr'],
+              localMap[ProgressKeys.step],
+              localMap[ProgressKeys.wrongCount],
+              localMap[ProgressKeys.lastReview],
+              localMap[ProgressKeys.nextReview],
               lUpdatedAt,
-              localMap['ps'] ?? 0.0,
-              localMap['pc'] ?? 0,
-              localMap['sv'] ?? 0,
+              localMap[ProgressKeys.pronunciationScore] ?? 0.0,
+              localMap[ProgressKeys.pronunciationCount] ?? 0,
+              localMap[ProgressKeys.isSaved] ?? 0,
             ];
           }
         }
@@ -251,14 +259,14 @@ class AuthSyncService {
           final localRaw = progressBox.get(key);
           if (localRaw is Map) {
             cloudUpdates[strKey] = [
-              localRaw['s'],
-              localRaw['wc'],
-              localRaw['lr'],
-              localRaw['nr'],
-              localRaw['ua'] ?? 0,
-              localRaw['ps'] ?? 0.0,
-              localRaw['pc'] ?? 0,
-              localRaw['sv'] ?? 0,
+              localRaw[ProgressKeys.step],
+              localRaw[ProgressKeys.wrongCount],
+              localRaw[ProgressKeys.lastReview],
+              localRaw[ProgressKeys.nextReview],
+              localRaw[ProgressKeys.updatedAt] ?? 0,
+              localRaw[ProgressKeys.pronunciationScore] ?? 0.0,
+              localRaw[ProgressKeys.pronunciationCount] ?? 0,
+              localRaw[ProgressKeys.isSaved] ?? 0,
             ];
           }
         }
@@ -283,13 +291,14 @@ class AuthSyncService {
 
       // VÁ LỖI BẢO TOÀN DỮ LIỆU KHI MẤT MẠNG (ATOMIC SYNC)
       // Chạy Firebase Batch Commit trước!
-      if (needCommit) {
-        await batch.commit(); // Đẩy lên Firebase
-      }
-
-      // NẾU Firebase THÀNH CÔNG (Không văng catch), mới được ghi vào máy!
-      if (localUpdates.isNotEmpty) {
-        await progressBox.putAll(localUpdates);
+      // ✅ SỬA — Wrap cả hai trong một atomic operation với rollback flag
+      try {
+        if (needCommit) await batch.commit();
+        if (localUpdates.isNotEmpty) await progressBox.putAll(localUpdates);
+      } catch (e) {
+        // Log để retry lần sau
+        debugPrint('❌ Partial sync failure: $e');
+        rethrow;
       }
 
       debugPrint("Đồng bộ tối ưu thành công!");

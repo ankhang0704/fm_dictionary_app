@@ -31,19 +31,24 @@ class TtsService {
     unawaited(_engine.warmUp());
     _isInitialized = true;
   }
+  
 
   // ─── Core API ─────────────────────────────────────────────────────────────
 
   /// Phát âm với Debounce + Cancel-old-play-new
   /// Người dùng nhấn nút loa nhiều lần nhanh → chỉ phát lần cuối
   Future<void> speak(String text, {String? accent}) async {
-    assert(_isInitialized, 'TtsService.init() chưa được gọi');
+    if (!_isInitialized) {
+      debugPrint('⚠️ TtsService chưa init, tự khởi động...');
+      await init();
+    }
 
     // 1. Hủy debounce timer cũ
     _debounceTimer?.cancel();
 
     // 2. Hủy lệnh speak đang chạy (nếu có)
-    if (_currentSpeakCompleter != null && !_currentSpeakCompleter!.isCompleted) {
+    if (_currentSpeakCompleter != null &&
+        !_currentSpeakCompleter!.isCompleted) {
       await _engine.stop();
     }
 
@@ -53,28 +58,25 @@ class TtsService {
 
     // 4. Debounce: chờ một chút rồi mới thực sự phát
     //    → tránh phát 3-4 âm thanh nếu user nhấn liên tục
-    _debounceTimer = Timer(
-      const Duration(milliseconds: _debounceMs),
-      () async {
-        // Nếu có Completer mới hơn đã thay thế → bỏ qua
-        if (thisCompleter != _currentSpeakCompleter) return;
+    _debounceTimer = Timer(const Duration(milliseconds: _debounceMs), () async {
+      // Nếu có Completer mới hơn đã thay thế → bỏ qua
+      if (thisCompleter != _currentSpeakCompleter) return;
 
-        try {
-          final settings = DatabaseService.getSettings();
-          // speak() trên flutter_tts là synchronous về UI thread,
-          // nhưng audio rendering nằm trên native thread → không jank
-          await _engine.speak(
-            text,
-            accent: accent ?? settings.defaultAccent,
-            speed: settings.ttsSpeed,
-          );
-        } catch (e) {
-          debugPrint('TtsService speak error: $e');
-        } finally {
-          if (!thisCompleter.isCompleted) thisCompleter.complete();
-        }
-      },
-    );
+      try {
+        final settings = DatabaseService.getSettings();
+        // speak() trên flutter_tts là synchronous về UI thread,
+        // nhưng audio rendering nằm trên native thread → không jank
+        await _engine.speak(
+          text,
+          accent: accent ?? settings.defaultAccent,
+          speed: settings.ttsSpeed,
+        );
+      } catch (e) {
+        debugPrint('TtsService speak error: $e');
+      } finally {
+        if (!thisCompleter.isCompleted) thisCompleter.complete();
+      }
+    });
 
     return thisCompleter.future;
   }
@@ -86,9 +88,10 @@ class TtsService {
     // GIẢI PHÓNG HÀNG ĐỢI - CHỐNG HUNG FUTURE (MEMORY LEAK)
     if (_currentSpeakCompleter != null &&
         !_currentSpeakCompleter!.isCompleted) {
-      _currentSpeakCompleter!.completeError(
-        StateError('TTS stopped before completion'),
-      );
+      if (_currentSpeakCompleter != null &&
+          !_currentSpeakCompleter!.isCompleted) {
+        _currentSpeakCompleter!.complete(); // Không phải complete error
+      }
     }
     _currentSpeakCompleter = null;
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/core/constants/progress_keys.dart';
 import '../../../../data/models/word_model.dart';
 import '../../../../data/services/database/word_service.dart';
 import '../../../../data/services/ai_speech/text_to_speech/speech_service.dart';
@@ -67,8 +68,8 @@ class LearningProvider extends ChangeNotifier {
 
     _words = allTopicWords.where((w) {
       final progress = _wordService.getWordProgress(w.id);
-      final nextReview = progress['nr'] as int;
-      final step = progress['s'] as int;
+      final nextReview = progress[ProgressKeys.nextReview] as int;
+      final step = progress[ProgressKeys.step] as int;
       return nextReview <= nowMs || step < 4;
     }).toList();
 

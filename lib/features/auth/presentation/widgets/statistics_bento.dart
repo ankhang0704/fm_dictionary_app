@@ -1,6 +1,7 @@
 // Đường dẫn: lib/features/auth/presentation/widgets/statistics_bento.dart
 
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/core/constants/progress_keys.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../data/services/database/database_service.dart';
 
@@ -21,9 +22,9 @@ class StatisticsSectionBento extends StatelessWidget {
         // Thuật toán tính toán nhanh từ dữ liệu Local
         for (var value in box.values) {
           final map = value as Map;
-          if ((map['s'] ?? 0) >= 4) learned++;
-          if ((map['nr'] ?? 0) <= now && (map['nr'] ?? 0) > 0) review++;
-          totalMistakes += (map['wc'] ?? 0) as int;
+          if ((map[ProgressKeys.step] ?? 0) >= 4) learned++;
+          if ((map[ProgressKeys.nextReview] ?? 0) <= now && (map[ProgressKeys.nextReview] ?? 0) > 0) review++;
+          totalMistakes += (map[ProgressKeys.wrongCount] ?? 0) as int;
         }
 
         return Row(

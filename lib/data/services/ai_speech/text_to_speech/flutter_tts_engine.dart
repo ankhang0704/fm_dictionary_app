@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_tts/flutter_tts.dart';
 import 'tts_engine.dart';
 
@@ -8,11 +10,24 @@ class FlutterTtsEngine implements TtsEngine {
   @override
   Future<void> warmUp() async {
     if (_isWarm) return;
-    // Phát âm thanh rỗng để kích hoạt Audio Session của OS
-    // Trick này loại bỏ ~300ms độ trễ lần phát đầu tiên
+    final completer = Completer<void>();
+    _tts.setCompletionHandler(() {
+      if (!completer.isCompleted) {
+        completer.complete();
+      }
+    });
     await _tts.setVolume(0.0);
     await _tts.speak(' ');
-    await _tts.stop();
+    await completer.future.timeout(
+      const Duration(seconds: 2),
+      onTimeout: () {
+        // Nếu quá 2s mà tts chưa đọc xong, ta ép nó complete luôn để đi tiếp
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
+      },
+    );
+    _tts.setCompletionHandler(() {});
     await _tts.setVolume(1.0);
     _isWarm = true;
   }

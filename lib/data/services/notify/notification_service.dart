@@ -110,7 +110,7 @@ class NotificationService {
               .resolvePlatformSpecificImplementation<
                 AndroidFlutterLocalNotificationsPlugin
               >();
-
+      
       if (androidImplementation != null) {
         // Xin quyền hiển thị thông báo (Android 13+)
         await androidImplementation.requestNotificationsPermission();
@@ -157,10 +157,12 @@ class NotificationService {
   Future<void> scheduleDailyReminder(TimeOfDay time) async {
     try {
       // Ép xin quyền lại trước khi set lịch để đảm bảo
-      await requestPermissions();
-
       reminderTime.value = time;
-
+      final androidImpl = _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      bool exactAlarmGranted = true;
+      if (androidImpl != null) {
+        exactAlarmGranted = await androidImpl.canScheduleExactNotifications() ?? false;
+      }
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('reminder_hour', time.hour);
       await prefs.setInt('reminder_minute', time.minute);
@@ -186,10 +188,10 @@ class NotificationService {
           ),
         ),
         // Chuẩn v21: Bắt buộc truyền androidScheduleMode
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-
-        matchDateTimeComponents:
-            DateTimeComponents.time, // Lặp lại đúng giờ này mỗi ngày
+         androidScheduleMode: exactAlarmGranted 
+            ? AndroidScheduleMode.exactAllowWhileIdle 
+            : AndroidScheduleMode.inexactAllowWhileIdle, // Fallback an toàn
+        matchDateTimeComponents: DateTimeComponents.time,
       );
       debugPrint('⏰ Đã hẹn giờ vào ${time.hour}:${time.minute} mỗi ngày.');
     } catch (e) {

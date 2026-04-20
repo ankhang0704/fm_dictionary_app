@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:fm_dictionary/core/constants/progress_keys.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../data/models/word_model.dart';
 import '../../../../data/services/database/database_service.dart';
@@ -44,10 +45,10 @@ class DetailStatisticalScreen extends StatelessWidget {
 
               for (var value in progressBox.values) {
                 final map = value as Map;
-                if ((map['s'] ?? 0) >= 4) masterCount++;
-                if ((map['nr'] ?? 0) <= now && (map['nr'] ?? 0) > 0)
+                if ((map[ProgressKeys.step] ?? 0) >= 4) masterCount++;
+                if ((map[ProgressKeys.nextReview] ?? 0) <= now && (map[ProgressKeys.nextReview] ?? 0) > 0)
                   reviewCount++;
-                mistakeCount += (map['wc'] ?? 0) as int;
+                mistakeCount += (map[ProgressKeys.wrongCount] ?? 0) as int;
               }
 
               return SingleChildScrollView(
@@ -418,7 +419,7 @@ class DetailStatisticalScreen extends StatelessWidget {
       totalPerTopic[word.topic] = (totalPerTopic[word.topic] ?? 0) + 1;
 
       final p = progressBox.get(word.id);
-      if (p != null && (p['s'] as int) >= 2) {
+      if (p != null && (p[ProgressKeys.step] as int) >= 2) {
         learnedPerTopic[word.topic] = (learnedPerTopic[word.topic] ?? 0) + 1;
       }
     }
@@ -508,7 +509,7 @@ class DetailStatisticalScreen extends StatelessWidget {
 
     for (var value in progressBox.values) {
       final map = value as Map;
-      final int lr = map['lr'] ?? 0;
+      final int lr = map[ProgressKeys.lastReview] ?? 0;
 
       if (lr > 0) {
         final reviewDate = DateTime.fromMillisecondsSinceEpoch(lr);

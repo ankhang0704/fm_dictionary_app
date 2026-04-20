@@ -16,7 +16,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
-
+  
   void _handleLogin(BuildContext context) async {
     final provider = context.read<AuthProvider>();
     try {

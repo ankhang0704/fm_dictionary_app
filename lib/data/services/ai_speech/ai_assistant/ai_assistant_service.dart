@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -42,6 +43,7 @@ class AiAssistantService {
   bool _isModelLoaded = false;
   bool _micActive = false;
   String? _modelDirPath;
+  String? _currentRecordingPath;
 
   // 1. Khởi tạo Model (Chỉ copy model vào ổ cứng, không nạp lên RAM vội)
   Future<void> initModel() async {
@@ -77,7 +79,7 @@ class AiAssistantService {
     final tempDir = await getTemporaryDirectory();
     final filePath =
         '${tempDir.path}/rec_${DateTime.now().millisecondsSinceEpoch}.wav';
-
+    _currentRecordingPath = filePath;
     // CẤU HÌNH SỐNG CÒN CHO WHISPER
     const config = RecordConfig(
       encoder: AudioEncoder.wav,
@@ -90,7 +92,7 @@ class AiAssistantService {
     _micActive = true;
   }
 
-  // 3. Tiền xử lý âm thanh (FFmpeg) bỏ bước này vì phần cứng 
+  // 3. Tiền xử lý âm thanh (FFmpeg) bỏ bước này vì phần cứng
   // Future<String> _preprocessAudio(String inputPath) async {
   //   final tempDir = await getTemporaryDirectory();
   //   final outputPath =
@@ -119,8 +121,13 @@ class AiAssistantService {
 
     _micActive = false; // Đặt cờ ngay lập tức để giải phóng state UI
     final filePath = await _audioRecorder.stop();
+    if (filePath == null) return null;
 
-    if (filePath == null || !_isModelLoaded || _modelDirPath == null) {
+    final file = File(filePath);
+    final fileSize = await file.length();
+    if (fileSize < 10000) {
+      // < 10KB = quá ngắn để transcribe
+      await file.delete();
       return null;
     }
 
@@ -129,10 +136,10 @@ class AiAssistantService {
       // final processedPath = await _preprocessAudio(filePath);
 
       // BƯỚC 2: Gọi Isolate để suy luận không làm đơ màn hình
-      final result = await compute(_runWhisperInIsolate, {
+      final result = await Isolate.run(() => _runWhisperInIsolate({
         'modelDir': _modelDirPath!,
         'audioPath': filePath,
-      });
+      }));
 
       // BƯỚC 3: Dọn dẹp cả 2 file tạm ngay lập tức
       for (final path in [filePath]) {
@@ -149,6 +156,11 @@ class AiAssistantService {
 
   // 5. Quản lý vòng đời (Gọi khi rời khỏi StudyScreen)
   Future<void> disposeSession() async {
+    if (_currentRecordingPath != null) {
+      final f = File(_currentRecordingPath!);
+      if (await f.exists()) await f.delete();
+      _currentRecordingPath = null;
+    }
     if (_micActive) {
       _micActive = false;
       await _audioRecorder.stop();

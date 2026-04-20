@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart'; // Bắt buộc import để dùng compute
 import 'package:flutter/services.dart';
@@ -17,21 +18,28 @@ class DatabaseService {
   static const String settingsBoxName = 'settings_box';
   static const String progressBoxName = 'learning_progress_box';
   static const String saveBoxName = 'saved_words_box';
+  static bool _initialized = false;
 
   static Future<void> init() async {
+    if (_initialized) return;
+    _initialized = true;
     await Hive.initFlutter();
 
     // Đăng ký Adapters TRƯỚC khi mở Box
-    Hive.registerAdapter(WordAdapter());
-    Hive.registerAdapter(AppSettingsAdapter());
+    if (!Hive.isAdapterRegistered(WordAdapter().typeId)) {
+      Hive.registerAdapter(WordAdapter());
+    }
+    if (!Hive.isAdapterRegistered(AppSettingsAdapter().typeId)) {
+      Hive.registerAdapter(AppSettingsAdapter());
+    }
 
     // Mở các Boxes
     await Hive.openBox<String>('searchHistoryBox');
     await Hive.openBox<Word>(wordBoxName);
     await Hive.openBox<AppSettings>(settingsBoxName);
-    await Hive.openBox(saveBoxName); 
+    await Hive.openBox<dynamic>(saveBoxName);
     // Kiểm tra và Import dữ liệu lần đầu
-    await Hive.openBox(progressBoxName);
+    await Hive.openBox<dynamic>(progressBoxName);
 
     await _checkAndImportData();
   }
@@ -56,10 +64,11 @@ class DatabaseService {
         );
 
         // 2. ÉP FLUTTER DỊCH JSON TRÊN LUỒNG NỀN (Tránh treo/crash app)
-        final List<Word> words = await compute(
-          _parseJsonInBackground,
-          response,
-        );
+        final List<Word> words = await compute(_parseJsonInBackground, response)
+            .timeout(
+              const Duration(seconds: 30),
+              onTimeout: () => throw TimeoutException('JSON parsing timeout'),
+            );
 
         // 3. Chuyển List thành Map để lưu vào Hive bằng putAll (Siêu tốc)
         final Map<String, Word> wordMap = {};

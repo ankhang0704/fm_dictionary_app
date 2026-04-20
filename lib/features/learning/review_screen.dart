@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fm_dictionary/core/constants/progress_keys.dart';
 import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
@@ -80,7 +81,7 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
       itemBuilder: (context, index) {
         final word = reviewWords[index];
         final progress = _wordService.getWordProgress(word.id);
-        final int wrongCount = progress['wc'] as int;
+        final int wrongCount = progress[ProgressKeys.wrongCount] as int;
 
         return Container(
           decoration: BoxDecoration(
