@@ -1,5 +1,4 @@
 // file: lib/data/services/features/quiz_service.dart
-import 'dart:math';
 import '../../models/word_model.dart';
 import '../database/word_service.dart';
 
@@ -20,7 +19,6 @@ class QuizQuestion {
 
 class QuizService {
   final WordService _wordService = WordService();
-  final Random _random = Random();
 
   /// Hàm cốt lõi: Tạo bộ câu hỏi (Chạy ngầm tách biệt khỏi UI)
   /// Hàm cốt lõi: Tạo bộ câu hỏi (Chạy ngầm tách biệt khỏi UI)
