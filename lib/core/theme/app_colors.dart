@@ -13,8 +13,8 @@ class AppColors {
   static final Color glassBorder = Colors.white.withValues(alpha: 0.50);
 
   // Text
-  static const Color textPrimary = Color(0xFF1E293B);
-  static const Color textSecondary = Color(0xFF64748B);
+  static const Color textPrimary = Color.fromARGB(255, 7, 10, 14);
+  static const Color textSecondary = Color.fromARGB(255, 0, 0, 0);
 
   // Semantic & Background
   static const Color success = Color(0xFF10B981);

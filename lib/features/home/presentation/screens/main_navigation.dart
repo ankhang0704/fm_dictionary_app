@@ -3,6 +3,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fm_dictionary/features/home/presentation/screens/detail_statistical_screen.dart';
+import 'package:fm_dictionary/features/home/presentation/screens/menu_screen.dart';
+import 'package:fm_dictionary/features/library/presentation/screens/dictionary_screen.dart';
+import 'package:fm_dictionary/features/roadmap/presentation/screen/roadmap_screen.dart';
 import 'dashboard_screen.dart';
 
 // import 'package:fm_dictionary/features/roadmap/presentation/screen/roadmap_screen.dart';
@@ -24,10 +28,10 @@ class _MainNavigationState extends State<MainNavigation> {
   // Pre-initialize screens. Use placeholders for non-dashboard screens.
   final List<Widget> _screens = const [
     DashboardScreen(),
-    Center(child: Text("Roadmap Placeholder")), 
-    Center(child: Text("Dictionary Placeholder")), 
-    Center(child: Text("Stats Placeholder")), 
-    Center(child: Text("Profile Placeholder")), 
+    RoadmapScreen(),
+    DictionaryScreen(),
+    DetailStatisticalScreen(),
+    MenuScreen(),
   ];
 
   @override
