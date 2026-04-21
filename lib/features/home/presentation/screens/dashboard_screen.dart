@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+import 'package:fm_dictionary/core/widgets/common/glass_tts_button.dart';
+import 'package:fm_dictionary/data/services/database/word_service.dart';
 import 'package:provider/provider.dart';
 
 // --- CORE / UTILS / CONSTANTS ---
@@ -408,15 +410,7 @@ class DashboardScreen extends StatelessWidget {
                   color: Colors.white.withValues(alpha:0.2),
                   shape: BoxShape.circle,
                 ),
-                child: IconButton(
-                  icon: const Icon(
-                    CupertinoIcons.speaker_2_fill,
-                    color: AppColors.textPrimary,
-                  ),
-                  onPressed: () {
-                    // TODO: Trigger TTS audio logic here
-                  },
-                ),
+                child: GlassTtsButton(text: word.word),
               ),
             ],
           ),
@@ -453,7 +447,7 @@ class DashboardScreen extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    "42 Từ đã lưu", // Ideally fetched dynamically from a SavedProvider
+                    "${WordService().getSavedWords().length} Từ đã lưu",
                     style: AppTypography.bodyMedium,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+import 'package:fm_dictionary/data/services/database/word_service.dart';
 
 // --- CORE / THEMES ---
 import '../../../../core/theme/app_colors.dart';
@@ -23,9 +24,14 @@ class WordDetailScreen extends StatefulWidget {
 class _WordDetailScreenState extends State<WordDetailScreen> {
   // Legacy TTS Service
   final TtsService _ttsService = TtsService();
-
-  // Local state for bookmark logic
+  final WordService _wordService = WordService();
   bool _isSaved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isSaved = _wordService.isWordSaved(widget.word.id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,11 +113,9 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
                       : CupertinoIcons.bookmark,
                   color: _isSaved ? AppColors.meshMint : AppColors.textPrimary,
                 ),
-                onPressed: () {
-                  setState(() {
-                    _isSaved = !_isSaved;
-                  });
-                  // TODO: Add logic here to save/remove word from database via SavedProvider
+                onPressed: () async {
+                  await _wordService.toggleSaveWord(widget.word.id);
+                  setState(() => _isSaved = !_isSaved);
                 },
               ),
             ],

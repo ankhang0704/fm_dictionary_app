@@ -6,7 +6,6 @@ import 'package:fm_dictionary/features/auth/presentation/providers/auth_provider
 import 'package:fm_dictionary/features/gamification/presentation/providers/gamification_provider.dart';
 import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
 import 'package:fm_dictionary/features/learning/presentation/providers/learning_provider.dart';
-import 'package:fm_dictionary/providers/streak_provider.dart';
 import 'package:get_it/get_it.dart';
 
 // --- Imaginary Imports ---
@@ -52,5 +51,4 @@ Future<void> init() async {
 
   sl.registerFactory<GamificationProvider>(() => GamificationProvider());
 
-  sl.registerFactory<StreakProvider>(() => StreakProvider());
 }

@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+import 'package:fm_dictionary/core/widgets/common/glass_tts_button.dart';
 import 'package:fm_dictionary/features/search/presentation/providers/search_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -327,16 +328,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   color: Colors.white.withValues(alpha:0.15),
                   shape: BoxShape.circle,
                 ),
-                child: IconButton(
-                  icon: const Icon(
-                    CupertinoIcons.speaker_2_fill,
-                    color: AppColors.textPrimary,
-                    size: 20,
-                  ),
-                  onPressed: () {
-                    // TODO: Add logic here for direct TTS audio playback
-                  },
-                ),
+                child: GlassTtsButton(text: word.word),
               ),
             ],
           ),

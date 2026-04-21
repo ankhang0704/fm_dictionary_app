@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fm_dictionary/core/di/service_locator.dart';
+import 'package:fm_dictionary/data/services/ui_management/theme_manager.dart';
 import 'package:fm_dictionary/features/learning/study_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -110,10 +111,21 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GamificationProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
-      child: MaterialApp(
+       child: ValueListenableBuilder<ThemeMode>(
+        valueListenable: ThemeManager.themeNotifier,
+        builder: (_, themeMode, _) => MaterialApp(
         title: 'English Mesh',
         debugShowCheckedModeBanner: false,
-
+        themeMode: themeMode,
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          fontFamily: 'Quicksand',
+          scaffoldBackgroundColor: Colors.transparent,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.meshBlue,
+            brightness: Brightness.dark,
+          ),
+        ),
         // Localization
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
@@ -188,6 +200,10 @@ class MyApp extends StatelessWidget {
           },
         },
       ),
+    )
+      
     );
   }
 }
+  
+

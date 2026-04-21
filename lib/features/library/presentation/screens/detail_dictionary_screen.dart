@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+import 'package:fm_dictionary/core/widgets/common/glass_tts_button.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 // --- CORE / THEMES ---
@@ -420,16 +421,7 @@ class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
                 color: Colors.white.withValues(alpha:0.15),
                 shape: BoxShape.circle,
               ),
-              child: IconButton(
-                icon: const Icon(
-                  CupertinoIcons.speaker_2_fill,
-                  color: AppColors.textPrimary,
-                  size: 20,
-                ),
-                onPressed: () {
-                  // TODO: Add logic here for TTS API call
-                },
-              ),
+              child: GlassTtsButton(text: word.word),
             ),
           ],
         ),

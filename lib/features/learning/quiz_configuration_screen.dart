@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/core/constants/app_routes.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
 import 'package:fm_dictionary/data/models/word_model.dart';
 import 'package:fm_dictionary/features/learning/presentation/providers/quiz_provider.dart';
@@ -391,7 +392,7 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
           // Assuming AppRoutes.quiz exists in your routes map
           Navigator.pushNamed(
             context,
-            '/quiz_play',
+            AppRoutes.quiz,
           ); // Ensure exact route matches your app_routes.dart
         },
       ),

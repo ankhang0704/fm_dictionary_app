@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+import 'package:fm_dictionary/core/widgets/common/glass_tts_button.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 // --- CORE UI & THEME ---
@@ -272,16 +273,7 @@ class _SavedWordsScreenState extends State<SavedWordsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // TTS Speaker
-              IconButton(
-                icon: const Icon(
-                  CupertinoIcons.speaker_2_fill,
-                  color: AppColors.textPrimary,
-                  size: 20,
-                ),
-                onPressed: () {
-                  // TODO: Add TTS Logic call
-                },
-              ),
+              GlassTtsButton(text: word.word),
               // Unsave Button
               IconButton(
                 icon: const Icon(

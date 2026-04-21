@@ -2,8 +2,10 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+import 'package:fm_dictionary/data/services/database/word_service.dart';
 import 'package:fm_dictionary/features/gamification/presentation/providers/gamification_provider.dart';
 import 'package:fm_dictionary/features/gamification/presentation/widgets/glass_badge_widget.dart';
+import 'package:fm_dictionary/features/learning/presentation/providers/learning_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -56,7 +58,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // SECTION 2: MINI STATS GRID
-                _buildStatsGrid(gamification),
+                _buildStatsGrid(context),
                 const SizedBox(height: 16),
 
                 // SECTION 3: BADGES COLLECTION
@@ -188,7 +190,9 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsGrid(GamificationProvider gami) {
+  Widget _buildStatsGrid(BuildContext context) {
+    final learning = context.watch<LearningProvider>();
+    final savedCount = WordService().getSavedWords().length;
     return Row(
       children: [
         Expanded(
@@ -198,7 +202,7 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 const Icon(CupertinoIcons.flame_fill, color: AppColors.warning, size: 30),
                 const SizedBox(height: 8),
-                Text("${gami.recentlyUnlocked} Ngày", style: AppTypography.heading2),
+                Text("${learning.currentStreak}", style: AppTypography.heading2),
                 Text("Chuỗi Streak", style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
               ],
             ),
@@ -212,8 +216,8 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 const Icon(CupertinoIcons.book_fill, color: AppColors.meshBlue, size: 30),
                 const SizedBox(height: 8),
-                Text("${gami.badges}", style: AppTypography.heading2),
-                Text("Từ vựng", style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                Text("$savedCount", style: AppTypography.heading2),
+                Text("Từ đã lưu", style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
               ],
             ),
           ),
@@ -260,7 +264,9 @@ class ProfileScreen extends StatelessWidget {
       onTap: null,
       child: Column(
         children: [
-          _buildMenuTile(context, CupertinoIcons.person_fill, "Chỉnh sửa thông tin", () {}),
+           _buildMenuTile(context, CupertinoIcons.person_fill, "Chỉnh sửa thông tin", () {
+            _showEditNameDialog(context);
+          }),
           const Divider(color: Colors.white10, height: 1),
           _buildMenuTile(context, CupertinoIcons.bell_fill, "Cài đặt thông báo", () => Navigator.pushNamed(context, AppRoutes.settings)),
           const Divider(color: Colors.white10, height: 1),
@@ -313,7 +319,37 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
-
+   void _showEditNameDialog(BuildContext context) {
+    final controller = TextEditingController(
+      text: DatabaseService.getSettings().userName,
+    );
+    showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text("Chỉnh sửa tên"),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: CupertinoTextField(controller: controller),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text("Hủy"),
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: const Text("Lưu"),
+            onPressed: () async {
+              final settings = DatabaseService.getSettings();
+              settings.userName = controller.text.trim();
+              await DatabaseService.saveSettings(settings);
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
+    );
+  }
   String _calculateLevelName(int count) {
     if (count >= 1000) return "Thần thoại";
     if (count >= 500) return "Kim cương";
