@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
 import 'package:fm_dictionary/core/widgets/common/glass_tts_button.dart';
 import 'package:fm_dictionary/data/services/database/word_service.dart';
+import 'package:fm_dictionary/features/settings/presentation/providers/settings_provider.dart';
 import 'package:provider/provider.dart';
 
 // --- CORE / UTILS / CONSTANTS ---
@@ -117,7 +118,13 @@ class DashboardScreen extends StatelessWidget {
   ) {
     final settings = DatabaseService.getSettings();
     final notifyProvider = context.watch<NotificationProvider>();
-    final userName = auth.currentUser?.displayName ?? 'Alex';
+    final userName = context.select<SettingsProvider, String>(
+      (s) => s.settings.userName,
+    );
+    // Firebase display name takes priority if available
+    final displayName = auth.currentUser?.displayName?.isNotEmpty == true
+        ? auth.currentUser!.displayName!
+        : userName;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -131,7 +138,7 @@ class DashboardScreen extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "👋 Hello, $userName!",
+                  "Hello, $displayName!",
                   style: AppTypography.heading2.copyWith(
                     color: AppColors.textPrimary,
                   ),
@@ -169,11 +176,28 @@ class DashboardScreen extends StatelessWidget {
             // Avatar
             GestureDetector(
               onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
-              child: AppAvatar(
-                localPath: settings.userAvatarPath,
-                networkUrl: auth.currentUser?.photoURL,
-                radius: 24, // Modern large avatar
-              ),
+              child:
+                  auth.currentUser?.photoURL?.isNotEmpty == true ||
+                      settings.userAvatarPath?.isNotEmpty == true
+                  ? AppAvatar(
+                      localPath: settings.userAvatarPath,
+                      networkUrl: auth.currentUser?.photoURL,
+                      radius: 24,
+                    )
+                  : CircleAvatar(
+                      radius: 24,
+                      backgroundColor: AppColors.meshBlue.withValues(
+                        alpha: 0.2,
+                      ),
+                      child: Text(
+                        displayName.isNotEmpty
+                            ? displayName[0].toUpperCase()
+                            : '?',
+                        style: AppTypography.heading3.copyWith(
+                          color: AppColors.meshBlue,
+                        ),
+                      ),
+                    ),
             ),
           ],
         ),
@@ -219,7 +243,7 @@ class DashboardScreen extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: clampedProgress,
                     minHeight: 12,
-                    backgroundColor: Colors.white.withValues(alpha:0.2),
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       AppColors.success,
                     ),
@@ -407,7 +431,7 @@ class DashboardScreen extends StatelessWidget {
               // Glass TTS Icon Button
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha:0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: GlassTtsButton(text: word.word),
@@ -501,7 +525,7 @@ class DashboardScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha:0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(100),
             ),
             child: const Row(

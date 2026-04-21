@@ -1,10 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fm_dictionary/core/di/service_locator.dart';
 import 'package:fm_dictionary/data/services/ui_management/theme_manager.dart';
+import 'package:fm_dictionary/features/auth/presentation/screens/profile_screen.dart';
+import 'package:fm_dictionary/features/home/presentation/screens/streak_screen.dart';
 import 'package:fm_dictionary/features/learning/study_screen.dart';
+import 'package:fm_dictionary/features/library/presentation/screens/detail_dictionary_screen.dart';
+import 'package:fm_dictionary/features/settings/presentation/screens/settings_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -111,99 +116,161 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GamificationProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
-       child: ValueListenableBuilder<ThemeMode>(
+      child: ValueListenableBuilder<ThemeMode>(
         valueListenable: ThemeManager.themeNotifier,
         builder: (_, themeMode, _) => MaterialApp(
-        title: 'English Mesh',
-        debugShowCheckedModeBanner: false,
-        themeMode: themeMode,
-        darkTheme: ThemeData(
-          useMaterial3: true,
-          fontFamily: 'Quicksand',
-          scaffoldBackgroundColor: Colors.transparent,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: AppColors.meshBlue,
-            brightness: Brightness.dark,
+          title: 'English Mesh',
+          debugShowCheckedModeBanner: false,
+          themeMode: themeMode,
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            fontFamily: 'Quicksand',
+            scaffoldBackgroundColor: Colors.transparent,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: AppColors.meshBlue,
+              brightness: Brightness.dark,
+            ),
           ),
-        ),
-        // Localization
-        localizationsDelegates: context.localizationDelegates,
-        supportedLocales: context.supportedLocales,
-        locale: context.locale,
+          // Localization
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          locale: context.locale,
 
-        // --- GLOBAL DESIGN SYSTEM THEME ---
-        theme: ThemeData(
-          useMaterial3: true,
-          fontFamily: 'Quicksand',
-          // CRITICAL: Scaffolds are transparent to show the Mesh Gradient background wrapper
-          scaffoldBackgroundColor: Colors.transparent,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: AppColors.meshBlue,
-            brightness: Brightness.light,
+          // --- GLOBAL DESIGN SYSTEM THEME ---
+          theme: ThemeData(
+            useMaterial3: true,
+            fontFamily: 'Quicksand',
+            // CRITICAL: Scaffolds are transparent to show the Mesh Gradient background wrapper
+            scaffoldBackgroundColor: Colors.transparent,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: AppColors.meshBlue,
+              brightness: Brightness.light,
+            ),
           ),
+
+          // --- NAVIGATION & ROUTING ---
+          onGenerateRoute: (settings) {
+            switch (settings.name) {
+              case AppRoutes.welcome:
+                return CupertinoPageRoute(
+                  builder: (_) => const WelcomeScreen(),
+                );
+              case AppRoutes.dashboard:
+                return CupertinoPageRoute(
+                  builder: (_) => const MainNavigation(),
+                );
+
+              // Auth
+              case AppRoutes.login:
+                return CupertinoPageRoute(builder: (_) => const LoginScreen());
+              case AppRoutes.register:
+                return CupertinoPageRoute(
+                  builder: (_) => const RegisterScreen(),
+                );
+              case AppRoutes.forgotPassword:
+                return CupertinoPageRoute(
+                  builder: (_) => const ForgotPasswordScreen(),
+                );
+              case AppRoutes.changePassword:
+                return CupertinoPageRoute(
+                  builder: (_) => const ChangePasswordScreen(),
+                );
+
+              // Library & Search
+              case AppRoutes.library:
+                return CupertinoPageRoute(
+                  builder: (_) => const RoadmapScreen(),
+                );
+              case AppRoutes.search:
+                return CupertinoPageRoute(builder: (_) => const SearchScreen());
+              case AppRoutes.wordDetail:
+                {
+                  final args = settings.arguments as Map<String, dynamic>;
+                  return CupertinoPageRoute(
+                    builder: (_) => WordDetailScreen(word: args['word']),
+                  );
+                }
+
+              // ✅ THE FIX: topicDetail now safely extracts the topic string
+              case AppRoutes.topicDetail:
+                {
+                  final args = settings.arguments as Map<String, dynamic>;
+                  final topic = args['topic'] as String;
+                  return CupertinoPageRoute(
+                    builder: (_) => DictionaryDetailScreen(topic: topic),
+                  );
+                }
+
+              // Learning
+              case AppRoutes.quizConfig:
+                {
+                  final args = settings.arguments;
+                  return CupertinoPageRoute(
+                    builder: (_) => QuizConfigurationScreen(
+                      initialTopic: args is String ? args : 'All',
+                    ),
+                  );
+                }
+              case AppRoutes.study:
+                {
+                  final args = settings.arguments as Map<String, dynamic>;
+                  return CupertinoPageRoute(
+                    builder: (_) => StudyScreen(
+                      words: args['words'],
+                      isFromRoadmap: args['isFromRoadmap'] ?? false,
+                    ),
+                  );
+                }
+              case AppRoutes.review:
+                return CupertinoPageRoute(
+                  builder: (_) => const SmartReviewScreen(),
+                );
+              case AppRoutes.quiz:
+                return CupertinoPageRoute(builder: (_) => const QuizScreen());
+
+              // Stats & Settings
+              case AppRoutes.stats:
+                return CupertinoPageRoute(builder: (_) => const StatsScreen());
+              case AppRoutes.settings:
+                return CupertinoPageRoute(
+                  builder: (_) => const SettingsScreen(),
+                );
+              case AppRoutes.profile:
+                return CupertinoPageRoute(
+                  builder: (_) => const ProfileScreen(),
+                );
+
+              // History, Saved
+              case AppRoutes.history:
+                return CupertinoPageRoute(builder: (_) => HistoryScreen());
+              case AppRoutes.saved:
+                return CupertinoPageRoute(
+                  builder: (_) => const SavedWordsScreen(),
+                );
+
+              // Static Content
+              case AppRoutes.staticContent:
+                {
+                  final args = settings.arguments as Map<String, String>;
+                  return CupertinoPageRoute(
+                    builder: (_) => StaticContentScreen(
+                      title: args['title']!,
+                      mdFileName: args['mdFileName']!,
+                    ),
+                  );
+                }
+
+              default:
+                return CupertinoPageRoute(
+                  builder: (_) => const MainNavigation(),
+                );
+            }
+          },
+          initialRoute: settings.isFirstRun
+              ? AppRoutes.welcome
+              : AppRoutes.dashboard,
         ),
-
-        // --- NAVIGATION & ROUTING ---
-        initialRoute: settings.isFirstRun
-            ? AppRoutes.welcome
-            : AppRoutes.dashboard,
-        routes: {
-          AppRoutes.welcome: (context) => const WelcomeScreen(),
-          AppRoutes.dashboard: (context) => const MainNavigation(),
-
-          // Auth
-          AppRoutes.login: (context) => const LoginScreen(),
-          AppRoutes.register: (context) => const RegisterScreen(),
-          AppRoutes.forgotPassword: (context) => const ForgotPasswordScreen(),
-          AppRoutes.changePassword: (context) => const ChangePasswordScreen(),
-
-          // Library & Search
-          AppRoutes.library: (context) => const RoadmapScreen(),
-          AppRoutes.search: (context) => const SearchScreen(),
-          AppRoutes.wordDetail: (context) {
-            final args =
-                ModalRoute.of(context)!.settings.arguments
-                    as Map<String, dynamic>;
-            return WordDetailScreen(word: args['word']);
-          },
-
-          // Learning
-          AppRoutes.quizConfig: (context) {
-            final args = ModalRoute.of(context)?.settings.arguments;
-            return QuizConfigurationScreen(
-              initialTopic: args is String ? args : 'All',
-            );
-          },
-          AppRoutes.study: (context) {
-            final args =
-                ModalRoute.of(context)!.settings.arguments
-                    as Map<String, dynamic>;
-            return StudyScreen(
-              words: args['words'],
-              isFromRoadmap: args['isFromRoadmap'] ?? false,
-            );
-          },
-          AppRoutes.review: (context) => const SmartReviewScreen(),
-          AppRoutes.quiz: (context) => const QuizScreen(),
-
-          // Profile & Settings
-          AppRoutes.history: (context) => HistoryScreen(),
-          AppRoutes.saved: (context) => const SavedWordsScreen(),
-          AppRoutes.staticContent: (context) {
-            final args =
-                ModalRoute.of(context)!.settings.arguments
-                    as Map<String, String>;
-            return StaticContentScreen(
-              title: args['title']!,
-              mdFileName: args['mdFileName']!,
-            );
-          },
-        },
       ),
-    )
-      
     );
   }
 }
-  
-
