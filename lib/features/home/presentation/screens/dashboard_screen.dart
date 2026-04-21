@@ -1,16 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
-import 'package:fm_dictionary/core/widgets/common/glass_tts_button.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
+import 'package:fm_dictionary/core/widgets/common/bento_tts_button.dart';
 import 'package:fm_dictionary/data/services/database/word_service.dart';
 import 'package:fm_dictionary/features/settings/presentation/providers/settings_provider.dart';
 import 'package:provider/provider.dart';
 
 // --- CORE / UTILS / CONSTANTS ---
 import '../../../../core/constants/app_routes.dart';
-import '../../../../core/constants/constants.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_layout.dart';
 import '../../../../core/widgets/common/smart_action_button.dart';
 import '../../../../core/widgets/common/app_avatar.dart';
@@ -28,80 +26,67 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      // GLOBAL DESIGN SYSTEM: Mesh Gradient Background
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.meshBlue,
-            AppColors.meshPurple,
-            AppColors.meshMint,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
-          bottom: false, // Prevents bottom padding over the glassy nav bar
-          child: Consumer2<HomeProvider, AuthProvider>(
-            builder: (context, home, auth, child) {
-              if (home.isLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                );
-              }
-
-              return SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.all(AppLayout.defaultPadding),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // --- SECTION A: HERO HEADER ---
-                    _buildHeroHeader(context, home, auth),
-                    const SizedBox(height: 24),
-
-                    // --- SECTION B: BENTO GRID ---
-                    // Card 1: Daily Goal
-                    _buildDailyGoalCard(context, home),
-                    const SizedBox(height: 16),
-
-                    // Row 1: Streak & Daily Quiz
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStreakCard(context, home.currentStreak),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(child: _buildDailyQuizCard(context)),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Card 4: Word of the Day
-                    if (home.wordOfTheDay != null) ...[
-                      _buildWordOfTheDayCard(context, home.wordOfTheDay!),
-                      const SizedBox(height: 16),
-                    ],
-
-                    // Row 2: Kho tàng & Quick Search
-                    Row(
-                      children: [
-                        Expanded(child: _buildTreasuresCard(context)),
-                        const SizedBox(width: 16),
-                        Expanded(child: _buildQuickSearchCard(context)),
-                      ],
-                    ),
-
-                    // Extra padding to scroll comfortably above the glass bottom bar
-                    const SizedBox(height: 100),
-                  ],
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        bottom: false,
+        child: Consumer2<HomeProvider, AuthProvider>(
+          builder: (context, home, auth, child) {
+            if (home.isLoading) {
+              return Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
                 ),
               );
-            },
-          ),
+            }
+
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.all(AppLayout.defaultPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // --- SECTION A: HERO HEADER ---
+                  _buildHeroHeader(context, home, auth),
+                  const SizedBox(height: 24),
+
+                  // --- SECTION B: VIBRANT BENTO GRID ---
+                  // Card 1: Daily Goal
+                  _buildDailyGoalCard(context, home),
+                  const SizedBox(height: 16),
+
+                  // Row 1: Streak & Daily Quiz
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStreakCard(context, home.currentStreak),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(child: _buildDailyQuizCard(context)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Card 4: Word of the Day
+                  if (home.wordOfTheDay != null) ...[
+                    _buildWordOfTheDayCard(context, home.wordOfTheDay!),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Row 2: Kho tàng & Quick Search
+                  Row(
+                    children: [
+                      Expanded(child: _buildTreasuresCard(context)),
+                      const SizedBox(width: 16),
+                      Expanded(child: _buildQuickSearchCard(context)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 100),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
@@ -123,7 +108,6 @@ class DashboardScreen extends StatelessWidget {
     final userName = context.select<SettingsProvider, String>(
       (s) => s.settings.userName,
     );
-    // Firebase display name takes priority if available
     final displayName = auth.currentUser?.displayName?.isNotEmpty == true
         ? auth.currentUser!.displayName!
         : userName;
@@ -135,24 +119,18 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ZERO OVERFLOW: FittedBox scales down text if name is too long
               FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Hello, $displayName!",
-                  style: AppTypography.heading2.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
+                  style: Theme.of(context).textTheme.displayMedium,
                 ),
               ),
               const SizedBox(height: 4),
-              // ZERO OVERFLOW: Ellipsis for long quotes
               Text(
                 home.quote.isNotEmpty ? home.quote : '"Học, học nữa, học mãi"',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -162,17 +140,26 @@ class DashboardScreen extends StatelessWidget {
         const SizedBox(width: 12),
         Row(
           children: [
-            // Notification Bell
-            IconButton(
-              icon: Icon(
-                notifyEnabled ? CupertinoIcons.bell_fill : CupertinoIcons.bell,
-                color: notifyEnabled
-                    ? AppColors.warning
-                    : AppColors.textSecondary,
+            // Notification Bell Wrapper
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                shape: BoxShape.circle,
               ),
-              onPressed: () => _showNotificationQuickSettings(
-                context,
-                context.read<NotificationProvider>(),
+              child: IconButton(
+                icon: Icon(
+                  notifyEnabled
+                      ? CupertinoIcons.bell_fill
+                      : CupertinoIcons.bell,
+                  color: notifyEnabled
+                      ? AppColors.warning
+                      : Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+                onPressed: () => _showNotificationQuickSettings(
+                  context,
+                  context.read<NotificationProvider>(),
+                ),
               ),
             ),
             // Avatar
@@ -188,16 +175,15 @@ class DashboardScreen extends StatelessWidget {
                     )
                   : CircleAvatar(
                       radius: 24,
-                      backgroundColor: AppColors.meshBlue.withValues(
-                        alpha: 0.2,
+                      backgroundColor: AppColors.bentoBlue.withValues(
+                        alpha: 0.15,
                       ),
                       child: Text(
                         displayName.isNotEmpty
                             ? displayName[0].toUpperCase()
                             : '?',
-                        style: AppTypography.heading3.copyWith(
-                          color: AppColors.meshBlue,
-                        ),
+                        style: Theme.of(context).textTheme.displaySmall
+                            ?.copyWith(color: AppColors.bentoBlue),
                       ),
                     ),
             ),
@@ -211,42 +197,49 @@ class DashboardScreen extends StatelessWidget {
     final studied = home.wordsLearnedToday;
     final target = home.dailyGoalTarget;
     final progress = home.dailyProgressPercent;
-
-    // Safety check to ensure valid double
     final clampedProgress = progress.clamp(0.0, 1.0);
     final percentage = (clampedProgress * 100).toInt();
 
-    return GlassBentoCard(
-      onTap: null, // Tap handled by SmartActionButton
+    return BentoCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  CupertinoIcons.flag_fill,
+                  color: AppColors.success,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   "Mục tiêu hôm nay: $studied/$target",
-                  style: AppTypography.heading3.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
+                  style: Theme.of(context).textTheme.displaySmall,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          // Progress Bar with exact percentage
+          const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(100),
                   child: LinearProgressIndicator(
                     value: clampedProgress,
                     minHeight: 12,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    valueColor: AlwaysStoppedAnimation<Color>(
+                    backgroundColor: AppColors.success.withValues(alpha: 0.1),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
                       AppColors.success,
                     ),
                   ),
@@ -255,20 +248,17 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 "$percentage%",
-                style: AppTypography.bodyMedium.copyWith(
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.success,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           SmartActionButton(
             text: "Tiếp tục chặng đường",
-            isGlass: false,
-            isLoading: false,
             onPressed: () async {
-              // Legacy Logic Mapping: Scan roadmap for next lesson
               final roadmap = context.read<RoadmapProvider>();
               RoadmapLesson? targetLesson;
 
@@ -293,13 +283,11 @@ class DashboardScreen extends StatelessWidget {
                 return;
               }
 
-              // Route properly
               await Navigator.pushNamed(
                 context,
                 AppRoutes.study,
                 arguments: {'words': targetLesson.words, 'isFromRoadmap': true},
               );
-              // Refresh home after coming back
               home.updateDailyProgress();
             },
           ),
@@ -309,32 +297,38 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildStreakCard(BuildContext context, int currentStreak) {
-    return GlassBentoCard(
+    return BentoCard(
       onTap: () => Navigator.pushNamed(context, AppRoutes.stats),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            CupertinoIcons.flame_fill,
-            color: AppColors.warning,
-            size: 36,
-          ),
-          const SizedBox(height: 8),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              "STREAK",
-              style: AppTypography.bodyMedium.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.warning.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
             ),
+            child: const Icon(
+              CupertinoIcons.flame_fill,
+              color: AppColors.warning,
+              size: 32,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            "STREAK",
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               "$currentStreak Ngày",
-              style: AppTypography.heading2.copyWith(color: AppColors.warning),
+              style: Theme.of(
+                context,
+              ).textTheme.displaySmall?.copyWith(color: AppColors.warning),
             ),
           ),
         ],
@@ -343,35 +337,38 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildDailyQuizCard(BuildContext context) {
-    return GlassBentoCard(
+    return BentoCard(
       onTap: () => Navigator.pushNamed(context, AppRoutes.quizConfig),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            AppConstants.topicIcons['All'] ?? CupertinoIcons.bolt_fill,
-            color: AppColors.meshPurple,
-            size: 36,
-          ),
-          const SizedBox(height: 8),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              "⚡ DAILY QUIZ",
-              style: AppTypography.bodyMedium.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.bentoPurple.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
             ),
+            child: const Icon(
+              CupertinoIcons.bolt_fill,
+              color: AppColors.bentoPurple,
+              size: 32,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            "⚡ DAILY QUIZ",
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              "Thử thách 5 phút",
-              style: AppTypography.bodyLarge.copyWith(
-                color: AppColors.meshPurple,
-                fontWeight: FontWeight.bold,
-              ),
+              "Thử thách",
+              style: Theme.of(
+                context,
+              ).textTheme.displaySmall?.copyWith(color: AppColors.bentoPurple),
             ),
           ),
         ],
@@ -380,7 +377,7 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildWordOfTheDayCard(BuildContext context, Word word) {
-    return GlassBentoCard(
+    return BentoCard(
       onTap: () => Navigator.pushNamed(
         context,
         AppRoutes.wordDetail,
@@ -389,56 +386,41 @@ class DashboardScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "WORD OF THE DAY",
-            style: AppTypography.bodyMedium.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      word.word,
-                      style: AppTypography.heading2,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (word.phoneticUK.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        word.phoneticUK,
-                        style: AppTypography.ipaText.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                    const SizedBox(height: 4),
-                    Text(
-                      word.meaning,
-                      style: AppTypography.bodyMedium,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
+              Text(
+                "WORD OF THE DAY",
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
               ),
-              const SizedBox(width: 8),
-              // Glass TTS Icon Button
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: GlassTtsButton(text: word.word),
-              ),
+              BentoTtsButton(text: word.word, size: 18),
             ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            word.word,
+            style: Theme.of(context).textTheme.displayMedium,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (word.phoneticUK.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              word.phoneticUK,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontStyle: FontStyle.italic,
+                color: AppColors.bentoBlue,
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Text(
+            word.meaning,
+            style: Theme.of(context).textTheme.bodyLarge,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -446,107 +428,113 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildTreasuresCard(BuildContext context) {
-    return GlassBentoCard(
-      onTap: null, // Delegate tap to child elements
+    return BentoCard(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "KHO TÀNG",
-            style: AppTypography.bodyMedium.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 12),
-          // Top Half: Saved Words
-          InkWell(
+          const SizedBox(height: 16),
+          _buildQuickLink(
+            context,
+            icon: CupertinoIcons.star_fill,
+            color: AppColors.bentoMint,
+            label: "${WordService().getSavedWords().length} Từ đã lưu",
             onTap: () => Navigator.pushNamed(context, AppRoutes.saved),
-            borderRadius: BorderRadius.circular(8),
-            child: Row(
-              children: [
-                const Icon(
-                  CupertinoIcons.star_fill,
-                  color: AppColors.meshMint,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    "${WordService().getSavedWords().length} Từ đã lưu",
-                    style: AppTypography.bodyMedium,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
           ),
-          const Divider(color: Colors.white24, height: 16),
-          // Bottom Half: History
-          InkWell(
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+            child: Divider(height: 1),
+          ),
+          _buildQuickLink(
+            context,
+            icon: CupertinoIcons.time_solid,
+            color: AppColors.bentoBlue,
+            label: "Lịch sử học",
             onTap: () => Navigator.pushNamed(context, AppRoutes.history),
-            borderRadius: BorderRadius.circular(8),
-            child: Row(
-              children: [
-                const Icon(
-                  CupertinoIcons.time_solid,
-                  color: AppColors.meshBlue,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    "Lịch sử học",
-                    style: AppTypography.bodyMedium,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
     );
   }
 
+  Widget _buildQuickLink(
+    BuildContext context, {
+    required IconData icon,
+    required Color color,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 16),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                label,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildQuickSearchCard(BuildContext context) {
-    return GlassBentoCard(
+    return BentoCard(
       onTap: () => Navigator.pushNamed(context, AppRoutes.search),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             "TÌM NHANH",
-            style: AppTypography.bodyMedium.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 20),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(100),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  CupertinoIcons.search,
-                  size: 18,
-                  color: AppColors.textPrimary,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  "Tra từ...",
-                  style: TextStyle(color: AppColors.textPrimary),
-                ),
-              ],
+            child: Icon(
+              CupertinoIcons.search,
+              color: Theme.of(context).colorScheme.primary,
+              size: 24,
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 12),
+          Text(
+            "Tra từ...",
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );
@@ -562,7 +550,7 @@ class DashboardScreen extends StatelessWidget {
   ) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent, // Making the bottom sheet match UI
+      backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
@@ -570,48 +558,59 @@ class DashboardScreen extends StatelessWidget {
             top: Radius.circular(AppLayout.bentoBorderRadius),
           ),
         ),
-        padding: EdgeInsets.all(AppLayout.defaultPadding),
+        padding: const EdgeInsets.all(AppLayout.defaultPadding),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text("Nhắc nhở học tập", style: AppTypography.heading2),
-            const SizedBox(height: 16),
-            SwitchListTile(
-              title: Text(
-                "Bật thông báo hàng ngày",
-                style: AppTypography.bodyLarge,
-              ),
-              value: provider.isEnabled,
-              activeThumbColor: AppColors.meshBlue,
-              onChanged: (v) => provider.toggleNotification(v),
+            Text(
+              "Nhắc nhở học tập",
+              style: Theme.of(context).textTheme.displaySmall,
             ),
-            if (provider.isEnabled)
-              ListTile(
-                leading: const Icon(
-                  CupertinoIcons.clock,
-                  color: AppColors.meshBlue,
-                ),
-                title: Text(
-                  "Giờ nhắc nhở hiện tại",
-                  style: AppTypography.bodyMedium,
-                ),
-                trailing: Text(
-                  provider.reminderTime?.format(context) ?? "20:00",
-                  style: AppTypography.heading3.copyWith(
-                    color: AppColors.meshBlue,
+            const SizedBox(height: 24),
+            BentoCard(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
+                  SwitchListTile(
+                    title: Text(
+                      "Bật thông báo hàng ngày",
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    value: provider.isEnabled,
+                    activeColor: AppColors.bentoBlue,
+                    onChanged: (v) => provider.toggleNotification(v),
                   ),
-                ),
-                onTap: () async {
-                  final time = await showTimePicker(
-                    context: context,
-                    initialTime:
-                        provider.reminderTime ??
-                        const TimeOfDay(hour: 20, minute: 0),
-                  );
-                  if (time != null) provider.updateReminderTime(time);
-                },
+                  if (provider.isEnabled) ...[
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(
+                        CupertinoIcons.clock,
+                        color: AppColors.bentoBlue,
+                      ),
+                      title: Text(
+                        "Giờ nhắc nhở",
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      trailing: Text(
+                        provider.reminderTime?.format(context) ?? "20:00",
+                        style: Theme.of(context).textTheme.displaySmall
+                            ?.copyWith(color: AppColors.bentoBlue),
+                      ),
+                      onTap: () async {
+                        final time = await showTimePicker(
+                          context: context,
+                          initialTime:
+                              provider.reminderTime ??
+                              const TimeOfDay(hour: 20, minute: 0),
+                        );
+                        if (time != null) provider.updateReminderTime(time);
+                      },
+                    ),
+                  ],
+                ],
               ),
-            SafeArea(child: const SizedBox(height: 20)),
+            ),
+            const SafeArea(child: SizedBox(height: 20)),
           ],
         ),
       ),

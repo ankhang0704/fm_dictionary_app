@@ -2,12 +2,11 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
 
-// Assuming these are correctly imported in your actual project:
-// import 'package:fm_dictionary/core/theme/app_colors.dart';
-// import 'package:fm_dictionary/core/theme/app_typography.dart';
-// import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+// --- CORE UI & THEME ---
+import 'package:fm_dictionary/core/theme/app_colors.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
+
 // import 'package:fm_dictionary/data/services/auth_sync/auth_sync_service.dart';
 
 class SyncDataDialog extends StatefulWidget {
@@ -18,45 +17,39 @@ class SyncDataDialog extends StatefulWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.2), // Light dim for transparent effect
+      barrierColor: Colors.black.withValues(
+        alpha: 0.4,
+      ), // Standard dim for focus
       builder: (dialogContext) => const SyncDataDialog(),
     );
 
     try {
       // Assuming AuthSyncService is globally available as in your old code
       // await AuthSyncService.instance.syncDataWithMerge();
-      
+
       // Simulate sync for UI testing if the service is not yet fully implemented
-      await Future.delayed(const Duration(seconds: 2)); 
+      await Future.delayed(const Duration(seconds: 2));
 
       if (!context.mounted) return;
-      
+
       // Dismiss the dialog
       Navigator.of(context, rootNavigator: true).pop();
       // Pop the underlying screen/sheet if applicable
       if (Navigator.canPop(context)) {
         Navigator.pop(context);
       }
-      
-      _showSnackBar(
-        context,
-        'sidebar.sync_success'.tr(),
-        const Color(0xFF10B981), // AppColors.success
-      );
+
+      _showSnackBar(context, 'sidebar.sync_success'.tr(), AppColors.success);
     } catch (e) {
       if (!context.mounted) return;
-      
+
       // Dismiss the dialog
       Navigator.of(context, rootNavigator: true).pop();
       if (Navigator.canPop(context)) {
         Navigator.pop(context);
       }
-      
-      _showSnackBar(
-        context,
-        _getFriendlyErrorMessage(e),
-        const Color(0xFFFF4757), // AppColors.error
-      );
+
+      _showSnackBar(context, _getFriendlyErrorMessage(e), AppColors.error);
     }
   }
 
@@ -65,16 +58,15 @@ class SyncDataDialog extends StatefulWidget {
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w500,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: Colors.white,
+            fontWeight: FontWeight.w600,
           ),
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0), // AppLayout.inputRadius
+          borderRadius: BorderRadius.circular(16.0),
         ),
         elevation: 0,
       ),
@@ -100,7 +92,8 @@ class SyncDataDialog extends StatefulWidget {
   State<SyncDataDialog> createState() => _SyncDataDialogState();
 }
 
-class _SyncDataDialogState extends State<SyncDataDialog> with SingleTickerProviderStateMixin {
+class _SyncDataDialogState extends State<SyncDataDialog>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
 
   @override
@@ -125,67 +118,66 @@ class _SyncDataDialogState extends State<SyncDataDialog> with SingleTickerProvid
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40.0),
-          child: GlassBentoCard(
-            padding: const EdgeInsets.all(24.0),
-            // GlassBentoCard already implements the Blur and Container with 25% opacity
+          child: BentoCard(
+            padding: const EdgeInsets.all(32.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                RotationTransition(
-                  turns: _animationController,
-                  child: const Icon(
-                    Icons.cloud_sync_rounded,
-                    size: 56.0,
-                    color: Color(0xFF50E3C2), // AppColors.meshMint
+                // Vibrant Bento Icon Wrapper
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: AppColors.bentoMint.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: RotationTransition(
+                    turns: _animationController,
+                    child: const Icon(
+                      Icons.cloud_sync_rounded,
+                      size: 48.0,
+                      color: AppColors.bentoMint,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24.0),
-                
-                // Zero Pixel Overflow Strategy
-                const Flexible(
+
+                // Zero Pixel Overflow Strategy + Adaptive Theme Text
+                Flexible(
                   child: Text(
                     "Đang đồng bộ dữ liệu...",
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Quicksand',
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E293B), // AppColors.textPrimary
-                    ), // Fallback: AppTypography.heading3
+                    style: Theme.of(context).textTheme.displaySmall,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(height: 20.0),
-                
-                // Rounded Custom Linear Progress Indicator
+                const SizedBox(height: 24.0),
+
+                // Rounded Custom Linear Progress Indicator (Playful Flat Style)
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(4.0),
+                  borderRadius: BorderRadius.circular(8.0),
                   child: SizedBox(
-                    height: 8.0,
+                    height: 10.0,
                     width: double.infinity,
                     child: LinearProgressIndicator(
-                      backgroundColor: Colors.white.withValues(alpha: 0.2),
+                      backgroundColor: AppColors.bentoMint.withValues(
+                        alpha: 0.2,
+                      ),
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                        Color(0xFF50E3C2), // AppColors.meshMint
+                        AppColors.bentoMint,
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16.0),
-                
+
                 // Subtext
-                const Flexible(
+                Flexible(
                   child: Text(
                     "Vui lòng không đóng ứng dụng",
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF64748B), // AppColors.textSecondary
-                    ), // Fallback: AppTypography.bodyTextSmall
+                    style: Theme.of(context).textTheme.bodyMedium,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

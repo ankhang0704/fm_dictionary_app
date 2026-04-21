@@ -1,7 +1,6 @@
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
 import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
@@ -10,7 +9,6 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/progress_keys.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_layout.dart';
 import '../../../../core/widgets/common/smart_action_button.dart';
 
@@ -31,43 +29,27 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      // GLOBAL DESIGN SYSTEM: Mesh Gradient Background
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.meshBlue,
-            AppColors.meshPurple,
-            AppColors.meshMint,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: _buildGlassHeader(context),
-        body: ValueListenableBuilder(
-          valueListenable: Hive.box(
-            DatabaseService.progressBoxName,
-          ).listenable(),
-          builder: (context, box, _) {
-            // --- LEGACY LOGIC EXTRACTION ---
-            final reviewWords = _wordService.getWordsToReview();
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: _buildBentoHeader(context),
+      body: ValueListenableBuilder(
+        valueListenable: Hive.box(DatabaseService.progressBoxName).listenable(),
+        builder: (context, box, _) {
+          // --- STRICTLY PRESERVED BUSINESS LOGIC ---
+          final reviewWords = _wordService.getWordsToReview();
 
-            if (reviewWords.isEmpty) return const _EmptyReviewState();
+          if (reviewWords.isEmpty) return const _EmptyReviewState();
 
-            return Stack(
-              children: [
-                // THE SCROLLABLE LIST
-                _buildReviewList(reviewWords),
+          return Stack(
+            children: [
+              // THE SCROLLABLE LIST
+              _buildReviewList(reviewWords),
 
-                // FIXED GLASS BOTTOM ACTION BAR
-                _buildStickyBottomAction(context, reviewWords),
-              ],
-            );
-          },
-        ),
+              // FIXED BENTO BOTTOM ACTION BAR
+              _buildStickyBottomAction(context, reviewWords),
+            ],
+          );
+        },
       ),
     );
   }
@@ -76,35 +58,31 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
   // WIDGET BUILDERS
   // ===========================================================================
 
-  PreferredSizeWidget _buildGlassHeader(BuildContext context) {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(kToolbarHeight),
-      child: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: AppBar(
-            backgroundColor: Colors.white.withValues(alpha:  0.1),
-            elevation: 0,
-            centerTitle: true,
-            leading: IconButton(
-              icon: const Icon(
-                CupertinoIcons.back,
-                color: AppColors.textPrimary,
-              ),
-              onPressed: () => Navigator.pop(context),
+  PreferredSizeWidget _buildBentoHeader(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+      leading: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: Icon(
+              CupertinoIcons.back,
+              color: Theme.of(context).textTheme.displayLarge?.color,
+              size: 20,
             ),
-            title: Text(
-              'Ôn tập từ vựng',
-              style: AppTypography.heading2.copyWith(
-                color: AppColors.textPrimary,
-              ),
-            ),
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(1),
-              child: Container(color: Colors.white.withValues(alpha:0.2), height: 1),
-            ),
+            onPressed: () => Navigator.pop(context),
           ),
         ),
+      ),
+      title: Text(
+        'Ôn tập từ vựng',
+        style: Theme.of(context).textTheme.displaySmall,
       ),
     );
   }
@@ -116,7 +94,7 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
         AppLayout.defaultPadding,
         AppLayout.defaultPadding,
         AppLayout.defaultPadding,
-        140, // Significant bottom padding for the fixed action bar
+        160, // Clearance for fixed bottom bar
       ),
       itemCount: reviewWords.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
@@ -124,11 +102,9 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
         final word = reviewWords[index];
         final progress = _wordService.getWordProgress(word.id);
         final int wrongCount = progress[ProgressKeys.wrongCount] as int;
+        final bool isUrgent = wrongCount > 0;
 
-        // VISUAL FEEDBACK: If errors exist, add a subtle red tint to the card
-        final isUrgent = wrongCount > 0;
-
-        return GlassBentoCard(
+        return BentoCard(
           onTap: () => Navigator.pushNamed(
             context,
             AppRoutes.wordDetail,
@@ -142,18 +118,16 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
                   children: [
                     Text(
                       word.word,
-                      style: AppTypography.heading3.copyWith(
-                        color: AppColors.textPrimary,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.displaySmall?.copyWith(fontSize: 18),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       word.meaning,
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -162,7 +136,7 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
               ),
               const SizedBox(width: 12),
 
-              // URGENCY INDICATOR
+              // URGENCY INDICATOR (VIBRANT BENTO STYLE)
               if (isUrgent)
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -170,9 +144,8 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha:0.15),
+                    color: AppColors.error.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.error.withValues(alpha:0.3)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -185,10 +158,9 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
                       const SizedBox(width: 6),
                       Text(
                         '$wrongCount lỗi',
-                        style: AppTypography.bodyMedium.copyWith(
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.error,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
                         ),
                       ),
                     ],
@@ -198,7 +170,7 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
                 const Icon(
                   CupertinoIcons.checkmark_seal_fill,
                   color: AppColors.success,
-                  size: 24,
+                  size: 28,
                 ),
             ],
           ),
@@ -215,70 +187,61 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
       bottom: 0,
       left: 0,
       right: 0,
-      child: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Container(
-            padding: EdgeInsets.fromLTRB(
-              AppLayout.defaultPadding,
-              16,
-              AppLayout.defaultPadding,
-              MediaQuery.of(context).padding.bottom + 16,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(
+          AppLayout.defaultPadding,
+          24,
+          AppLayout.defaultPadding,
+          MediaQuery.of(context).padding.bottom + 24,
+        ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppLayout.bentoBorderRadius),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
             ),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha:0.1),
-              border: Border(
-                top: BorderSide(color: Colors.white.withValues(alpha:0.2), width: 1),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: SmartActionButton(
+                text: "Làm Quiz",
+                // Passing a specific color can make it look like the "glass" variant but flat
+                onPressed: () => Navigator.pushNamed(
+                  context,
+                  AppRoutes.quizConfig,
+                  arguments: 'Review',
+                ),
               ),
             ),
-            child: Row(
-              children: [
-                // ACTION 1: QUIZ (Glass Variant)
-                Expanded(
-                  child: SmartActionButton(
-                    text: "Làm Quiz",
-                    isGlass: true,
-                    isLoading: false,
-                    onPressed: () => Navigator.pushNamed(
-                      context,
-                      AppRoutes.quizConfig,
-                      arguments: 'Review',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-
-                // ACTION 2: STUDY (Solid Variant)
-                Expanded(
-                  child: SmartActionButton(
-                    text: "Học Lại",
-                    isGlass: false,
-                    isLoading: false,
-                    onPressed: () {
-                      // Legacy logic: Fetching words via HomeProvider for the 'Review' virtual topic
-                      final words = context
-                          .read<HomeProvider>()
-                          .getWordsByTopicName('Review');
-                      Navigator.pushNamed(
-                        context,
-                        AppRoutes.study,
-                        arguments: {'words': words},
-                      );
-                    },
-                  ),
-                ),
-              ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: SmartActionButton(
+                text: "Học Lại",
+                onPressed: () {
+                  final words = context
+                      .read<HomeProvider>()
+                      .getWordsByTopicName('Review');
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.study,
+                    arguments: {'words': words},
+                  );
+                },
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 }
-
-// ===========================================================================
-// EMPTY STATE (BENTO STYLE)
-// ===========================================================================
 
 class _EmptyReviewState extends StatelessWidget {
   const _EmptyReviewState();
@@ -291,16 +254,11 @@ class _EmptyReviewState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Hero Icon Container
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha:0.15),
+                color: AppColors.success.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.success.withValues(alpha:0.3),
-                  width: 2,
-                ),
               ),
               child: const Icon(
                 CupertinoIcons.checkmark_seal_fill,
@@ -309,32 +267,22 @@ class _EmptyReviewState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-
             Text(
               "Tuyệt vời!",
-              style: AppTypography.heading1.copyWith(
-                color: AppColors.textPrimary,
-              ),
+              style: Theme.of(context).textTheme.displayMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
-
             Text(
               "Bạn đã hoàn thành tất cả các từ cần ôn tập cho hôm nay. Hãy tiếp tục duy trì phong độ này nhé!",
               textAlign: TextAlign.center,
-              style: AppTypography.bodyLarge.copyWith(
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 40),
-
-            // Encouraging Action
             SmartActionButton(
               text: "Quay về Trang chủ",
               onPressed: () =>
                   Navigator.pushReplacementNamed(context, AppRoutes.dashboard),
-              isGlass: true,
             ),
           ],
         ),

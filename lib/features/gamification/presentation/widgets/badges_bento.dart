@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
-import 'package:fm_dictionary/features/gamification/presentation/widgets/glass_badge_widget.dart';
+import 'package:flutter/material.dart';
+import 'package:fm_dictionary/features/gamification/presentation/widgets/bento_badge_widget.dart';
 import 'package:provider/provider.dart';
 
 // --- CORE UI ---
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 
 // --- PROVIDERS ---
 import '../providers/gamification_provider.dart';
@@ -24,17 +24,23 @@ class BadgesBento extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
           child: Row(
             children: [
-              const Icon(
-                CupertinoIcons.rosette,
-                color: AppColors.warning,
-                size: 24,
+              // Vibrant Bento Icon Wrapper
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  CupertinoIcons.rosette,
+                  color: AppColors.warning,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
                 "Bộ sưu tập Huy hiệu",
-                style: AppTypography.heading3.copyWith(
-                  color: AppColors.textPrimary,
-                ),
+                style: Theme.of(context).textTheme.displaySmall,
               ),
             ],
           ),
@@ -55,11 +61,12 @@ class BadgesBento extends StatelessWidget {
           itemBuilder: (context, index) {
             final badge = gamification.badges[index];
 
-            // Legacy Logic Mapping:
+            // STRICTLY PRESERVED LOGIC:
             // - title maps to badgeName
             // - icon maps to icon
             // - isUnlocked maps to isUnlocked
-            return GlassBadgeWidget(
+            return BentoBadgeWidget(
+              // Replaced GlassBadgeWidget
               badgeName: badge.title,
               icon: badge.icon,
               isUnlocked: badge.isUnlocked,

@@ -1,3 +1,5 @@
+// lib/core/theme/app_layout.dart
+
 class AppLayout {
   AppLayout._();
 
@@ -5,8 +7,6 @@ class AppLayout {
   static const double defaultPadding = 16.0;
   static const double bentoBorderRadius = 24.0;
   static const double buttonRadius = 16.0;
-
-  // Glassmorphism Values
-  static const double glassBlur = 15.0;
-  static const double glassBorderWidth = 1.0;
+  static const double iconWrapperRadius =
+      100.0; // Perfect circle for Bento icons
 }

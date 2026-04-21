@@ -1,13 +1,11 @@
-import 'dart:ui';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
 import 'package:fm_dictionary/features/home/presentation/screens/main_navigation.dart';
 
 // --- CORE UI & THEME ---
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_layout.dart';
 import '../../../../core/widgets/common/smart_action_button.dart';
 
@@ -43,7 +41,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     super.dispose();
   }
 
-  // --- LEGACY LOGIC: SAVE & START ---
+  // --- ABSOLUTE ZERO-TOUCH BUSINESS LOGIC ---
   void _handleStart() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
@@ -77,61 +75,43 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      // GLOBAL DESIGN SYSTEM: Mesh Gradient Background (Strict Rule)
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.meshBlue,
-            AppColors.meshPurple,
-            AppColors.meshMint,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppLayout.defaultPadding,
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 60),
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(AppLayout.defaultPadding),
+          child: Column(
+            children: [
+              const SizedBox(height: 60),
 
-                // HEADER SECTION
-                _buildHeader(),
+              // HEADER SECTION
+              _buildHeader(context),
 
-                const SizedBox(height: 48),
+              const SizedBox(height: 48),
 
-                // BENTO SETUP GRID
-                _buildNameInputCard(),
-                const SizedBox(height: 16),
+              // VIBRANT BENTO SETUP GRID
+              _buildNameInputCard(context),
+              const SizedBox(height: 16),
 
-                Row(
-                  children: [
-                    Expanded(child: _buildLanguageCard()),
-                    const SizedBox(width: 16),
-                    Expanded(child: _buildThemeToggleCard()),
-                  ],
-                ),
+              Row(
+                children: [
+                  Expanded(child: _buildLanguageCard(context)),
+                  const SizedBox(width: 16),
+                  Expanded(child: _buildThemeToggleCard(context)),
+                ],
+              ),
 
-                const SizedBox(height: 60),
+              const SizedBox(height: 60),
 
-                // PRIMARY ACTION
-                SmartActionButton(
-                  text: "Bắt đầu hành trình 🚀",
-                  isGlass: false,
-                  isLoading: false,
-                  onPressed: _handleStart,
-                ),
+              // PRIMARY ACTION
+              SmartActionButton(
+                text: "Bắt đầu hành trình 🚀",
+                onPressed: _handleStart,
+              ),
 
-                const SizedBox(height: 40),
-              ],
-            ),
+              const SizedBox(height: 40),
+            ],
           ),
         ),
       ),
@@ -142,49 +122,47 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   // WIDGET BUILDERS
   // ===========================================================================
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
         Text(
           "Chào mừng bạn! 👋",
-          style: AppTypography.heading1.copyWith(fontSize: 32),
+          style: Theme.of(
+            context,
+          ).textTheme.displayLarge?.copyWith(fontSize: 32),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
         Text(
           "Hãy thiết lập không gian học tập\ncủa riêng bạn.",
-          style: AppTypography.bodyLarge.copyWith(
-            color: AppColors.textPrimary.withValues(alpha: 0.8),
-          ),
+          style: Theme.of(context).textTheme.bodyLarge,
           textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  Widget _buildNameInputCard() {
-    return GlassBentoCard(
-      onTap: null,
+  Widget _buildNameInputCard(BuildContext context) {
+    return BentoCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "Tên của bạn",
-            style: AppTypography.bodyLarge.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppColors.textSecondary,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           TextField(
             controller: _nameController,
-            style: AppTypography.heading2.copyWith(
-              color: AppColors.textPrimary,
-            ),
+            style: Theme.of(context).textTheme.displaySmall,
             decoration: InputDecoration(
               hintText: "Nhập tên tại đây...",
-              hintStyle: TextStyle(
-                color: AppColors.textPrimary.withValues(alpha: 0.3),
+              hintStyle: Theme.of(context).textTheme.displaySmall?.copyWith(
+                color: Theme.of(
+                  context,
+                ).textTheme.displaySmall?.color?.withValues(alpha: 0.3),
               ),
               border: InputBorder.none,
               contentPadding: EdgeInsets.zero,
@@ -195,39 +173,46 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
-  Widget _buildLanguageCard() {
+  Widget _buildLanguageCard(BuildContext context) {
     final currentLang = context.locale.languageCode;
     final isVi = currentLang == 'vi';
 
-    return GlassBentoCard(
+    return BentoCard(
       onTap: () => _showLanguagePicker(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(CupertinoIcons.globe, color: AppColors.meshMint, size: 28),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.bentoMint.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              CupertinoIcons.globe,
+              color: AppColors.bentoMint,
+              size: 24,
+            ),
+          ),
           const SizedBox(height: 12),
           Text(
             "Ngôn ngữ",
-            style: AppTypography.bodyLarge.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
-          FittedBox(
-            child: Text(
-              isVi ? "Tiếng Việt 🇻🇳" : "English 🇬🇧",
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
+          Text(
+            isVi ? "Tiếng Việt 🇻🇳" : "English 🇬🇧",
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildThemeToggleCard() {
-    return GlassBentoCard(
+  Widget _buildThemeToggleCard(BuildContext context) {
+    return BentoCard(
       onTap: () {
         setState(() => _isDarkMode = !_isDarkMode);
         ThemeManager.updateTheme(_isDarkMode ? 'dark' : 'light');
@@ -235,65 +220,71 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: Icon(
-              _isDarkMode
-                  ? CupertinoIcons.moon_stars_fill
-                  : CupertinoIcons.sun_max_fill,
-              key: ValueKey(_isDarkMode),
-              color: _isDarkMode ? Colors.amber : AppColors.meshBlue,
-              size: 28,
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.bentoBlue.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: Icon(
+                _isDarkMode
+                    ? CupertinoIcons.moon_stars_fill
+                    : CupertinoIcons.sun_max_fill,
+                key: ValueKey(_isDarkMode),
+                color: _isDarkMode ? Colors.amber : AppColors.bentoBlue,
+                size: 24,
+              ),
             ),
           ),
           const SizedBox(height: 12),
           Text(
             "Giao diện",
-            style: AppTypography.bodyLarge.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
           Text(
             _isDarkMode ? "Tối" : "Sáng",
-            style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
       ),
     );
   }
 
-  // --- LANGUAGE PICKER SHEET ---
+  // --- LANGUAGE PICKER (BENTO BOTTOM SHEET) ---
   void _showLanguagePicker() {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => ClipRRect(
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppLayout.bentoBorderRadius),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(AppLayout.defaultPadding),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppLayout.bentoBorderRadius),
+          ),
         ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Container(
-            padding: const EdgeInsets.all(AppLayout.defaultPadding),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              border: Border(
-                top: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildLangTile("Tiếng Việt", "🇻🇳", "vi"),
-                const Divider(color: Colors.white10),
-                _buildLangTile("English", "🇬🇧", "en"),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
+            _buildLangTile("Tiếng Việt", "🇻🇳", "vi"),
+            const Divider(height: 1, indent: 56),
+            _buildLangTile("English", "🇬🇧", "en"),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );
@@ -305,18 +296,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       leading: Text(flag, style: const TextStyle(fontSize: 24)),
       title: Text(
         title,
-        style: AppTypography.bodyLarge.copyWith(
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? AppColors.meshMint : AppColors.textPrimary,
+          color: isSelected ? AppColors.bentoMint : null,
         ),
       ),
       trailing: isSelected
-          ? const Icon(CupertinoIcons.checkmark_alt, color: AppColors.meshMint)
+          ? const Icon(CupertinoIcons.checkmark_alt, color: AppColors.bentoMint)
           : null,
       onTap: () {
         context.setLocale(Locale(code));
         Navigator.pop(context);
-        setState(() {}); // Refresh language card
+        setState(() {}); // Refresh local UI state
       },
     );
   }

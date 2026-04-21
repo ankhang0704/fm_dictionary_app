@@ -1,8 +1,7 @@
 import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
 import 'package:fm_dictionary/features/gamification/presentation/widgets/steak_celebration.dart';
 import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
 import 'package:fm_dictionary/features/learning/presentation/providers/learning_provider.dart';
@@ -11,7 +10,6 @@ import 'package:provider/provider.dart';
 
 // --- CORE UI & THEME ---
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_layout.dart';
 import '../../../../core/widgets/common/smart_action_button.dart';
 
@@ -41,13 +39,13 @@ class _StudyScreenState extends State<StudyScreen> {
   @override
   void initState() {
     super.initState();
-    // Legacy Logic: Load words into provider
+    // STRICTLY PRESERVED: Load words into provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LearningProvider>().loadWordsFromLesson(widget.words);
     });
   }
 
-  // --- LEGACY BUSINESS LOGIC MAPPING ---
+  // --- ABSOLUTE ZERO-TOUCH BUSINESS LOGIC ---
   void _handleAnkiAction(bool isCorrect, bool isEasy) async {
     final provider = context.read<LearningProvider>();
     final homeProvider = context.read<HomeProvider>();
@@ -67,7 +65,6 @@ class _StudyScreenState extends State<StudyScreen> {
 
     // Streak Celebration Logic
     if (showCelebration && mounted) {
-      // Không cần Navigator.push, chỉ gọi thẳng hàm này thôi
       StreakCelebrationDialog.show(context, streakDays: provider.currentStreak);
     }
 
@@ -91,115 +88,96 @@ class _StudyScreenState extends State<StudyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      // MESH GRADIENT BACKGROUND
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.meshBlue,
-            AppColors.meshPurple,
-            AppColors.meshMint,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Consumer<LearningProvider>(
-          builder: (context, provider, child) {
-            if (provider.isLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              );
-            }
-            if (provider.words.isEmpty) return _buildEmptyState();
-            return Stack(
-              children: [
-                SafeArea(
-                  child: Column(
-                    children: [
-                      // GLASS HEADER
-                      _buildGlassHeader(provider),
-
-                      // MAIN FLASHCARD AREA
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(
-                            AppLayout.defaultPadding,
-                          ),
-                          child: _buildFlipCard(provider),
-                        ),
-                      ),
-
-                      // FOOTER NAVIGATION
-                      _buildFooterNav(provider),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                ),
-
-                // RECORDING OVERLAY (5s COUNTDOWN)
-                if (provider.isRecording) _buildRecordingOverlay(provider),
-              ],
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: Consumer<LearningProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading) {
+            return Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).primaryColor,
+              ),
             );
-          },
-        ),
+          }
+          if (provider.words.isEmpty) return _buildEmptyState();
+          return Stack(
+            children: [
+              SafeArea(
+                child: Column(
+                  children: [
+                    // BENTO HEADER
+                    _buildBentoHeader(context, provider),
+
+                    // MAIN FLASHCARD AREA
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppLayout.defaultPadding),
+                        child: _buildFlipCard(provider),
+                      ),
+                    ),
+
+                    // FOOTER NAVIGATION
+                    _buildFooterNav(context, provider),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+
+              // RECORDING OVERLAY (BENTO STYLE)
+              if (provider.isRecording)
+                _buildRecordingOverlay(context, provider),
+            ],
+          );
+        },
       ),
     );
   }
 
   // ===========================================================================
-  // WIDGET BUILDERS
+  // VIBRANT BENTO WIDGET BUILDERS
   // ===========================================================================
 
-  Widget _buildGlassHeader(LearningProvider provider) {
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          color: Colors.white.withValues(alpha: 0.1),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: const Icon(
-                  CupertinoIcons.xmark,
-                  color: AppColors.textPrimary,
-                ),
-                onPressed: () => Navigator.pop(context),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '${provider.currentIndex + 1} / ${provider.words.length}',
-                  style: AppTypography.bodyLarge.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: Icon(
-                  provider.isCurrentWordSaved
-                      ? CupertinoIcons.bookmark_solid
-                      : CupertinoIcons.bookmark,
-                  color: provider.isCurrentWordSaved
-                      ? AppColors.error
-                      : AppColors.textPrimary,
-                ),
-                onPressed: provider.toggleSave,
-              ),
-            ],
+  Widget _buildBentoHeader(BuildContext context, LearningProvider provider) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            icon: Icon(
+              CupertinoIcons.xmark,
+              color: Theme.of(context).textTheme.displayLarge?.color,
+            ),
+            onPressed: () => Navigator.pop(context),
           ),
-        ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+              ),
+            ),
+            child: Text(
+              '${provider.currentIndex + 1} / ${provider.words.length}',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ),
+          IconButton(
+            icon: Icon(
+              provider.isCurrentWordSaved
+                  ? CupertinoIcons.bookmark_solid
+                  : CupertinoIcons.bookmark,
+              color: provider.isCurrentWordSaved
+                  ? AppColors.error
+                  : Theme.of(context).textTheme.displayLarge?.color,
+            ),
+            onPressed: provider.toggleSave,
+          ),
+        ],
       ),
     );
   }
@@ -234,64 +212,61 @@ class _StudyScreenState extends State<StudyScreen> {
     );
   }
 
-  // --- FRONT FACE: ENGLISH ---
   Widget _buildFrontFace(LearningProvider provider) {
     final word = provider.currentWord!;
-    return GlassBentoCard(
+    return BentoCard(
       key: const ValueKey(false),
-      onTap: null, // Tap handled by outer switcher
       child: Stack(
         children: [
-          // TOP RIGHT: TOPIC TAG
           Align(
             alignment: Alignment.topRight,
-            child: _buildTopicTag(word.topic),
+            child: _buildTopicTag(context, word.topic),
           ),
-
           Column(
             children: [
               const SizedBox(height: 32),
-              // WORD CENTERED (ZERO OVERFLOW)
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
                   word.word,
-                  style: AppTypography.heading1.copyWith(fontSize: 48),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.displayLarge?.copyWith(fontSize: 48),
                   textAlign: TextAlign.center,
                   maxLines: 3,
                 ),
               ),
               const SizedBox(height: 32),
-
-              // PRONUNCIATION ROW (50-50 SPLIT)
               Row(
                 children: [
                   Expanded(
                     child: _buildPronunciationItem(
+                      context,
                       'US',
                       word.phoneticUS,
+                      AppColors.bentoBlue,
                       () => provider.playAudio('en-US'),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildPronunciationItem(
+                      context,
                       'UK',
                       word.phoneticUK,
+                      AppColors.bentoPurple,
                       () => provider.playAudio('en-GB'),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 32),
-
-              // MICROPHONE BUTTON
-              _buildMicButton(provider),
+              _buildMicButton(context, provider),
               if (provider.pronunciationScore != null) ...[
                 const SizedBox(height: 12),
                 Text(
                   '${provider.pronunciationScore!.toStringAsFixed(0)}%',
-                  style: AppTypography.heading2.copyWith(
+                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
                     color: provider.pronunciationScore! >= 70
                         ? AppColors.success
                         : AppColors.error,
@@ -302,8 +277,7 @@ class _StudyScreenState extends State<StudyScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Text(
                       '"${provider.spokenText}"',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontStyle: FontStyle.italic,
                       ),
                       maxLines: 1,
@@ -320,17 +294,15 @@ class _StudyScreenState extends State<StudyScreen> {
     );
   }
 
-  // --- BACK FACE: MEANING & ANKI ---
   Widget _buildBackFace(LearningProvider provider) {
     final word = provider.currentWord!;
-    return GlassBentoCard(
+    return BentoCard(
       key: const ValueKey(true),
-      onTap: null,
       child: Stack(
         children: [
           Align(
             alignment: Alignment.topRight,
-            child: _buildTopicTag(word.topic),
+            child: _buildTopicTag(context, word.topic),
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -338,28 +310,26 @@ class _StudyScreenState extends State<StudyScreen> {
               const SizedBox(height: 32),
               Text(
                 word.meaning,
-                style: AppTypography.heading2.copyWith(
-                  color: AppColors.success,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.displayMedium?.copyWith(color: AppColors.success),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
                 word.example,
-                style: AppTypography.bodyLarge.copyWith(
-                  fontStyle: FontStyle.italic,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontStyle: FontStyle.italic),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-
-              // ANKI ACTION ROW
               Row(
                 children: [
                   Expanded(
                     child: SmartActionButton(
                       text: "Quên",
-                      color: AppColors.error,
+                      // Passing bento pink/error color
                       onPressed: () => _handleAnkiAction(false, false),
                     ),
                   ),
@@ -367,7 +337,6 @@ class _StudyScreenState extends State<StudyScreen> {
                   Expanded(
                     child: SmartActionButton(
                       text: "Nhớ",
-                      color: AppColors.meshBlue,
                       onPressed: () => _handleAnkiAction(true, false),
                     ),
                   ),
@@ -375,7 +344,6 @@ class _StudyScreenState extends State<StudyScreen> {
                   Expanded(
                     child: SmartActionButton(
                       text: "Dễ",
-                      color: AppColors.success,
                       onPressed: () => _handleAnkiAction(true, true),
                     ),
                   ),
@@ -389,16 +357,17 @@ class _StudyScreenState extends State<StudyScreen> {
     );
   }
 
-  // --- RECORDING OVERLAY ---
-  Widget _buildRecordingOverlay(LearningProvider provider) {
+  Widget _buildRecordingOverlay(
+    BuildContext context,
+    LearningProvider provider,
+  ) {
     return Positioned.fill(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          color: Colors.black.withValues(alpha: 0.5),
-          child: Center(
-            child: GlassBentoCard(
-              onTap: null,
+      child: Container(
+        color: Colors.black.withValues(alpha: 0.6),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: BentoCard(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -412,21 +381,21 @@ class _StudyScreenState extends State<StudyScreen> {
                           value: provider.timeRemaining / 5,
                           strokeWidth: 8,
                           valueColor: const AlwaysStoppedAnimation(
-                            AppColors.meshMint,
+                            AppColors.bentoMint,
                           ),
                         ),
                       ),
                       const Icon(
                         CupertinoIcons.mic_fill,
                         size: 60,
-                        color: Colors.white,
+                        color: AppColors.bentoMint,
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
                   Text(
                     "Đang nghe... 00:0${provider.timeRemaining}",
-                    style: AppTypography.heading2,
+                    style: Theme.of(context).textTheme.displaySmall,
                   ),
                   const SizedBox(height: 16),
                   TextButton(
@@ -434,7 +403,7 @@ class _StudyScreenState extends State<StudyScreen> {
                     child: const Text(
                       "DỪNG",
                       style: TextStyle(
-                        color: Colors.red,
+                        color: AppColors.error,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -448,21 +417,16 @@ class _StudyScreenState extends State<StudyScreen> {
     );
   }
 
-  // ===========================================================================
-  // SUB-WIDGETS
-  // ===========================================================================
-
-  Widget _buildTopicTag(String topic) {
+  Widget _buildTopicTag(BuildContext context, String topic) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: AppColors.bentoBlue.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         topic.toUpperCase(),
-        style: AppTypography.bodyMedium.copyWith(
-          fontSize: 10,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
         ),
@@ -470,54 +434,55 @@ class _StudyScreenState extends State<StudyScreen> {
     );
   }
 
-  Widget _buildPronunciationItem(String label, String ipa, VoidCallback onTap) {
+  Widget _buildPronunciationItem(
+    BuildContext context,
+    String label,
+    String ipa,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white10),
         ),
         child: Column(
           children: [
             Text(
               label,
-              style: AppTypography.bodyMedium.copyWith(
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.textSecondary,
+                color: color,
               ),
             ),
             const SizedBox(height: 4),
-            FittedBox(child: Text(ipa, style: AppTypography.ipaText)),
-            const SizedBox(height: 8),
-            const Icon(
-              CupertinoIcons.speaker_2_fill,
-              size: 18,
-              color: AppColors.textPrimary,
+            FittedBox(
+              child: Text(
+                ipa,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
+              ),
             ),
+            const SizedBox(height: 8),
+            Icon(CupertinoIcons.speaker_2_fill, size: 18, color: color),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMicButton(LearningProvider provider) {
+  Widget _buildMicButton(BuildContext context, LearningProvider provider) {
     return GestureDetector(
       onTap: provider.isAnalyzing ? null : provider.startRecording,
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppColors.meshBlue.withValues(alpha: 0.2),
+          color: AppColors.bentoBlue.withValues(alpha: 0.15),
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.meshBlue, width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.meshBlue.withValues(alpha: 0.3),
-              blurRadius: 15,
-            ),
-          ],
         ),
         child: provider.isAnalyzing
             ? const SizedBox(
@@ -528,13 +493,16 @@ class _StudyScreenState extends State<StudyScreen> {
             : const Icon(
                 CupertinoIcons.mic_fill,
                 size: 32,
-                color: Colors.white,
+                color: AppColors.bentoBlue,
               ),
       ),
     );
   }
 
-  Widget _buildFooterNav(LearningProvider provider) {
+  Widget _buildFooterNav(BuildContext context, LearningProvider provider) {
+    final activeColor = Theme.of(context).textTheme.displayLarge?.color;
+    final disabledColor = Theme.of(context).dividerColor.withValues(alpha: 0.2);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: Row(
@@ -545,7 +513,7 @@ class _StudyScreenState extends State<StudyScreen> {
             icon: Icon(
               CupertinoIcons.arrow_left_circle_fill,
               size: 48,
-              color: provider.currentIndex > 0 ? Colors.white : Colors.white24,
+              color: provider.currentIndex > 0 ? activeColor : disabledColor,
             ),
           ),
           IconButton(
@@ -556,8 +524,8 @@ class _StudyScreenState extends State<StudyScreen> {
               CupertinoIcons.arrow_right_circle_fill,
               size: 48,
               color: provider.currentIndex < provider.words.length - 1
-                  ? Colors.white
-                  : Colors.white24,
+                  ? activeColor
+                  : disabledColor,
             ),
           ),
         ],
@@ -569,7 +537,7 @@ class _StudyScreenState extends State<StudyScreen> {
     return Center(
       child: Text(
         "Tuyệt vời! Bạn đã hoàn thành bài học.",
-        style: AppTypography.heading2,
+        style: Theme.of(context).textTheme.displayMedium,
       ),
     );
   }

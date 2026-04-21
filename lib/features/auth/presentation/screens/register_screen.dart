@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
 import 'package:provider/provider.dart';
 
 // --- CORE UI & THEME ---
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../core/widgets/bento_grid/bento_card.dart';
 import '../../../../core/widgets/common/smart_action_button.dart';
 import '../../../../core/utils/status_navigator.dart';
 
@@ -21,7 +20,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  // --- LEGACY STATE EXTRACTION ---
+  // --- STRICTLY PRESERVED STATE ---
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
@@ -34,7 +33,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  // --- LEGACY LOGIC MAPPING ---
+  // --- STRICTLY PRESERVED LOGIC ---
   void _handleRegister(BuildContext context) async {
     final provider = context.read<AuthProvider>();
     final email = _emailController.text.trim();
@@ -72,102 +71,96 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
-    return Container(
-      // GLOBAL DESIGN SYSTEM: Mesh Gradient Background
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.meshBlue,
-            AppColors.meshPurple,
-            AppColors.meshMint,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
-          child: auth.isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                )
-              : SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 60),
-
-                      // --- HERO SECTION (OPEN DESIGN) ---
-                      _buildHeroHeader(),
-
-                      const SizedBox(height: 40),
-
-                      // --- INPUT FIELDS (FLOATING GLASS INPUTS) ---
-                      _buildGlassInput(
-                        controller: _nameController,
-                        hint: "Họ và Tên",
-                        icon: CupertinoIcons.person,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildGlassInput(
-                        controller: _emailController,
-                        hint: "Email",
-                        icon: CupertinoIcons.mail,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildGlassInput(
-                        controller: _passController,
-                        hint: "Mật khẩu",
-                        icon: CupertinoIcons.lock,
-                        obscureText: true,
-                      ),
-
-                      const SizedBox(height: 48),
-
-                      // --- ACTION SECTION ---
-                      SmartActionButton(
-                        text: "Đăng ký",
-                        isGlass: false,
-                        isLoading: auth.isLoading,
-                        onPressed: () => _handleRegister(context),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // --- LOGIN LINK ---
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Đã có tài khoản?",
-                            style: AppTypography.bodyMedium.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pushReplacementNamed(
-                              context,
-                              AppRoutes.login,
-                            ),
-                            child: Text(
-                              "Đăng nhập",
-                              style: AppTypography.bodyMedium.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 40),
-                    ],
-                  ),
+    return Scaffold(
+      backgroundColor: Theme.of(
+        context,
+      ).scaffoldBackgroundColor, // Replaced heavy mesh gradient
+      body: SafeArea(
+        child: auth.isLoading
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
                 ),
-        ),
+              )
+            : SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 60),
+
+                    // --- HERO SECTION ---
+                    _buildHeroHeader(context),
+
+                    const SizedBox(height: 40),
+
+                    // --- VIBRANT BENTO INPUT FIELDS ---
+                    _buildBentoInput(
+                      context: context,
+                      controller: _nameController,
+                      hint: "Họ và Tên",
+                      icon: CupertinoIcons.person,
+                      iconTint: AppColors.bentoBlue,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildBentoInput(
+                      context: context,
+                      controller: _emailController,
+                      hint: "Email",
+                      icon: CupertinoIcons.mail,
+                      iconTint: AppColors.bentoPurple,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildBentoInput(
+                      context: context,
+                      controller: _passController,
+                      hint: "Mật khẩu",
+                      icon: CupertinoIcons.lock,
+                      iconTint: AppColors.bentoMint,
+                      obscureText: true,
+                    ),
+
+                    const SizedBox(height: 48),
+
+                    // --- ACTION SECTION ---
+                    SmartActionButton(
+                      text: "Đăng ký",
+                      isLoading: auth.isLoading,
+                      onPressed: () => _handleRegister(context),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // --- LOGIN LINK ---
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Đã có tài khoản?",
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pushReplacementNamed(
+                            context,
+                            AppRoutes.login,
+                          ),
+                          child: Text(
+                            "Đăng nhập",
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).primaryColor,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -176,54 +169,60 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // WIDGET BUILDERS
   // ===========================================================================
 
-  Widget _buildHeroHeader() {
+  Widget _buildHeroHeader(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           "Tạo tài khoản mới 🚀",
-          style: AppTypography.heading1.copyWith(
-            fontSize: 34,
-            color: AppColors.textPrimary,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.displayLarge?.copyWith(fontSize: 34),
         ),
         const SizedBox(height: 8),
         Text(
           "Bắt đầu hành trình học tập cùng hàng ngàn học viên khác.",
-          style: AppTypography.bodyLarge.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge,
         ),
       ],
     );
   }
 
-  Widget _buildGlassInput({
+  Widget _buildBentoInput({
+    required BuildContext context,
     required TextEditingController controller,
     required String hint,
     required IconData icon,
+    required Color iconTint,
     bool obscureText = false,
     TextInputType? keyboardType,
   }) {
-    return GlassBentoCard(
-      onTap: null, // Card acts as visual container only
+    return BentoCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.textPrimary, size: 22),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: iconTint.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconTint, size: 24),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: TextField(
               controller: controller,
               obscureText: obscureText,
               keyboardType: keyboardType,
-              style: AppTypography.bodyLarge.copyWith(
-                color: AppColors.textPrimary,
-              ),
-              cursorColor: AppColors.meshBlue,
+              style: Theme.of(context).textTheme.bodyLarge,
+              cursorColor: Theme.of(context).primaryColor,
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.textPrimary.withOpacity(0.4),
+                hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.color?.withValues(alpha: 0.5),
                 ),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.zero,

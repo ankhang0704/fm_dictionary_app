@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fm_dictionary/core/di/service_locator.dart';
+import 'package:fm_dictionary/core/theme/app_theme.dart';
 import 'package:fm_dictionary/data/services/ui_management/theme_manager.dart';
 import 'package:fm_dictionary/features/auth/presentation/screens/profile_screen.dart';
 import 'package:fm_dictionary/features/home/presentation/screens/streak_screen.dart';
@@ -17,7 +18,6 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 
 // --- CORE / CONSTANTS ---
 import 'core/constants/app_routes.dart';
-import 'core/theme/app_colors.dart';
 import 'firebase_options.dart';
 
 // --- SERVICES ---
@@ -122,31 +122,14 @@ class MyApp extends StatelessWidget {
           title: 'English Mesh',
           debugShowCheckedModeBanner: false,
           themeMode: themeMode,
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            fontFamily: 'Quicksand',
-            scaffoldBackgroundColor: Colors.transparent,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: AppColors.meshBlue,
-              brightness: Brightness.dark,
-            ),
-          ),
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
           // Localization
           localizationsDelegates: context.localizationDelegates,
           supportedLocales: context.supportedLocales,
           locale: context.locale,
 
           // --- GLOBAL DESIGN SYSTEM THEME ---
-          theme: ThemeData(
-            useMaterial3: true,
-            fontFamily: 'Quicksand',
-            // CRITICAL: Scaffolds are transparent to show the Mesh Gradient background wrapper
-            scaffoldBackgroundColor: Colors.transparent,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: AppColors.meshBlue,
-              brightness: Brightness.light,
-            ),
-          ),
 
           // --- NAVIGATION & ROUTING ---
           onGenerateRoute: (settings) {

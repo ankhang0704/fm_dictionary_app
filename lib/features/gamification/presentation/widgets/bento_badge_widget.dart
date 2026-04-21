@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:fm_dictionary/core/theme/app_colors.dart';
-import 'package:fm_dictionary/core/theme/app_typography.dart';
-import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
 
 // --- CORE UI & THEME ---
+import 'package:fm_dictionary/core/theme/app_colors.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
 
-
-class GlassBadgeWidget extends StatelessWidget {
+class BentoBadgeWidget extends StatelessWidget {
   final String badgeName;
   final IconData icon;
   final bool isUnlocked;
   final String? dateUnlocked;
 
-  const GlassBadgeWidget({
+  const BentoBadgeWidget({
     super.key,
     required this.badgeName,
     required this.icon,
@@ -23,7 +21,12 @@ class GlassBadgeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassBentoCard(
+    // Dynamic theme text colors mapping
+    final primaryTextColor = Theme.of(context).textTheme.displayLarge?.color;
+    final secondaryTextColor = Theme.of(context).textTheme.bodyMedium?.color;
+
+    return BentoCard(
+      padding: const EdgeInsets.all(12.0),
       onTap: () {
         // Optional: Show a detail dialog for the badge
       },
@@ -31,7 +34,7 @@ class GlassBadgeWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // THE ICON SECTION
-          _buildBadgeIcon(),
+          _buildBadgeIcon(context, secondaryTextColor),
           const SizedBox(height: 12),
 
           // THE TEXT SECTION (ZERO OVERFLOW PROTECTION)
@@ -39,11 +42,10 @@ class GlassBadgeWidget extends StatelessWidget {
             fit: BoxFit.scaleDown,
             child: Text(
               badgeName,
-              style: AppTypography.heading3.copyWith(
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.bold,
                 fontSize: 13,
-                color: isUnlocked
-                    ? AppColors.textPrimary
-                    : AppColors.textSecondary,
+                color: isUnlocked ? primaryTextColor : secondaryTextColor,
               ),
               textAlign: TextAlign.center,
             ),
@@ -53,9 +55,9 @@ class GlassBadgeWidget extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               dateUnlocked!,
-              style: TextStyle(
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontSize: 9,
-                color: AppColors.textSecondary.withValues(alpha:0.7),
+                color: secondaryTextColor,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
@@ -66,66 +68,52 @@ class GlassBadgeWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildBadgeIcon() {
+  Widget _buildBadgeIcon(BuildContext context, Color? secondaryTextColor) {
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Background Glow for Unlocked Badges
-        if (isUnlocked)
-          Container(
-            width: 45,
-            height: 45,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.warning.withValues(alpha:0.4),
-                  blurRadius: 15,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-          ),
-
-        // The Badge Icon
+        // Flat Bento Badge Icon Wrapper
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: isUnlocked
-                ? AppColors.warning.withValues(alpha:0.2)
-                : Colors.white.withValues(alpha:0.05),
+                ? AppColors.warning.withValues(alpha: 0.15) // Flat tint
+                : Theme.of(context).dividerColor.withValues(alpha: 0.05),
             shape: BoxShape.circle,
-            border: Border.all(
-              color: isUnlocked
-                  ? AppColors.warning
-                  : Colors.white.withValues(alpha:0.1),
-              width: 1.5,
-            ),
           ),
           child: Icon(
             icon,
             color: isUnlocked
                 ? AppColors.warning
-                : AppColors.textSecondary.withValues(alpha:0.4),
+                : secondaryTextColor?.withValues(alpha: 0.4),
             size: 28,
           ),
         ),
 
-        // Lock Overlay for Locked Badges
+        // Solid Lock Overlay for Locked Badges
         if (!isUnlocked)
           Positioned(
             right: 0,
             bottom: 0,
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Colors.black54,
+              decoration: BoxDecoration(
+                color: Theme.of(
+                  context,
+                ).colorScheme.surface, // Cut-out effect against card
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                CupertinoIcons.lock_fill,
-                size: 10,
-                color: Colors.white70,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  CupertinoIcons.lock_fill,
+                  size: 10,
+                  color: secondaryTextColor,
+                ),
               ),
             ),
           ),

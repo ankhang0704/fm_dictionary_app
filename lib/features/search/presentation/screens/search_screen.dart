@@ -1,15 +1,13 @@
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
-import 'package:fm_dictionary/core/widgets/common/glass_tts_button.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
+import 'package:fm_dictionary/core/widgets/common/bento_tts_button.dart';
 import 'package:fm_dictionary/features/search/presentation/providers/search_provider.dart';
 import 'package:provider/provider.dart';
 
 // --- CORE / THEMES ---
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_layout.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -30,144 +28,98 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      // GLOBAL DESIGN SYSTEM: Mesh Gradient Background
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.meshBlue,
-            AppColors.meshPurple,
-            AppColors.meshMint,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
-          child: Column(
-            children: [
-              // TOP: Glassmorphism Search Bar & Back Button
-              _buildTopBar(context),
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // TOP: Bento Search Bar & Back Button
+            _buildTopBar(context),
 
-              // BODY: Search Results or Empty State
-              Expanded(
-                child: Consumer<SearchProvider>(
-                  builder: (context, provider, _) {
-                    if (provider.currentQuery.isEmpty) {
-                      return _buildHistoryAndSuggestions(provider);
-                    }
-                    if (provider.searchResults.isEmpty) {
-                      return _buildEmptyInfo();
-                    }
+            // BODY: Search Results or Empty State
+            Expanded(
+              child: Consumer<SearchProvider>(
+                builder: (context, provider, _) {
+                  if (provider.currentQuery.isEmpty) {
+                    return _buildHistoryAndSuggestions(context, provider);
+                  }
+                  if (provider.searchResults.isEmpty) {
+                    return _buildEmptyInfo(context);
+                  }
 
-                    return _buildSearchResults(provider);
-                  },
-                ),
+                  return _buildSearchResults(context, provider);
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   // ===========================================================================
-  // WIDGET BUILDERS
+  // VIBRANT BENTO WIDGET BUILDERS
   // ===========================================================================
 
   Widget _buildTopBar(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(AppLayout.defaultPadding),
+      padding: const EdgeInsets.all(AppLayout.defaultPadding),
       child: Row(
         children: [
-          // Glass Back Button
+          // Bento Back Button
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha:0.15),
+              color: Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon: const Icon(
+              icon: Icon(
                 CupertinoIcons.back,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.displayLarge?.color,
               ),
               onPressed: () => Navigator.pop(context),
             ),
           ),
           const SizedBox(width: 12),
 
-          // Prominent Glassmorphism Search Field
+          // Solid Bento Search Field
           Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppLayout.bentoBorderRadius),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: TextField(
-                  controller: _controller,
-                  autofocus: true,
-                  onChanged: (val) =>
-                      context.read<SearchProvider>().search(val),
-                  style: AppTypography.bodyLarge.copyWith(
-                    color: AppColors.textPrimary,
+            child: BentoCard(
+              padding: EdgeInsets.zero,
+              child: TextField(
+                controller: _controller,
+                autofocus: true,
+                onChanged: (val) => context.read<SearchProvider>().search(val),
+                style: Theme.of(context).textTheme.bodyLarge,
+                decoration: InputDecoration(
+                  hintText: 'Tìm kiếm từ vựng...',
+                  hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.color?.withValues(alpha: 0.5),
                   ),
-                  decoration: InputDecoration(
-                    hintText: 'Tìm kiếm từ vựng...',
-                    hintStyle: AppTypography.bodyLarge.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                    prefixIcon: const Icon(
-                      CupertinoIcons.search,
-                      size: 20,
-                      color: AppColors.textSecondary,
-                    ),
-                    suffixIcon: _controller.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(
-                              CupertinoIcons.clear_thick_circled,
-                              size: 18,
-                              color: AppColors.textSecondary,
-                            ),
-                            onPressed: () {
-                              _controller.clear();
-                              context.read<SearchProvider>().clearSearch();
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: Colors.white.withValues(alpha:0.15),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 14,
-                      horizontal: 16,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppLayout.bentoBorderRadius,
-                      ),
-                      borderSide: BorderSide(
-                        color: Colors.white.withValues(alpha:0.3),
-                        width: 1,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppLayout.bentoBorderRadius,
-                      ),
-                      borderSide: BorderSide(
-                        color: Colors.white.withValues(alpha:0.3),
-                        width: 1,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppLayout.bentoBorderRadius,
-                      ),
-                      borderSide: const BorderSide(
-                        color: AppColors.meshMint,
-                        width: 1.5,
-                      ),
-                    ),
+                  prefixIcon: Icon(
+                    CupertinoIcons.search,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  suffixIcon: _controller.text.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(
+                            CupertinoIcons.clear_thick_circled,
+                            size: 18,
+                            color: Theme.of(context).dividerColor,
+                          ),
+                          onPressed: () {
+                            _controller.clear();
+                            context.read<SearchProvider>().clearSearch();
+                          },
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 16,
                   ),
                 ),
               ),
@@ -178,21 +130,22 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildHistoryAndSuggestions(SearchProvider provider) {
+  Widget _buildHistoryAndSuggestions(
+    BuildContext context,
+    SearchProvider provider,
+  ) {
     if (provider.history.isEmpty) {
       return Center(
         child: Text(
           "Nhập từ vựng để tìm kiếm...",
-          style: AppTypography.bodyLarge.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge,
         ),
       );
     }
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.all(AppLayout.defaultPadding),
+      padding: const EdgeInsets.all(AppLayout.defaultPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -201,15 +154,13 @@ class _SearchScreenState extends State<SearchScreen> {
             children: [
               Text(
                 'Gợi ý & Lịch sử',
-                style: AppTypography.heading3.copyWith(
-                  color: AppColors.textPrimary,
-                ),
+                style: Theme.of(context).textTheme.displaySmall,
               ),
               GestureDetector(
                 onTap: provider.clearHistory,
                 child: Text(
                   'Xóa lịch sử',
-                  style: AppTypography.bodyMedium.copyWith(
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.error,
                     fontWeight: FontWeight.bold,
                   ),
@@ -219,7 +170,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Wrap of Glass Chips
+          // Wrap of Vibrant Bento Chips
           Wrap(
             spacing: 12,
             runSpacing: 12,
@@ -235,23 +186,27 @@ class _SearchScreenState extends State<SearchScreen> {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha:0.15),
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withValues(alpha:0.2)),
+                    border: Border.all(
+                      color: Theme.of(
+                        context,
+                      ).dividerColor.withValues(alpha: 0.1),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         CupertinoIcons.clock,
                         size: 14,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 8),
                       Text(
                         term,
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.textPrimary,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -265,28 +220,23 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildSearchResults(SearchProvider provider) {
+  Widget _buildSearchResults(BuildContext context, SearchProvider provider) {
     return ListView.separated(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.only(
+      padding: const EdgeInsets.only(
         left: AppLayout.defaultPadding,
         right: AppLayout.defaultPadding,
         top: 8,
-        bottom: 100, // Safe padding for smooth scrolling
+        bottom: 100,
       ),
       itemCount: provider.searchResults.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final word = provider.searchResults[index];
-        return GlassBentoCard(
+        return BentoCard(
           onTap: () {
-            // Dismiss keyboard
             FocusScope.of(context).unfocus();
-
-            // Legacy Logic: Save to search history
             provider.saveToHistory(word.word);
-
-            // Explicit Routing mapped
             Navigator.pushNamed(
               context,
               AppRoutes.wordDetail,
@@ -295,25 +245,22 @@ class _SearchScreenState extends State<SearchScreen> {
           },
           child: Row(
             children: [
-              // ZERO PIXEL OVERFLOW Strategy
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       word.word,
-                      style: AppTypography.heading3.copyWith(
-                        color: AppColors.textPrimary,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.displaySmall?.copyWith(fontSize: 18),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       word.meaning,
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -322,14 +269,8 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               const SizedBox(width: 12),
 
-              // Trailing Glass TTS Button
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha:0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: GlassTtsButton(text: word.word),
-              ),
+              // Trailing Bento TTS Button
+              BentoTtsButton(text: word.word),
             ],
           ),
         );
@@ -337,22 +278,27 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildEmptyInfo() {
+  Widget _buildEmptyInfo(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            CupertinoIcons.search,
-            size: 60,
-            color: AppColors.textSecondary,
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              CupertinoIcons.search,
+              size: 60,
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
+            ),
           ),
           const SizedBox(height: 16),
           Text(
             "Không tìm thấy kết quả",
-            style: AppTypography.bodyLarge.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
         ],
       ),

@@ -1,12 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/core/theme/app_colors.dart';
-import 'package:fm_dictionary/core/theme/app_typography.dart';
-import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
-import 'package:fm_dictionary/core/widgets/common/smart_action_button.dart';
 
 // --- CORE UI & THEME ---
-
+import 'package:fm_dictionary/core/theme/app_colors.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
+import 'package:fm_dictionary/core/widgets/common/smart_action_button.dart';
 
 class StreakCelebrationDialog {
   /// Static method to trigger the celebration from any screen or provider.
@@ -15,9 +13,9 @@ class StreakCelebrationDialog {
       context: context,
       barrierDismissible: true,
       barrierLabel: "StreakCelebration",
-      barrierColor: Colors.black.withValues(alpha:0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.5),
       transitionDuration: const Duration(milliseconds: 600),
-      // Scale + Fade "Pop" animation
+      // Scale + Fade "Pop" animation (LOGIC PRESERVED)
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         final curve = CurvedAnimation(
           parent: animation,
@@ -29,34 +27,40 @@ class StreakCelebrationDialog {
         );
       },
       pageBuilder: (context, animation, secondaryAnimation) {
+        final primaryTextColor = Theme.of(
+          context,
+        ).textTheme.displayLarge?.color;
+        final secondaryTextColor = Theme.of(
+          context,
+        ).textTheme.bodyMedium?.color;
+
         return Center(
           child: SingleChildScrollView(
-            // ZERO OVERFLOW: Support small screens
             child: Material(
               color: Colors.transparent,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 340),
-                  child: GlassBentoCard(
-                    onTap: null,
+                  child: BentoCard(
+                    // Replaced GlassBentoCard
+                    padding: const EdgeInsets.all(24.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const SizedBox(height: 16),
 
-                        // --- HERO GRAPHIC: VIVID GLOWING FIRE ---
-                        _buildGlowingFire(),
+                        // --- HERO GRAPHIC: VIBRANT BENTO FIRE ---
+                        _buildBentoFire(),
 
                         const SizedBox(height: 24),
 
                         // --- TITLE ---
                         Text(
                           "Tuyệt vời!",
-                          style: AppTypography.heading1.copyWith(
-                            color: AppColors.textPrimary,
-                            fontSize: 32,
-                          ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.displayLarge?.copyWith(fontSize: 32),
                           textAlign: TextAlign.center,
                         ),
 
@@ -68,17 +72,19 @@ class StreakCelebrationDialog {
                           child: RichText(
                             textAlign: TextAlign.center,
                             text: TextSpan(
-                              style: AppTypography.heading3.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.normal,
-                              ),
+                              style: Theme.of(context).textTheme.displaySmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.normal,
+                                    color: primaryTextColor,
+                                  ),
                               children: [
                                 const TextSpan(text: "Bạn đã đạt chuỗi "),
                                 TextSpan(
                                   text: "$streakDays ngày",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.orangeAccent,
+                                    color: AppColors
+                                        .warning, // Vibrant Bento Warning
                                   ),
                                 ),
                                 const TextSpan(text: " học liên tiếp!"),
@@ -92,9 +98,8 @@ class StreakCelebrationDialog {
                         // --- SUBTITLE ---
                         Text(
                           "Giữ vững phong độ này nhé 🔥",
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: secondaryTextColor),
                           textAlign: TextAlign.center,
                         ),
 
@@ -103,7 +108,6 @@ class StreakCelebrationDialog {
                         // --- ACTION BUTTON ---
                         SmartActionButton(
                           text: "Tiếp tục",
-                          isGlass: false,
                           onPressed: () => Navigator.pop(context),
                         ),
 
@@ -120,39 +124,35 @@ class StreakCelebrationDialog {
     );
   }
 
-  static Widget _buildGlowingFire() {
+  static Widget _buildBentoFire() {
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Outer Glow
+        // Vibrant Flat Background Wrapper (Replacing Glow)
         Container(
-          width: 100,
-          height: 100,
+          width: 140,
+          height: 140,
           decoration: BoxDecoration(
+            color: AppColors.warning.withValues(alpha: 0.15),
             shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.orange.withValues(alpha:0.4),
-                blurRadius: 40,
-                spreadRadius: 5,
-              ),
-            ],
           ),
         ),
 
-        // Inner Fire Icon
+        // Inner Fire Icon with Preserved Pulse Animation
         TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.8, end: 1.2),
+          tween: Tween(begin: 0.9, end: 1.1),
           duration: const Duration(seconds: 1),
           curve: Curves.easeInOutSine,
-          onEnd:
-              () {}, // Optional: Add looping logic if using a stateful wrapper
           builder: (context, scale, child) {
             return Transform.scale(
-              scale: scale, // Subtly "pulses" the fire
+              scale: scale, // Subtly "pulses" the fire (Logic Preserved)
               child: ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
-                  colors: [Colors.yellow, Colors.orange, Colors.redAccent],
+                  colors: [
+                    AppColors.bentoYellow,
+                    AppColors.warning,
+                    AppColors.error,
+                  ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ).createShader(bounds),

@@ -1,12 +1,10 @@
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
 import 'package:provider/provider.dart';
 
 // --- CORE UI & THEME ---
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/bento_grid/bento_card.dart';
 import '../../../../core/widgets/common/smart_action_button.dart';
 import '../../../../core/utils/status_navigator.dart';
 
@@ -29,7 +27,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  // --- LEGACY LOGIC MAPPING ---
+  // --- STRICTLY PRESERVED LOGIC ---
   void _handleReset(BuildContext context) async {
     final email = _emailController.text.trim();
     if (email.isEmpty) return;
@@ -56,104 +54,107 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.meshBlue,
-            AppColors.meshPurple,
-            AppColors.meshMint,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: _buildGlassHeader(context),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 40),
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: _buildBentoHeader(context),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 24),
 
-                // HERO TEXT
-                Text(
-                  "Khôi phục mật khẩu",
-                  style: AppTypography.heading1.copyWith(fontSize: 32),
+              // HERO TEXT
+              Text(
+                "Khôi phục mật khẩu",
+                style: Theme.of(context).textTheme.displayLarge,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                "Nhập email của bạn để nhận liên kết đặt lại mật khẩu.",
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+
+              const SizedBox(height: 40),
+
+              // VIBRANT BENTO INPUT
+              BentoCard(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  "Nhập email của bạn để nhận liên kết đặt lại mật khẩu.",
-                  style: AppTypography.bodyLarge.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-
-                const SizedBox(height: 40),
-
-                // GLASS INPUT
-                GlassBentoCard(
-                  onTap: null,
-                  child: Row(
-                    children: [
-                      const Icon(
-                        CupertinoIcons.mail,
-                        color: AppColors.textPrimary,
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.bentoMint.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: TextField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          style: AppTypography.bodyLarge,
-                          decoration: InputDecoration(
-                            hintText: "Email đăng ký",
-                            hintStyle: TextStyle(
-                              color: AppColors.textPrimary.withValues(alpha:0.4),
-                            ),
-                            border: InputBorder.none,
-                          ),
+                      child: const Icon(
+                        CupertinoIcons.mail,
+                        color: AppColors.bentoMint,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        decoration: InputDecoration(
+                          hintText: "Email đăng ký",
+                          hintStyle: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color
+                                    ?.withValues(alpha: 0.5),
+                              ),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+              ),
 
-                const SizedBox(height: 32),
+              const SizedBox(height: 32),
 
-                SmartActionButton(
-                  text: "Gửi yêu cầu",
-                  isLoading: auth.isLoading,
-                  onPressed: () => _handleReset(context),
-                ),
-              ],
-            ),
+              SmartActionButton(
+                text: "Gửi yêu cầu",
+                isLoading: auth.isLoading,
+                onPressed: () => _handleReset(context),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  PreferredSizeWidget _buildGlassHeader(BuildContext context) {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(kToolbarHeight),
-      child: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: AppBar(
-            backgroundColor: Colors.white.withValues(alpha:0.1),
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(
-                CupertinoIcons.back,
-                color: AppColors.textPrimary,
-              ),
-              onPressed: () => Navigator.pop(context),
+  PreferredSizeWidget _buildBentoHeader(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      leading: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: Icon(
+              CupertinoIcons.back,
+              color: Theme.of(context).textTheme.displayLarge?.color,
             ),
+            onPressed: () => Navigator.pop(context),
           ),
         ),
       ),

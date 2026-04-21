@@ -1,14 +1,12 @@
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 // --- CORE UI & THEME ---
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_layout.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/widgets/common/smart_action_button.dart';
@@ -29,118 +27,98 @@ class MenuScreen extends StatelessWidget {
     final settings = DatabaseService.getSettings();
     final currentLocale = context.locale.languageCode;
 
-    return Container(
-      // MESH GRADIENT BACKGROUND INTEGRATION
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.meshBlue, AppColors.meshPurple],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Stack(
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Column(
           children: [
-            // Glass Overlay for the whole screen
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(color: Colors.black.withValues(alpha:0.1)),
-            ),
+            // --- TOP: PROFILE QUICK-VIEW ---
+            _buildProfileHeader(context, user, settings, auth),
 
-            SafeArea(
-              child: Column(
-                children: [
-                  // --- TOP: PROFILE QUICK-VIEW ---
-                  _buildProfileHeader(context, user, settings, auth),
-
-                  // --- MIDDLE: NAVIGATION ITEMS ---
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: EdgeInsets.all(AppLayout.defaultPadding),
-                      child: Column(
-                        children: [
-                          // Group 1: Learning Tools
-                          _buildBentoSection([
-                            _buildNavItem(
-                              context,
-                              CupertinoIcons.arrow_2_circlepath,
-                              'sidebar.sync'.tr(),
-                              () => _handleSync(context),
-                              iconColor: AppColors.meshMint,
-                            ),
-                            _buildNavItem(
-                              context,
-                              CupertinoIcons.clock_fill,
-                              'sidebar.history'.tr(),
-                              () => Navigator.pushNamed(
-                                context,
-                                AppRoutes.history,
-                              ),
-                            ),
-                            _buildNavItem(
-                              context,
-                              CupertinoIcons.star_fill,
-                              'sidebar.saved'.tr(),
-                              () =>
-                                  Navigator.pushNamed(context, AppRoutes.saved),
-                            ),
-                          ]),
-                          const SizedBox(height: 16),
-
-                          // Group 2: App & Legal
-                          _buildBentoSection([
-                            _buildNavItem(
-                              context,
-                              CupertinoIcons.gear_solid,
-                              'sidebar.settings'.tr(),
-                              () => Navigator.pushNamed(
-                                context,
-                                AppRoutes.settings,
-                              ),
-                            ),
-                            _buildNavItem(
-                              context,
-                              CupertinoIcons.chat_bubble_text,
-                              'sidebar.feedback'.tr(),
-                              () => _navigateToStatic(
-                                context,
-                                'sidebar.feedback'.tr(),
-                                'feedback_$currentLocale.md',
-                              ),
-                            ),
-                            _buildNavItem(
-                              context,
-                              CupertinoIcons.shield_fill,
-                              'sidebar.privacy'.tr(),
-                              () => _navigateToStatic(
-                                context,
-                                'sidebar.privacy'.tr(),
-                                'privacy_$currentLocale.md',
-                              ),
-                            ),
-                            _buildNavItem(
-                              context,
-                              CupertinoIcons.info_circle_fill,
-                              'sidebar.about'.tr(),
-                              () => _navigateToStatic(
-                                context,
-                                'sidebar.about'.tr(),
-                                'about_$currentLocale.md',
-                              ),
-                            ),
-                          ]),
-                        ],
+            // --- MIDDLE: NAVIGATION ITEMS ---
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.all(AppLayout.defaultPadding),
+                child: Column(
+                  children: [
+                    // Group 1: Learning Tools (Vibrant Mint/Blue/Yellow)
+                    _buildBentoSection([
+                      _buildNavItem(
+                        context,
+                        CupertinoIcons.arrow_2_circlepath,
+                        'sidebar.sync'.tr(),
+                        () => _handleSync(context),
+                        iconColor: AppColors.bentoMint,
                       ),
-                    ),
-                  ),
+                      _buildNavItem(
+                        context,
+                        CupertinoIcons.clock_fill,
+                        'sidebar.history'.tr(),
+                        () => Navigator.pushNamed(context, AppRoutes.history),
+                        iconColor: AppColors.bentoBlue,
+                      ),
+                      _buildNavItem(
+                        context,
+                        CupertinoIcons.star_fill,
+                        'sidebar.saved'.tr(),
+                        () => Navigator.pushNamed(context, AppRoutes.saved),
+                        iconColor: AppColors.bentoYellow,
+                      ),
+                    ]),
+                    const SizedBox(height: 16),
 
-                  // --- BOTTOM: LOGOUT & VERSION ---
-                  _buildFooter(context, auth, user),
-                ],
+                    // Group 2: App & Legal (Vibrant Purple/Blue/Pink)
+                    _buildBentoSection([
+                      _buildNavItem(
+                        context,
+                        CupertinoIcons.gear_solid,
+                        'sidebar.settings'.tr(),
+                        () => Navigator.pushNamed(context, AppRoutes.settings),
+                        iconColor: AppColors.bentoPurple,
+                      ),
+                      _buildNavItem(
+                        context,
+                        CupertinoIcons.chat_bubble_text,
+                        'sidebar.feedback'.tr(),
+                        () => _navigateToStatic(
+                          context,
+                          'sidebar.feedback'.tr(),
+                          'feedback_$currentLocale.md',
+                        ),
+                        iconColor: AppColors.bentoBlue,
+                      ),
+                      _buildNavItem(
+                        context,
+                        CupertinoIcons.shield_fill,
+                        'sidebar.privacy'.tr(),
+                        () => _navigateToStatic(
+                          context,
+                          'sidebar.privacy'.tr(),
+                          'privacy_$currentLocale.md',
+                        ),
+                        iconColor: AppColors.bentoPink,
+                      ),
+                      _buildNavItem(
+                        context,
+                        CupertinoIcons.info_circle_fill,
+                        'sidebar.about'.tr(),
+                        () => _navigateToStatic(
+                          context,
+                          'sidebar.about'.tr(),
+                          'about_$currentLocale.md',
+                        ),
+                        iconColor: AppColors.bentoMint,
+                      ),
+                    ]),
+                  ],
+                ),
               ),
             ),
+
+            // --- BOTTOM: LOGOUT & VERSION ---
+            _buildFooter(context, auth, user),
+            const SizedBox(height: 100), // Navigation clearance
           ],
         ),
       ),
@@ -158,8 +136,8 @@ class MenuScreen extends StatelessWidget {
     AuthProvider auth,
   ) {
     return Padding(
-      padding: EdgeInsets.all(AppLayout.defaultPadding),
-      child: GlassBentoCard(
+      padding: const EdgeInsets.all(AppLayout.defaultPadding),
+      child: BentoCard(
         onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
         child: Row(
           children: [
@@ -177,32 +155,29 @@ class MenuScreen extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     child: Text(
                       user?.displayName ?? 'sidebar.guest'.tr(),
-                      style: AppTypography.heading3,
+                      style: Theme.of(context).textTheme.displaySmall,
                     ),
                   ),
                   Text(
                     user?.email ?? 'sidebar.login_desc'.tr(),
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     "Edit Profile",
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.meshBlue,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               CupertinoIcons.chevron_right,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
               size: 16,
             ),
           ],
@@ -212,7 +187,10 @@ class MenuScreen extends StatelessWidget {
   }
 
   Widget _buildBentoSection(List<Widget> items) {
-    return GlassBentoCard(onTap: null, child: Column(children: items));
+    return BentoCard(
+      padding: EdgeInsets.zero,
+      child: Column(children: items),
+    );
   }
 
   Widget _buildNavItem(
@@ -220,23 +198,28 @@ class MenuScreen extends StatelessWidget {
     IconData icon,
     String title,
     VoidCallback onTap, {
-    Color? iconColor,
+    required Color iconColor,
   }) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: (iconColor ?? AppColors.textPrimary).withValues(alpha:0.1),
+          color: iconColor.withValues(alpha: 0.15),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, size: 20, color: iconColor ?? AppColors.textPrimary),
+        child: Icon(icon, size: 20, color: iconColor),
       ),
-      title: Text(title, style: AppTypography.bodyLarge),
-      trailing: const Icon(
+      title: Text(
+        title,
+        style: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+      ),
+      trailing: Icon(
         CupertinoIcons.chevron_right,
         size: 14,
-        color: AppColors.textSecondary,
+        color: Theme.of(context).textTheme.bodyMedium?.color,
       ),
       onTap: onTap,
     );
@@ -244,13 +227,11 @@ class MenuScreen extends StatelessWidget {
 
   Widget _buildFooter(BuildContext context, AuthProvider auth, dynamic user) {
     return Padding(
-      padding: EdgeInsets.all(AppLayout.defaultPadding),
+      padding: const EdgeInsets.symmetric(horizontal: AppLayout.defaultPadding),
       child: Column(
         children: [
           SmartActionButton(
             text: user != null ? "sidebar.logout".tr() : "sidebar.login".tr(),
-            isGlass: true,
-            isLoading: false,
             onPressed: () => user != null
                 ? auth.logout()
                 : Navigator.pushNamed(context, AppRoutes.login),
@@ -261,10 +242,9 @@ class MenuScreen extends StatelessWidget {
             builder: (context, snapshot) {
               return Text(
                 'Version ${snapshot.data?.version ?? '1.0.0'}',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12),
               );
             },
           ),
@@ -274,7 +254,7 @@ class MenuScreen extends StatelessWidget {
   }
 
   // ===========================================================================
-  // LEGACY LOGIC INTEGRATION
+  // STRICTLY PRESERVED LOGIC
   // ===========================================================================
 
   void _navigateToStatic(BuildContext context, String title, String fileName) {

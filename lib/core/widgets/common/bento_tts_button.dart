@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../data/services/ai_speech/text_to_speech/speech_service.dart';
 import '../../theme/app_colors.dart';
 
-class GlassTtsButton extends StatelessWidget {
+class BentoTtsButton extends StatelessWidget {
   final String text;
   final String accent;
   final double size;
-  const GlassTtsButton({
+
+  const BentoTtsButton({
     super.key,
     required this.text,
     this.accent = 'en-US',
@@ -18,12 +19,15 @@ class GlassTtsButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
+        color: Theme.of(context).colorScheme.primaryContainer,
         shape: BoxShape.circle,
       ),
       child: IconButton(
-        icon: Icon(CupertinoIcons.speaker_2_fill,
-            color: AppColors.textPrimary, size: size),
+        icon: Icon(
+          CupertinoIcons.speaker_2_fill,
+          color: AppColors.textPrimaryLight,
+          size: size,
+        ),
         onPressed: () => TtsService().speak(text, accent: accent),
       ),
     );

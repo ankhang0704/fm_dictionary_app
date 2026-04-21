@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/constants/progress_keys.dart';
 import 'package:hive/hive.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/word_model.dart';
 import 'database_service.dart';
 
