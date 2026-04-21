@@ -33,6 +33,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // --- LEGACY LOGIC MAPPING ---
   void _handleLogin(BuildContext context) async {
+    FocusScope.of(
+      context,
+    ).unfocus(); // Unfocus để tránh crash framework khi widget tree thay đổi state đột ngột
+    final email = _emailController.text.trim();
+    final pass = _passController.text.trim();
+    if (email.isEmpty || pass.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng nhập email và mật khẩu.'),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final provider = context.read<AuthProvider>();
     try {
       await provider.login(
@@ -44,9 +60,10 @@ class _LoginScreenState extends State<LoginScreen> {
       // Navigate to dashboard on success
       Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
     } catch (e) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString()),
+          content: Text(e.toString().replaceAll('Exception: ', '')),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
         ),
@@ -112,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: TextButton(
                           onPressed: () => Navigator.pushNamed(
                             context,
-                            '/forgot_password',
+                            AppRoutes.forgotPassword,
                           ), // Ensure route exists
                           child: Text(
                             "Quên mật khẩu?",

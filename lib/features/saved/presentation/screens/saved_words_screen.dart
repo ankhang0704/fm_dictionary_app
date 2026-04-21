@@ -47,7 +47,7 @@ class _SavedWordsScreenState extends State<SavedWordsScreen> {
         backgroundColor: Colors.transparent,
         appBar: _buildGlassHeader(context),
         body: ValueListenableBuilder(
-          valueListenable: Hive.box(DatabaseService.saveBoxName).listenable(),
+          valueListenable: Hive.box(DatabaseService.progressBoxName).listenable(),
           builder: (context, box, _) {
             // --- DATA LOGIC EXTRACTION ---
             final allSavedWords = _wordService.getSavedWords();

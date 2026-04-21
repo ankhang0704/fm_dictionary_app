@@ -58,9 +58,7 @@ class _MainNavigationState extends State<MainNavigation> {
                   Colors.transparent, // Ensures glass effect shows through
               elevation: 0,
               type: BottomNavigationBarType.fixed,
-              selectedItemColor: const Color(
-                0xFF9013FE,
-              ), // Vibrant Purple (or AppColors.vibrantPurple)
+              selectedItemColor: const Color.fromARGB(255, 0, 0, 0), // Vibrant Purple (or AppColors.vibrantPurple)
               unselectedItemColor: const Color(
                 0xFF64748B,
               ), // Slate 500 (or AppColors.slate500)

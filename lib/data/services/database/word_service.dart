@@ -38,7 +38,7 @@ class WordService {
 
   // 2. THUẬT TOÁN ANKI (Cập nhật tiến độ)
   Future<void> updateProgress(String wordId, bool isCorrect) async {
-    Map<String, dynamic> progress = await getWordProgress(wordId);
+    Map<String, dynamic> progress = getWordProgress(wordId);
     final int now = DateTime.now().millisecondsSinceEpoch;
 
     progress[ProgressKeys.lastReview] = now; // Cập nhật lần học cuối
@@ -78,13 +78,17 @@ class WordService {
     }
     invalidateCache();
   }
-  void invalidateCache() { _reviewCache = null; }
+
+  void invalidateCache() {
+    _reviewCache = null;
+  }
+
   // 3. ĐÁNH DẤU ĐÃ THUỘC (Manual Learn)
   Future<void> markAsLearned(String wordId) async {
     final int now = DateTime.now().millisecondsSinceEpoch;
 
     // Lấy progress hiện tại để không làm mất ProgressKeys.wrongCount (wrongCount)
-    Map<String, dynamic> progress = await getWordProgress(wordId);
+    Map<String, dynamic> progress = getWordProgress(wordId);
 
     progress[ProgressKeys.step] = 4;
     progress[ProgressKeys.lastReview] = now;
@@ -146,9 +150,11 @@ class WordService {
   List<String> getAllTopics() {
     return _wordBox.values.map((w) => w.topic).toSet().toList();
   }
+
   List<Word> getAllWords() {
     return _wordBox.values.toList();
   }
+
   bool isWordLearned(String wordId) {
     final progress = getWordProgress(wordId);
     return (progress[ProgressKeys.step] as int) >=
@@ -215,21 +221,21 @@ class WordService {
 
   Future<void> saveQuizProgress(List<Word> wordsInQuiz, bool isPassed) async {
     final int now = DateTime.now().millisecondsSinceEpoch;
+    // BATCH UPDATE: Gom tất cả dữ liệu vào 1 Map để ghi vào DB đúng 1 lần
+    final Map<dynamic, dynamic> batchUpdates = {};
 
     for (var word in wordsInQuiz) {
-      Map<String, dynamic> progress = await getWordProgress(word.id);
+      Map<String, dynamic> progress = getWordProgress(word.id);
 
-      progress[ProgressKeys.lastReview] = now; // Cập nhật lần tương tác cuối
+      progress[ProgressKeys.lastReview] = now;
       progress[ProgressKeys.updatedAt] = now;
 
       if (isPassed) {
-        // Nếu PASS bài test: Thưởng tiến độ (Coi như nhấn nút Dễ/Nhớ)
         int currentStep = progress[ProgressKeys.step] as int;
         if (currentStep < 4) {
-          progress[ProgressKeys.step] = currentStep + 1; // Tăng level
+          progress[ProgressKeys.step] = currentStep + 1;
         }
 
-        // Tính ngày ôn tập tiếp theo
         int daysToAdd = (progress[ProgressKeys.step] == 1)
             ? 1
             : (progress[ProgressKeys.step] == 2)
@@ -239,13 +245,17 @@ class WordService {
             : 30;
         progress[ProgressKeys.nextReview] = now + (daysToAdd * _msPerDay);
       } else {
-        // Nếu FAIL bài test: Ghi nhận số lần sai để ưu tiên học lại
         progress[ProgressKeys.wrongCount] =
             (progress[ProgressKeys.wrongCount] as int) + 1;
-        // Không hạ step thẳng tay để đỡ nản, chỉ bắt ôn lại sớm hơn
         progress[ProgressKeys.nextReview] = now;
       }
-      await _progressBox.put(word.id, progress);
+      // Thay vì ghi ổ cứng ngay, ta đẩy vào Map tạm
+      batchUpdates[word.id] = progress;
+    }
+
+    // GHI 1 LẦN DUY NHẤT: Nhanh gấp N lần so với loop put
+    if (batchUpdates.isNotEmpty) {
+      await _progressBox.putAll(batchUpdates);
     }
   }
 
@@ -265,7 +275,7 @@ class WordService {
       progress = getWordProgress(wordId);
       progress[ProgressKeys.isSaved] = 1;
     } else {
-      progress = Map<String, dynamic>.from(raw as Map);
+      progress = Map<String, dynamic>.from(raw);
       int currentSv = (progress[ProgressKeys.isSaved] ?? 0) as int;
       progress[ProgressKeys.isSaved] = currentSv == 1 ? 0 : 1;
     }
@@ -322,7 +332,7 @@ class WordService {
 
   // Hàm lưu điểm phát âm
   Future<void> updatePronunciationScore(String wordId, double newScore) async {
-    Map<String, dynamic> progress = await getWordProgress(wordId);
+    Map<String, dynamic> progress = getWordProgress(wordId);
 
     double currentScore = (progress[ProgressKeys.pronunciationScore] ?? 0.0)
         .toDouble();
@@ -340,8 +350,20 @@ class WordService {
 
   // Hàm ép buộc thuộc toàn bộ list từ (Dùng khi pass Quiz 80%)
   Future<void> massMasterWords(List<Word> words) async {
+    final int now = DateTime.now().millisecondsSinceEpoch;
+    final Map<dynamic, dynamic> batchUpdates = {};
     for (var w in words) {
-      await markAsLearned(w.id);
+      // Tính toán trực tiếp thay vì await gọi từng hàm markAsLearned
+      Map<String, dynamic> progress = getWordProgress(w.id);
+      progress[ProgressKeys.step] = 4;
+      progress[ProgressKeys.lastReview] = now;
+      progress[ProgressKeys.nextReview] = now + (30 * _msPerDay);
+      progress[ProgressKeys.updatedAt] = now;
+      batchUpdates[w.id] = progress;
+    }
+
+    if (batchUpdates.isNotEmpty) {
+      await _progressBox.putAll(batchUpdates); // O(1) disk write
     }
   }
 
@@ -369,8 +391,9 @@ class WordService {
 
   // Thêm tham số amount vào hàm hiện tại của bạn trong WordService
   Future<void> addWordsToDailyGoal(List<String> wordIds) async {
-    final box = Hive.box(DatabaseService.saveBoxName); // Dùng tạm box này ok
-
+    final box = Hive.box(
+      DatabaseService.saveBoxName,
+    ); // Box đang mở, tốc độ đọc ghi là tức thời (RAM speed)
     final today = DateTime.now();
     final key = 'stats_ids_${today.year}_${today.month}_${today.day}';
 
@@ -379,15 +402,22 @@ class WordService {
 
     Set<String> uniqueIds = existingIds.toSet();
     uniqueIds.addAll(wordIds);
-    await box.put(key, uniqueIds.toList()); // Cộng lượng từ mới vào
-    
-  final prefs = await SharedPreferences.getInstance(); // hoặc dùng biến static
-  final lastCleanup = prefs.getString('last_cleanup_date') ?? '';
-  final today1 = DateTime.now().toIso8601String().substring(0, 10);
-  if (lastCleanup != today1) {
-    await prefs.setString('last_cleanup_date', today1);
-    unawaited(cleanUpOldDailyStats().catchError((e) => debugPrint('Cleanup failed: $e')));
-  }
+    await box.put(key, uniqueIds.toList());
+
+    // TỐI ƯU HÓA: Thay vì gọi await SharedPreferences.getInstance() cực chậm,
+    // ta lưu luôn flag dọn dẹp vào trong Hive box có sẵn.
+    final todayStr = '${today.year}_${today.month}_${today.day}';
+    final lastCleanup =
+        box.get('last_cleanup_date', defaultValue: '') as String;
+
+    if (lastCleanup != todayStr) {
+      await box.put('last_cleanup_date', todayStr);
+      unawaited(
+        cleanUpOldDailyStats().catchError(
+          (e) => debugPrint('Cleanup failed: $e'),
+        ),
+      );
+    }
   }
 
   // 2. Hàm lấy số lượng siêu nhanh (Không cần vòng lặp)

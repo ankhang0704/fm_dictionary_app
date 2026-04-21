@@ -123,10 +123,10 @@ class ProfileScreen extends StatelessWidget {
     dynamic settings,
   ) {
     final user = auth.currentUser!;
-    // final levelName = _calculateLevelName(gami);
-    // final expProgress = (gami.masteredWordsCount % 50) / 50.0; // Assume level every 50 words
-    final levelName = "Kim";
-    double expProgress = 10;
+    final masteredCount =
+        GamificationProvider().badges.where((b) => b.isUnlocked).length * 100;
+    final levelName = _calculateLevelName(masteredCount);
+    final double expProgress = ((masteredCount % 50) / 50.0).clamp(0.0, 1.0);
     return GlassBentoCard(
       onTap: null,
       child: Column(
@@ -436,12 +436,13 @@ class ProfileScreen extends StatelessWidget {
             isDefaultAction: true,
             child: const Text("Lưu"),
             onPressed: () async {
-              // ✅ Route through SettingsProvider so notifyListeners fires
-              // and Dashboard rebuilds automatically
+              final newName = controller.text.trim();
               if (context.mounted) {
-                await context.read<SettingsProvider>().updateName(
-                  controller.text.trim(),
-                );
+                await context.read<SettingsProvider>().updateName(newName);
+                final auth = context.read<AuthProvider>();
+                if (auth.currentUser != null) {
+                  await auth.updateDisplayName(newName);
+                }
               }
               if (ctx.mounted) Navigator.pop(ctx);
             },

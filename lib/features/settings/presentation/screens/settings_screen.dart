@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
+import 'package:fm_dictionary/features/auth/presentation/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -419,12 +420,16 @@ class SettingsScreen extends StatelessWidget {
             SmartActionButton(
               text: 'settings.save'.tr(),
               isGlass: false,
-              onPressed: () {
-                provider.updateName(controller.text.trim());
-                Navigator.pop(dialogContext);
+              onPressed: () async {
+                final newName = controller.text.trim();
+                provider.updateName(newName);
+                final auth = context.read<AuthProvider>();
+                if (auth.currentUser != null) {
+                  await auth.updateDisplayName(newName);
+                }
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
               },
-            ),
-          ],
+        )],
         ),
       ),
     );

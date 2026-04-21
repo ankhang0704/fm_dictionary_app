@@ -165,7 +165,6 @@ class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
               ),
             ),
             background: Container(
-              color: Colors.white.withValues(alpha:0.1),
               // Border line to define the glass edge
               decoration: BoxDecoration(
                 border: Border(

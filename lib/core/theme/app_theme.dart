@@ -7,7 +7,7 @@ class AppTheme {
 
   static ThemeData get lightTheme {
     return ThemeData(
-      primaryColor: AppColors.meshBlue,
+      primaryColor: const Color.fromARGB(255, 255, 255, 255),
       scaffoldBackgroundColor: AppColors.background,
       
       // Map custom typography to standard Material TextTheme

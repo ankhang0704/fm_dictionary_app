@@ -117,7 +117,9 @@ class DashboardScreen extends StatelessWidget {
     AuthProvider auth,
   ) {
     final settings = DatabaseService.getSettings();
-    final notifyProvider = context.watch<NotificationProvider>();
+    final notifyEnabled = context.select<NotificationProvider, bool>(
+      (p) => p.isEnabled,
+    );
     final userName = context.select<SettingsProvider, String>(
       (s) => s.settings.userName,
     );
@@ -163,15 +165,15 @@ class DashboardScreen extends StatelessWidget {
             // Notification Bell
             IconButton(
               icon: Icon(
-                notifyProvider.isEnabled
-                    ? CupertinoIcons.bell_fill
-                    : CupertinoIcons.bell,
-                color: notifyProvider.isEnabled
+                notifyEnabled ? CupertinoIcons.bell_fill : CupertinoIcons.bell,
+                color: notifyEnabled
                     ? AppColors.warning
                     : AppColors.textSecondary,
               ),
-              onPressed: () =>
-                  _showNotificationQuickSettings(context, notifyProvider),
+              onPressed: () => _showNotificationQuickSettings(
+                context,
+                context.read<NotificationProvider>(),
+              ),
             ),
             // Avatar
             GestureDetector(
@@ -223,7 +225,7 @@ class DashboardScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  "🎯 Mục tiêu hôm nay: $studied/$target từ",
+                  "Mục tiêu hôm nay: $studied/$target",
                   style: AppTypography.heading3.copyWith(
                     color: AppColors.textPrimary,
                   ),
@@ -262,7 +264,7 @@ class DashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           SmartActionButton(
-            text: "Tiếp tục chặng đường 🚀",
+            text: "Tiếp tục chặng đường",
             isGlass: false,
             isLoading: false,
             onPressed: () async {
@@ -321,7 +323,7 @@ class DashboardScreen extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              "🔥 STREAK",
+              "STREAK",
               style: AppTypography.bodyMedium.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -388,7 +390,7 @@ class DashboardScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "📖 WORD OF THE DAY",
+            "WORD OF THE DAY",
             style: AppTypography.bodyMedium.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -451,7 +453,7 @@ class DashboardScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "📚 KHO TÀNG",
+            "KHO TÀNG",
             style: AppTypography.bodyMedium.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -516,7 +518,7 @@ class DashboardScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            "🔍 TÌM NHANH",
+            "TÌM NHANH",
             style: AppTypography.bodyMedium.copyWith(
               fontWeight: FontWeight.bold,
             ),

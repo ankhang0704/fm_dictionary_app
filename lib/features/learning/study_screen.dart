@@ -287,6 +287,31 @@ class _StudyScreenState extends State<StudyScreen> {
 
               // MICROPHONE BUTTON
               _buildMicButton(provider),
+              if (provider.pronunciationScore != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  '${provider.pronunciationScore!.toStringAsFixed(0)}%',
+                  style: AppTypography.heading2.copyWith(
+                    color: provider.pronunciationScore! >= 70
+                        ? AppColors.success
+                        : AppColors.error,
+                  ),
+                ),
+                if (provider.spokenText.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text(
+                      '"${provider.spokenText}"',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+              ],
               const SizedBox(height: 20),
             ],
           ),

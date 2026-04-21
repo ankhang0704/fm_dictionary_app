@@ -3,7 +3,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/data/services/database/database_service.dart';
-import 'package:hive/hive.dart';
 import '../../../../data/models/word_model.dart';
 import '../../../../data/services/database/word_service.dart';
 import '../../../../core/constants/constants.dart';

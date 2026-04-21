@@ -77,11 +77,11 @@ void main() async {
   }
 
   // 3. Audio & AI Services
-  await TtsService().init();
-  await AiAssistantService().initModel();
+  await sl<TtsService>().init();
+  await sl<AiAssistantService>().initModel();
 
   // 4. Auth & Notifications
-  await AuthSyncService().init();
+  await sl<AuthSyncService>().init();
   await NotificationService.instance.init();
 
   // Lock Orientation

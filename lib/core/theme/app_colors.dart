@@ -7,17 +7,17 @@ class AppColors {
   // static const Color meshBlue = Color(0xFF4A90E2);
   // static const Color meshPurple = Color(0xFF9013FE);
   // static const Color meshMint = Color(0xFF50E3C2);
-  static const Color meshBlue = Color(0xFF788CB6);
-  static const Color meshPurple = Color(0xFFE2E2E2);
-  static const Color meshMint = Color(0xFF9ECAED);
+  static const Color meshBlue = Color.fromARGB(255, 255, 255, 255);
+  static const Color meshPurple = Color.fromARGB(255, 255, 255, 255);
+  static const Color meshMint = Color.fromARGB(255, 255, 255, 255);
   // Glassmorphism
   // static final Color glassBackground = const Color.fromARGB(255, 141, 141, 141).withValues(alpha: 0.25);
   // static final Color glassBorder = const Color.fromARGB(255, 140, 140, 140).withValues(alpha: 0.50);
-  static final Color glassBackground = const Color.fromARGB(255, 143, 143, 143).withValues(alpha: 0.25);
-  static final Color glassBorder = const Color.fromARGB(255, 119, 119, 119).withValues(alpha: 0.50);
+  static final Color glassBackground = const Color.fromARGB(255, 30, 30, 30).withValues(alpha: 0.25);
+  static final Color glassBorder = const Color.fromARGB(255, 37, 37, 37).withValues(alpha: 0.50);
   // Text
   static const Color textPrimary = Color.fromARGB(255, 7, 10, 14);
-  static const Color textSecondary = Color(0xFF64748B);
+  static const Color textSecondary = Color.fromARGB(255, 39, 39, 39);
   
 
   // Semantic & Background

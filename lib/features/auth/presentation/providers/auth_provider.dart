@@ -11,7 +11,8 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   // Lấy user realtime từ Service cũ của bạn
-  ValueNotifier<User?> get currentUserNotifier => sl<AuthSyncService>().currentUser;
+  ValueNotifier<User?> get currentUserNotifier =>
+      sl<AuthSyncService>().currentUser;
   User? get currentUser => currentUserNotifier.value;
 
   void _setLoading(bool value) {
@@ -24,15 +25,22 @@ class AuthProvider extends ChangeNotifier {
     _setLoading(true);
     try {
       await sl<AuthSyncService>().loginWithEmail(email, password);
-    } finally {
-      _setLoading(false);
+      _setLoading(false); // Thành công thì tắt loading
+    } catch (e) {
+      _setLoading(false); // Thất bại cũng tắt loading
+      // BẮT BUỘC rethrow để truyền Exception lên catch block của _handleLogin trên UI
+      rethrow;
     }
   }
 
   Future<void> register(String email, String password, String name) async {
     _setLoading(true);
     try {
-      await sl<AuthSyncService>().registerWithEmail(email: email, password: password, name: name);
+      await sl<AuthSyncService>().registerWithEmail(
+        email: email,
+        password: password,
+        name: name,
+      );
     } finally {
       _setLoading(false);
     }
@@ -41,7 +49,10 @@ class AuthProvider extends ChangeNotifier {
   Future<void> changePassword(String oldPass, String newPass) async {
     _setLoading(true);
     try {
-      await sl<AuthSyncService>().changePassword(currentPassword: oldPass, newPassword: newPass);
+      await sl<AuthSyncService>().changePassword(
+        currentPassword: oldPass,
+        newPassword: newPass,
+      );
     } finally {
       _setLoading(false);
     }
@@ -63,21 +74,28 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners(); // Cập nhật UI ngay lập tức
   }
 
+  Future<void> updateDisplayName(String name) async {
+    await sl<AuthSyncService>().updateDisplayName(name);
+    notifyListeners();
+  }
+
   Future<void> removeAvatar() async {
     var settings = DatabaseService.getSettings();
     settings.userAvatarPath = null;
     await DatabaseService.saveSettings(settings);
     notifyListeners();
   }
-   Future<void> resetPassword(String email) async {
+
+  Future<void> resetPassword(String email) async {
     _setLoading(true);
     try {
       await sl<AuthSyncService>().resetPassword(email);
     } finally {
       _setLoading(false);
     }
-   }
-    Future<void> logout() async {
+  }
+
+  Future<void> logout() async {
     _setLoading(true);
     try {
       await sl<AuthSyncService>().signOut();

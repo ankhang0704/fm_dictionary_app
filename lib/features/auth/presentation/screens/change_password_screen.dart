@@ -63,9 +63,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 
   void _showMsg(String msg) {
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg),
+        content: Text(msg.replaceAll('Exception: ', '')),
         backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
       ),

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fm_dictionary/core/constants/progress_keys.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/glass_bento_card.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -49,14 +50,15 @@ class DictionaryScreen extends StatelessWidget {
               for (var word in wordBox.values) {
                 topicTotalCount[word.topic] =
                     (topicTotalCount[word.topic] ?? 0) + 1;
-
-                // Assuming your Word model has an 'isLearned' property.
-                // Adjust if your model uses a different metric (e.g., repetitionLevel > 0).
-                // final bool isLearned = word.isLearned ?? false;
-                // if (isLearned) {
-                //   topicLearnedCount[word.topic] =
-                //       (topicLearnedCount[word.topic] ?? 0) + 1;
-                // }
+                final progressBox = Hive.box(DatabaseService.progressBoxName);
+                final raw = progressBox.get(word.id);
+                if (raw is Map) {
+                  final step = (raw[ProgressKeys.step] ?? 0) as int;
+                  if (step >= 4) {
+                    topicLearnedCount[word.topic] =
+                        (topicLearnedCount[word.topic] ?? 0) + 1;
+                  }
+                }
               }
 
               final topics = topicTotalCount.keys.toList()..sort();
@@ -160,10 +162,10 @@ class DictionaryScreen extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha:0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: Colors.white.withValues(alpha:0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -196,7 +198,7 @@ class DictionaryScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha:0.2),
+                  color: AppColors.success.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -236,7 +238,7 @@ class DictionaryScreen extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 8,
-              backgroundColor: Colors.white.withValues(alpha:0.15),
+              backgroundColor: Colors.white.withValues(alpha: 0.15),
               valueColor: const AlwaysStoppedAnimation<Color>(
                 AppColors.success,
               ),
@@ -274,7 +276,7 @@ class DictionaryScreen extends StatelessWidget {
             child: Icon(
               topicIcon,
               size: 100,
-              color: Colors.white.withValues(alpha:0.05),
+              color: Colors.white.withValues(alpha: 0.05),
             ),
           ),
 
@@ -286,7 +288,7 @@ class DictionaryScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.meshBlue.withValues(alpha:0.2),
+                  color: AppColors.meshBlue.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(topicIcon, color: AppColors.meshBlue, size: 28),
@@ -337,7 +339,7 @@ class DictionaryScreen extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: progress,
                       minHeight: 4,
-                      backgroundColor: Colors.white.withValues(alpha:0.1),
+                      backgroundColor: Colors.white.withValues(alpha: 0.1),
                       valueColor: AlwaysStoppedAnimation<Color>(
                         progress == 1.0
                             ? AppColors.success

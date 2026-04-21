@@ -10,7 +10,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../database/database_service.dart';
 
 class AuthSyncService {
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -74,12 +73,23 @@ class AuthSyncService {
         throw Exception('Vui lòng xác minh Email trước khi đăng nhập.');
       }
       return user;
-    } on FirebaseAuthException catch (e) {
-      debugPrint("Firebase Auth Error Code: ${e.code}");
-      debugPrint("Firebase Auth Error Message: ${e.message}");
+    } catch (e) {
+      // Bắt TẤT CẢ các loại lỗi (dù là PlatformException cũ hay FirebaseAuthException mới)
+      final errorString = e.toString().toLowerCase();
 
-      // Ném lỗi ra cho UI
-      throw Exception(_handleAuthError(e.code));
+      if (errorString.contains('invalid_credential') || 
+          errorString.contains('invalid-credential') || 
+          errorString.contains('wrong-password') || 
+          errorString.contains('user-not-found')) {
+        throw Exception("Email hoặc mật khẩu không chính xác.");
+      } else if (errorString.contains('too-many-requests')) {
+        throw Exception("Thử sai quá nhiều lần. Vui lòng thử lại sau.");
+      } else if (errorString.contains('invalid-email')) {
+        throw Exception("Định dạng email không hợp lệ.");
+      }
+      
+      // Nếu là lỗi mạng hoặc lỗi khác
+      throw Exception("Đăng nhập thất bại. Vui lòng kiểm tra lại mạng hoặc thông tin.");
     }
   }
 
@@ -88,6 +98,18 @@ class AuthSyncService {
       await _auth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
       throw Exception(_handleAuthError(e.code));
+    }
+  }
+
+  Future<void> updateDisplayName(String name) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) return;
+      await user.updateDisplayName(name);
+      await user.reload();
+      currentUser.value = _auth.currentUser;
+    } catch (e) {
+      debugPrint("Could not update Firebase display name: $e");
     }
   }
 
@@ -322,21 +344,27 @@ class AuthSyncService {
     }
   }
 
+  // --- ERROR HANDLING (Tránh lỗi NoSuchMethodError làm crash App) ---
   String _handleAuthError(String errorCode) {
     switch (errorCode) {
       case 'user-not-found':
-        return 'Không tìm thấy tài khoản.';
+        return 'Tài khoản không tồn tại.';
       case 'wrong-password':
+        return 'Mật khẩu không chính xác.';
+      case 'invalid-email':
+        return 'Định dạng Email không hợp lệ.';
+      case 'user-disabled':
+        return 'Tài khoản này đã bị khóa.';
       case 'invalid-credential':
-        return 'Email hoặc mật khẩu không đúng.';
+        return 'Thông tin đăng nhập không chính xác.';
       case 'email-already-in-use':
         return 'Email này đã được sử dụng.';
-      case 'invalid-email':
-        return 'Định dạng email không hợp lệ.';
       case 'weak-password':
         return 'Mật khẩu quá yếu.';
+      case 'too-many-requests':
+        return 'Đăng nhập sai quá nhiều lần. Vui lòng thử lại sau.';
       default:
-        return 'Lỗi hệ thống: $errorCode';
+        return 'Đã xảy ra lỗi: $errorCode';
     }
   }
 }
