@@ -144,20 +144,27 @@ class LearningRoadmapScreen extends StatelessWidget {
     );
   }
 
+// New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
+
   Widget _buildTopicDivider(BuildContext context, String topicName) {
     final dividerColor = Theme.of(context).dividerColor.withValues(alpha: 0.1);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 30),
       child: Row(
-        children: [
+        children:[
           Expanded(child: Container(height: 2, color: dividerColor)),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              "Chủ đề: $topicName",
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
+          // Wrapped in Flexible to allow wrapping, preventing overflow pixels
+          Flexible(
+            flex: 4, // Gives the text generous room to wrap before shrinking the dividers too much
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                "Chủ đề: $topicName",
+                textAlign: TextAlign.center, // Ensures nicely centered text when it wraps to a new line
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
               ),
             ),
           ),

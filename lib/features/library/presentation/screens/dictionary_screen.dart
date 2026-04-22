@@ -226,8 +226,6 @@ class DictionaryScreen extends StatelessWidget {
     int learnedWords,
     double progress,
   ) {
-    final IconData topicIcon =
-        AppConstants.topicIcons[topic] ?? CupertinoIcons.book_fill;
     final int percentage = (progress * 100).toInt();
 
     return BentoCard(
@@ -246,8 +244,8 @@ class DictionaryScreen extends StatelessWidget {
               color: AppColors.bentoBlue.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              CupertinoIcons.doc_plaintext,
+            child:  Icon(
+              AppConstants.topicIcons[topic] ?? CupertinoIcons.book_fill,
               color: AppColors.bentoBlue,
               size: 28,
             ),

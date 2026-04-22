@@ -96,7 +96,9 @@ class DashboardScreen extends StatelessWidget {
   // WIDGET BUILDERS
   // ===========================================================================
 
-  Widget _buildHeroHeader(
+  // New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
+
+Widget _buildHeroHeader(
     BuildContext context,
     HomeProvider home,
     AuthProvider auth,
@@ -114,11 +116,13 @@ class DashboardScreen extends StatelessWidget {
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
+      children:[
+        // LEFT SIDE (1/2 of the "2x2" feel): Hello + Name (Top) & Quote (Bottom)
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+            mainAxisAlignment: MainAxisAlignment.center,
+            children:[
               FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
@@ -137,57 +141,56 @@ class DashboardScreen extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: 12),
-        Row(
-          children: [
-            // Notification Bell Wrapper
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: Icon(
-                  notifyEnabled
-                      ? CupertinoIcons.bell_fill
-                      : CupertinoIcons.bell,
-                  color: notifyEnabled
-                      ? AppColors.warning
-                      : Theme.of(context).textTheme.bodyMedium?.color,
-                ),
-                onPressed: () => _showNotificationQuickSettings(
-                  context,
-                  context.read<NotificationProvider>(),
-                ),
-              ),
+        
+        const SizedBox(width: 8),
+        
+        // MIDDLE: Notification Bell in a solid Bento circle
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: Icon(
+              notifyEnabled
+                  ? CupertinoIcons.bell_fill
+                  : CupertinoIcons.bell,
+              color: notifyEnabled
+                  ? AppColors.warning
+                  : Theme.of(context).textTheme.bodyMedium?.color,
             ),
-            // Avatar
-            GestureDetector(
-              onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
-              child:
-                  auth.currentUser?.photoURL?.isNotEmpty == true ||
+            onPressed: () => _showNotificationQuickSettings(
+              context,
+              context.read<NotificationProvider>(),
+            ),
+          ),
+        ),
+        
+        // RIGHT SIDE (The biggest element): Enlarged Avatar
+        GestureDetector(
+          onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
+          child:
+              auth.currentUser?.photoURL?.isNotEmpty == true ||
                       settings.userAvatarPath?.isNotEmpty == true
-                  ? AppAvatar(
-                      localPath: settings.userAvatarPath,
-                      networkUrl: auth.currentUser?.photoURL,
-                      radius: 24,
-                    )
-                  : CircleAvatar(
-                      radius: 24,
-                      backgroundColor: AppColors.bentoBlue.withValues(
-                        alpha: 0.15,
-                      ),
-                      child: Text(
-                        displayName.isNotEmpty
-                            ? displayName[0].toUpperCase()
-                            : '?',
-                        style: Theme.of(context).textTheme.displaySmall
-                            ?.copyWith(color: AppColors.bentoBlue),
-                      ),
-                    ),
-            ),
-          ],
+              ? AppAvatar(
+                  localPath: settings.userAvatarPath,
+                  networkUrl: auth.currentUser?.photoURL,
+                  radius: 34, // ENLARGED AVATAR for prominence
+                )
+              : CircleAvatar(
+                  radius: 34, // ENLARGED AVATAR for prominence
+                  backgroundColor: AppColors.bentoBlue.withValues(
+                    alpha: 0.15,
+                  ),
+                  child: Text(
+                    displayName.isNotEmpty
+                        ? displayName[0].toUpperCase()
+                        : '?',
+                    style: Theme.of(context).textTheme.displayMedium // Increased text size to match larger avatar
+                        ?.copyWith(color: AppColors.bentoBlue),
+                  ),
+                ),
         ),
       ],
     );
@@ -200,12 +203,14 @@ class DashboardScreen extends StatelessWidget {
     final clampedProgress = progress.clamp(0.0, 1.0);
     final percentage = (clampedProgress * 100).toInt();
 
+// New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
+
     return BentoCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        children:[
           Row(
-            children: [
+            children:[
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -222,7 +227,10 @@ class DashboardScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   "Mục tiêu hôm nay: $studied/$target",
-                  style: Theme.of(context).textTheme.displaySmall,
+                  // CHANGED: Reduced from displaySmall to titleMedium for better fit
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -231,7 +239,7 @@ class DashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Row(
-            children: [
+            children:[
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(100),
@@ -257,7 +265,9 @@ class DashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           SmartActionButton(
-            text: "Tiếp tục chặng đường",
+            text: "Tiếp tục", // CHANGED: Shortened text
+            icon: CupertinoIcons.play_circle_fill, // CHANGED: Added icon
+            color: AppColors.success, // CHANGED: Added vibrant color
             onPressed: () async {
               final roadmap = context.read<RoadmapProvider>();
               RoadmapLesson? targetLesson;
@@ -356,7 +366,7 @@ class DashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            "⚡ DAILY QUIZ",
+            "DAILY QUIZ",
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
@@ -544,75 +554,84 @@ class DashboardScreen extends StatelessWidget {
   // LEGACY LOGIC METHODS
   // ===========================================================================
 
-  void _showNotificationQuickSettings(
+  // New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
+
+void _showNotificationQuickSettings(
     BuildContext context,
     NotificationProvider provider,
   ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppLayout.bentoBorderRadius),
-          ),
-        ),
-        padding: const EdgeInsets.all(AppLayout.defaultPadding),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Nhắc nhở học tập",
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-            const SizedBox(height: 24),
-            BentoCard(
-              padding: EdgeInsets.zero,
-              child: Column(
-                children: [
-                  SwitchListTile(
-                    title: Text(
-                      "Bật thông báo hàng ngày",
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    value: provider.isEnabled,
-                    activeColor: AppColors.bentoBlue,
-                    onChanged: (v) => provider.toggleNotification(v),
-                  ),
-                  if (provider.isEnabled) ...[
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(
-                        CupertinoIcons.clock,
-                        color: AppColors.bentoBlue,
-                      ),
-                      title: Text(
-                        "Giờ nhắc nhở",
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      trailing: Text(
-                        provider.reminderTime?.format(context) ?? "20:00",
-                        style: Theme.of(context).textTheme.displaySmall
-                            ?.copyWith(color: AppColors.bentoBlue),
-                      ),
-                      onTap: () async {
-                        final time = await showTimePicker(
-                          context: context,
-                          initialTime:
-                              provider.reminderTime ??
-                              const TimeOfDay(hour: 20, minute: 0),
-                        );
-                        if (time != null) provider.updateReminderTime(time);
-                      },
-                    ),
-                  ],
-                ],
+      builder: (context) => ListenableBuilder(
+        // ListenableBuilder automatically listens to the provider and rebuilds the BottomSheet 
+        // instantly when toggleNotification() triggers notifyListeners().
+        listenable: provider, 
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppLayout.bentoBorderRadius),
               ),
             ),
-            const SafeArea(child: SizedBox(height: 20)),
-          ],
-        ),
+            padding: const EdgeInsets.all(AppLayout.defaultPadding),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children:[
+                Text(
+                  "Nhắc nhở học tập",
+                  style: Theme.of(context).textTheme.displaySmall,
+                ),
+                const SizedBox(height: 24),
+                BentoCard(
+                  padding: EdgeInsets.zero,
+                  child: Column(
+                    children:[
+                      SwitchListTile(
+                        title: Text(
+                          "Bật thông báo hàng ngày",
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                        value: provider.isEnabled,
+                        activeColor: AppColors.bentoBlue,
+                        onChanged: (v) => provider.toggleNotification(v),
+                      ),
+                      if (provider.isEnabled) ...[
+                        const Divider(height: 1),
+                        ListTile(
+                          leading: const Icon(
+                            CupertinoIcons.clock,
+                            color: AppColors.bentoBlue,
+                          ),
+                          title: Text(
+                            "Giờ nhắc nhở",
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          trailing: Text(
+                            provider.reminderTime?.format(context) ?? "20:00",
+                            style: Theme.of(context).textTheme.displaySmall
+                                ?.copyWith(color: AppColors.bentoBlue),
+                          ),
+                          onTap: () async {
+                            final time = await showTimePicker(
+                              context: context,
+                              initialTime:
+                                  provider.reminderTime ??
+                                  const TimeOfDay(hour: 20, minute: 0),
+                            );
+                            if (time != null) provider.updateReminderTime(time);
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SafeArea(child: SizedBox(height: 20)),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

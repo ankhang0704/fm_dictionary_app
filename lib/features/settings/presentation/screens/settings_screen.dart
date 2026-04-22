@@ -336,7 +336,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Slider(
-                  value: provider.settings.ttsSpeed.clamp(0.5, 1.5),
+                  value: provider.settings.ttsSpeed.clamp(0.1, 1.5),
                   min: 0.5,
                   max: 1.5,
                   divisions: 10,

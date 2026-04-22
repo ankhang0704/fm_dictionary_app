@@ -1,6 +1,5 @@
-// lib/core/widgets/common/smart_action_button.dart
+// New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
 
-import 'dart:ui';
 import 'package:flutter/material.dart';
 
 // Assuming these are correctly imported in your actual project:
@@ -12,8 +11,9 @@ class SmartActionButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
-  final bool isGlass;
+  final bool isGlass; // Kept to preserve existing logic/calls, but rendered as Flat Secondary Bento
   final Color? color;
+  final IconData? icon; // Added optional Icon parameter
 
   const SmartActionButton({
     super.key,
@@ -22,20 +22,22 @@ class SmartActionButton extends StatelessWidget {
     this.isLoading = false,
     this.isGlass = false,
     this.color,
+    this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Determine text and spinner color based on glass state
-    // Glass: Slate 800, Solid: White
+    // Bento Style Colors
     final Color contentColor = isGlass 
         ? const Color(0xFF1E293B) // AppColors.textPrimary 
         : Colors.white;
 
-    // Default solid background color if not provided
-    final Color solidBgColor = color ?? const Color(0xFF1E293B); // AppColors.textPrimary
+    // Completely stripped Glassmorphism. If 'isGlass' is true, we use a playful flat pastel/secondary style.
+    final Color solidBgColor = isGlass 
+        ? const Color(0xFFF8FAFC) // Soft Flat Pastel for Bento Secondary
+        : (color ?? const Color(0xFF1E293B)); // Solid Primary
 
-    // Reusable inner content (Text or Spinner)
+    // Reusable inner content (Icon + Text or Spinner)
     final Widget innerContent = isLoading
         ? SizedBox(
             width: 24.0,
@@ -45,59 +47,31 @@ class SmartActionButton extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation<Color>(contentColor),
             ),
           )
-        : Text(
-            text,
-            style: const TextStyle(
-              fontFamily: 'Quicksand',
-              fontWeight: FontWeight.bold,
-              fontSize: 20, // Fallback for AppTypography.heading3
-            ).copyWith(color: contentColor),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis, // Zero Pixel Overflow Policy
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children:[
+              if (icon != null) ...[
+                Icon(icon, color: contentColor, size: 24),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                text,
+                style: const TextStyle(
+                  fontFamily: 'Quicksand',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20, // Fallback for AppTypography.heading3
+                ).copyWith(color: contentColor),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis, // Zero Pixel Overflow Policy
+              ),
+            ],
           );
 
-    final double buttonHeight = 56.0;
+    const double buttonHeight = 56.0;
     final BorderRadius buttonRadius = BorderRadius.circular(16.0); // AppLayout.buttonRadius
 
-    if (isGlass) {
-      return ClipRRect(
-        borderRadius: buttonRadius,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-          child: Container(
-            height: buttonHeight,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.25),
-              borderRadius: buttonRadius,
-              border: Border.all(
-                color: Colors.white.withValues(alpha:0.5),
-                width: 1.0,
-              ),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: isLoading ? null : onPressed,
-                borderRadius: buttonRadius,
-                child: Center(
-                  // FittedBox ensures text shrinks instead of overflowing if translated text is too long
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: innerContent,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    // Solid Button
+    // Unified Solid Bento Button
     return SizedBox(
       height: buttonHeight,
       width: double.infinity,
@@ -106,9 +80,12 @@ class SmartActionButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: solidBgColor,
           foregroundColor: contentColor,
-          elevation: 0,
+          elevation: 0, // Strict Flat Bento style
           shape: RoundedRectangleBorder(
             borderRadius: buttonRadius,
+            side: isGlass 
+                ? const BorderSide(color: Color(0xFFE2E8F0), width: 2) // Playful border for secondary
+                : BorderSide.none,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
         ),

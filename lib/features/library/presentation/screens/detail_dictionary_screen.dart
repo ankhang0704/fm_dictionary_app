@@ -245,13 +245,17 @@ class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
     );
   }
 
-  Widget _buildActionRow(BuildContext context, List<Word> allWords) {
+  // New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
+
+Widget _buildActionRow(BuildContext context, List<Word> allWords) {
     return Row(
-      children: [
-        // Button 1: Study (Primary Bento Color)
+      children:[
+        // Button 1: Study (Primary Bento Color - Vibrant Blue)
         Expanded(
           child: SmartActionButton(
             text: "Học",
+            icon: Icons.school_rounded,
+            color: const Color(0xFF3B82F6), // Vibrant Bento Blue
             onPressed: () {
               Navigator.pushNamed(
                 context,
@@ -263,10 +267,12 @@ class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
         ),
         const SizedBox(width: 16),
 
-        // Button 2: Quiz (Secondary Bento Color)
+        // Button 2: Quiz (Secondary Bento Color - Playful Orange)
         Expanded(
           child: SmartActionButton(
             text: "Kiểm tra",
+            icon: Icons.videogame_asset_rounded,
+            color: const Color(0xFFF97316), // Vibrant Bento Orange
             onPressed: () {
               if (allWords.length < 4) {
                 ScaffoldMessenger.of(context).showSnackBar(
