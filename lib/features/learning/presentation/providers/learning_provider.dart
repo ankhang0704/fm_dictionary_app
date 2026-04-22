@@ -15,13 +15,19 @@ class LearningProvider extends ChangeNotifier {
   //Streak
   int _currentStreak = 0;
   Set<DateTime> _studyDates = {};
-
+  int _masteredWords = 0;
+  int _totalWords = 0;
+  int get masteredWords => _masteredWords;
+  int get totalWords => _totalWords;
   int get currentStreak => _currentStreak;
   Set<DateTime> get studyDates => _studyDates;
 
   void loadLearningData() {
     _currentStreak = _wordService.getCurrentStreak();
     _studyDates = _wordService.getStudyDates();
+
+    _masteredWords = _wordService.getTotalMasteredWords();
+    _totalWords = _wordService.getTotalWordsCount();
     notifyListeners();
   }
   // State

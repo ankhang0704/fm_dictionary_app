@@ -8,7 +8,7 @@ import 'package:fm_dictionary/core/theme/app_theme.dart';
 import 'package:fm_dictionary/data/services/ui_management/theme_manager.dart';
 import 'package:fm_dictionary/features/auth/presentation/screens/profile_screen.dart';
 import 'package:fm_dictionary/features/home/presentation/screens/streak_screen.dart';
-import 'package:fm_dictionary/features/learning/study_screen.dart';
+import 'package:fm_dictionary/features/learning/study_flashcard_screen.dart';
 import 'package:fm_dictionary/features/library/presentation/screens/detail_dictionary_screen.dart';
 import 'package:fm_dictionary/features/settings/presentation/screens/settings_screen.dart';
 import 'package:provider/provider.dart';
@@ -198,7 +198,7 @@ class MyApp extends StatelessWidget {
                 {
                   final args = settings.arguments as Map<String, dynamic>;
                   return CupertinoPageRoute(
-                    builder: (_) => StudyScreen(
+                    builder: (_) => StudyFlashCardScreen(
                       words: args['words'],
                       isFromRoadmap: args['isFromRoadmap'] ?? false,
                     ),
@@ -213,7 +213,7 @@ class MyApp extends StatelessWidget {
 
               // Stats & Settings
               case AppRoutes.stats:
-                return CupertinoPageRoute(builder: (_) => const StatsScreen());
+                return CupertinoPageRoute(builder: (_) =>  StreakScreen());
               case AppRoutes.settings:
                 return CupertinoPageRoute(
                   builder: (_) => const SettingsScreen(),

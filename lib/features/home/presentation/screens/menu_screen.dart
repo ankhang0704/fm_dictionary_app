@@ -101,6 +101,17 @@ class MenuScreen extends StatelessWidget {
                       ),
                       _buildNavItem(
                         context,
+                        CupertinoIcons.book_fill,
+                        'sidebar.terms'.tr(),
+                        () => _navigateToStatic(
+                          context,
+                          'sidebar.terms'.tr(),
+                          'terms_$currentLocale.md',
+                        ),
+                        iconColor: AppColors.bentoPink,
+                      ),
+                      _buildNavItem(
+                        context,
                         CupertinoIcons.info_circle_fill,
                         'sidebar.about'.tr(),
                         () => _navigateToStatic(
@@ -110,6 +121,18 @@ class MenuScreen extends StatelessWidget {
                         ),
                         iconColor: AppColors.bentoMint,
                       ),
+                      const SizedBox(height: 16),
+                      FutureBuilder<PackageInfo>(
+                        future: PackageInfo.fromPlatform(),
+                        builder: (context, snapshot) {
+                          return Text(
+                            'Version ${snapshot.data?.version ?? '1.0.0'}',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(fontSize: 12),
+                          );
+                        },
+                      ),
                     ]),
                   ],
                 ),
@@ -118,7 +141,6 @@ class MenuScreen extends StatelessWidget {
 
             // --- BOTTOM: LOGOUT & VERSION ---
             _buildFooter(context, auth, user),
-            const SizedBox(height: 100), // Navigation clearance
           ],
         ),
       ),
@@ -226,28 +248,26 @@ class MenuScreen extends StatelessWidget {
   }
 
   Widget _buildFooter(BuildContext context, AuthProvider auth, dynamic user) {
+    // Nếu ĐÃ ĐĂNG NHẬP, ẩn toàn bộ footer này đi (Người dùng sẽ vào Profile để đăng xuất)
+    if (user != null) {
+      return const SizedBox.shrink();
+    }
+
+    // Nếu CHƯA ĐĂNG NHẬP, hiện nút Login rực rỡ
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppLayout.defaultPadding),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 24.0,
+      ), // Cập nhật padding theo AppLayout.defaultPadding của bạn
       child: Column(
         children: [
           SmartActionButton(
-            text: user != null ? "sidebar.logout".tr() : "sidebar.login".tr(),
-            onPressed: () => user != null
-                ? auth.logout()
-                : Navigator.pushNamed(context, AppRoutes.login),
+            text: "sidebar.login".tr(),
+            icon: Icons.login_rounded,
+            color: const Color(0xFF3B82F6), // Vibrant Blue
+            textColor: Colors.white,
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.login),
           ),
-          const SizedBox(height: 16),
-          FutureBuilder<PackageInfo>(
-            future: PackageInfo.fromPlatform(),
-            builder: (context, snapshot) {
-              return Text(
-                'Version ${snapshot.data?.version ?? '1.0.0'}',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12),
-              );
-            },
-          ),
+          const SizedBox(height: 24),
         ],
       ),
     );

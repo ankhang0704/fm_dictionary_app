@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
@@ -21,21 +22,21 @@ import '../../../../data/services/features/quiz_service.dart';
 // --- SCREENS ---
 import 'quiz_screen.dart';
 
-class StudyScreen extends StatefulWidget {
+class StudyFlashCardScreen extends StatefulWidget {
   final List<Word> words;
   final bool isFromRoadmap;
 
-  const StudyScreen({
+  const StudyFlashCardScreen({
     super.key,
     required this.words,
     this.isFromRoadmap = false,
   });
 
   @override
-  State<StudyScreen> createState() => _StudyScreenState();
+  State<StudyFlashCardScreen> createState() => _StudyFlashCardScreenState();
 }
 
-class _StudyScreenState extends State<StudyScreen> {
+class _StudyFlashCardScreenState extends State<StudyFlashCardScreen> {
   @override
   void initState() {
     super.initState();
@@ -218,76 +219,97 @@ class _StudyScreenState extends State<StudyScreen> {
       key: const ValueKey(false),
       child: Stack(
         children: [
+          // 1. TOPIC TAG: Ghim ở góc trên, không bao giờ bị đè
           Align(
             alignment: Alignment.topRight,
             child: _buildTopicTag(context, word.topic),
           ),
-          Column(
-            children: [
-              const SizedBox(height: 32),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  word.word,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.displayLarge?.copyWith(fontSize: 48),
-                  textAlign: TextAlign.center,
-                  maxLines: 3,
-                ),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildPronunciationItem(
-                      context,
-                      'US',
-                      word.phoneticUS,
-                      AppColors.bentoBlue,
-                      () => provider.playAudio('en-US'),
+
+          // 2. MAIN CONTENT: Dùng Column ghim về phía đáy (End)
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppLayout.defaultPadding,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment
+                  .center, // Đẩy toàn bộ nội dung xuống dưới 3/4 khung hình
+              children: [
+                // WORD: Giữ nguyên FittedBox để chữ tự co giãn trên 1 hàng, không gây lỗi
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    word.word,
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildPronunciationItem(
-                      context,
-                      'UK',
-                      word.phoneticUK,
-                      AppColors.bentoPurple,
-                      () => provider.playAudio('en-GB'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              _buildMicButton(context, provider),
-              if (provider.pronunciationScore != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  '${provider.pronunciationScore!.toStringAsFixed(0)}%',
-                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    color: provider.pronunciationScore! >= 70
-                        ? AppColors.success
-                        : AppColors.error,
+                    textAlign: TextAlign.center,
                   ),
                 ),
-                if (provider.spokenText.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
+
+                const SizedBox(height: 24),
+
+                // PRONUNCIATION: Đã bọc trong Row và Expanded để tránh tràn ngang
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildPronunciationItem(
+                        context,
+                        'US',
+                        word.phoneticUS,
+                        const Color(0xFF3B82F6), // Vibrant Blue
+                        () => provider.playAudio('en-US'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildPronunciationItem(
+                        context,
+                        'UK',
+                        word.phoneticUK,
+                        const Color(0xFF8B5CF6), // Vibrant Purple
+                        () => provider.playAudio('en-GB'),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // MIC BUTTON & SCORE: Gom nhóm để quản lý không gian tốt hơn
+                _buildMicButton(context, provider),
+
+                if (provider.pronunciationScore != null) ...[
+                  const SizedBox(height: 12),
+                  // Điểm số gọn gàng theo chuẩn Bento
+                  Text(
+                    '${provider.pronunciationScore!.toStringAsFixed(0)}%',
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: provider.pronunciationScore! >= 70
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFFF4757),
+                    ),
+                  ),
+                  if (provider.spokenText.isNotEmpty)
+                    Text(
                       '"${provider.spokenText}"',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontStyle: FontStyle.italic,
+                        fontSize: 14,
+                        color: Theme.of(context).hintColor,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                     ),
-                  ),
+                ],
+
+                // Khoảng trống dưới cùng để Card trông cân đối (Bento Padding)
+                const SizedBox(height: 30),
               ],
-              const SizedBox(height: 20),
-            ],
+            ),
           ),
         ],
       ),
@@ -300,6 +322,7 @@ class _StudyScreenState extends State<StudyScreen> {
       key: const ValueKey(true),
       child: Stack(
         children: [
+          // Logic tag giữ nguyên
           Align(
             alignment: Alignment.topRight,
             child: _buildTopicTag(context, word.topic),
@@ -308,42 +331,64 @@ class _StudyScreenState extends State<StudyScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 32),
+
+              // Nghĩa của từ với màu Success (Logic của bạn)
               Text(
                 word.meaning,
-                style: Theme.of(
-                  context,
-                ).textTheme.displayMedium?.copyWith(color: AppColors.success),
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  color: AppColors.success,
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              Text(
-                word.example,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge?.copyWith(fontStyle: FontStyle.italic),
-                textAlign: TextAlign.center,
+
+              // Ví dụ (Logic giữ nguyên)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  word.example,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontStyle: FontStyle.italic,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 40),
+
+              // BENTO ACTION BAR - Hệ màu tín hiệu
               Row(
                 children: [
+                  // Nút QUÊN - Màu Đỏ (Danger)
                   Expanded(
                     child: SmartActionButton(
-                      text: "Quên",
-                      // Passing bento pink/error color
+                      text: "study.action_forgot".tr(), // Đã thêm Localization
+                      color: const Color(0xFFFF4757),
+                      textColor: Colors.white,
                       onPressed: () => _handleAnkiAction(false, false),
                     ),
                   ),
                   const SizedBox(width: 8),
+
+                  // Nút NHỚ - Màu Xanh (Primary/Info)
                   Expanded(
                     child: SmartActionButton(
-                      text: "Nhớ",
+                      text: "study.action_remembered"
+                          .tr(), // Đã thêm Localization
+                      color: const Color(0xFF3B82F6),
+                      textColor: Colors.white,
                       onPressed: () => _handleAnkiAction(true, false),
                     ),
                   ),
                   const SizedBox(width: 8),
+
+                  // Nút DỄ - Màu Xanh Lá (Success)
                   Expanded(
                     child: SmartActionButton(
-                      text: "Dễ",
+                      text: "study.action_easy".tr(), // Đã thêm Localization
+                      color: const Color(0xFF10B981),
+                      textColor: Colors.white,
                       onPressed: () => _handleAnkiAction(true, true),
                     ),
                   ),

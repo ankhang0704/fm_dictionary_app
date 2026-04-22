@@ -79,7 +79,10 @@
         "keepPracticing": "Keep practicing!",
         "again": "Try Again",
         "good": "Good",
-        "easy": "Easy"
+        "easy": "Easy",
+        "action_forgot": "Forgot",
+        "action_remembered": "Good",
+        "action_easy": "Easy"
     },
     "categories": {
         "title": "Categories",
@@ -194,5 +197,11 @@
         "delete_confirm_desc": "This action will delete all your learning progress on the cloud. Are you sure you want to proceed?",
         "delete_error": "Please log out and log back in before deleting your account.",
         "delete_success": "Your account has been deleted successfully!"
+    },
+    "roadmap": {
+        "lesson_number": "Lesson {}",
+        "lesson_topic": "Topic: {}",
+        "study_flashcards": "Study Flashcards",
+        "skip_test": "Skip Lesson"
     }
 }

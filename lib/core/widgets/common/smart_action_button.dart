@@ -1,19 +1,15 @@
-// New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
-
 import 'package:flutter/material.dart';
-
-// Assuming these are correctly imported in your actual project:
-// import 'package:your_app/core/theme/app_colors.dart';
-// import 'package:your_app/core/theme/app_layout.dart';
-// import 'package:your_app/core/theme/app_typography.dart';
 
 class SmartActionButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
-  final bool isGlass; // Kept to preserve existing logic/calls, but rendered as Flat Secondary Bento
+  final bool
+  isGlass; // Giữ lại để không vỡ logic cũ, nhưng render theo Flat Secondary Bento
   final Color? color;
-  final IconData? icon; // Added optional Icon parameter
+  final Color?
+  textColor; // Thêm tùy chọn màu chữ để linh hoạt với các màu nền Vibrant
+  final IconData? icon;
 
   const SmartActionButton({
     super.key,
@@ -22,22 +18,41 @@ class SmartActionButton extends StatelessWidget {
     this.isLoading = false,
     this.isGlass = false,
     this.color,
+    this.textColor,
     this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
     // Bento Style Colors
-    final Color contentColor = isGlass 
-        ? const Color(0xFF1E293B) // AppColors.textPrimary 
-        : Colors.white;
+    final Color solidBgColor =
+        color ??
+        (isGlass
+            ? const Color(0xFFF1F5F9) // Slate 100 - Soft Flat Pastel
+            : const Color(0xFF1E293B)); // Dark Primary default
 
-    // Completely stripped Glassmorphism. If 'isGlass' is true, we use a playful flat pastel/secondary style.
-    final Color solidBgColor = isGlass 
-        ? const Color(0xFFF8FAFC) // Soft Flat Pastel for Bento Secondary
-        : (color ?? const Color(0xFF1E293B)); // Solid Primary
+    final Color contentColor =
+        textColor ??
+        (isGlass
+            ? const Color(0xFF0F172A) // Slate 900
+            : Colors.white);
 
-    // Reusable inner content (Icon + Text or Spinner)
+    // Premium Circular Icon Wrapper (Bento UI standard)
+    Widget? iconWidget;
+    if (icon != null) {
+      iconWidget = Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: contentColor.withValues(
+           alpha:  0.15,
+          ), // Nền mờ nhẹ tương phản với icon
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: contentColor, size: 18),
+      );
+    }
+
+    // Reusable inner content
     final Widget innerContent = isLoading
         ? SizedBox(
             width: 24.0,
@@ -50,28 +65,31 @@ class SmartActionButton extends StatelessWidget {
         : Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
-            children:[
-              if (icon != null) ...[
-                Icon(icon, color: contentColor, size: 24),
-                const SizedBox(width: 8),
+            children: [
+              if (iconWidget != null) ...[
+                iconWidget,
+                const SizedBox(width: 10),
               ],
               Text(
                 text,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Quicksand',
                   fontWeight: FontWeight.bold,
-                  fontSize: 20, // Fallback for AppTypography.heading3
-                ).copyWith(color: contentColor),
+                  fontSize: 18,
+                  color: contentColor,
+                  letterSpacing: 0.3,
+                ),
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis, // Zero Pixel Overflow Policy
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           );
 
     const double buttonHeight = 56.0;
-    final BorderRadius buttonRadius = BorderRadius.circular(16.0); // AppLayout.buttonRadius
+    final BorderRadius buttonRadius = BorderRadius.circular(
+      20.0,
+    ); // Playful rounded corners
 
-    // Unified Solid Bento Button
     return SizedBox(
       height: buttonHeight,
       width: double.infinity,
@@ -80,19 +98,16 @@ class SmartActionButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: solidBgColor,
           foregroundColor: contentColor,
-          elevation: 0, // Strict Flat Bento style
+          elevation: 0, // Tuyệt đối phẳng (Flat Bento)
           shape: RoundedRectangleBorder(
             borderRadius: buttonRadius,
-            side: isGlass 
-                ? const BorderSide(color: Color(0xFFE2E8F0), width: 2) // Playful border for secondary
+            side: isGlass
+                ? const BorderSide(color: Color(0xFFE2E8F0), width: 2)
                 : BorderSide.none,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
         ),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: innerContent,
-        ),
+        child: FittedBox(fit: BoxFit.scaleDown, child: innerContent),
       ),
     );
   }

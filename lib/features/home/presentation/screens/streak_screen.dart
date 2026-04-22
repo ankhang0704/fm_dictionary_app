@@ -1,171 +1,385 @@
-// lib/features/home/presentation/screens/stats_screen.dart
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fm_dictionary/features/learning/presentation/providers/learning_provider.dart';
+import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
 import 'package:provider/provider.dart';
-import 'package:table_calendar/table_calendar.dart';
-import '../../../settings/presentation/providers/notification_provider.dart';
 
-class StatsScreen extends StatelessWidget {
-  const StatsScreen({super.key});
+import '../../../../core/theme/app_colors.dart';
+import '../../../learning/presentation/providers/learning_provider.dart';
+import '../../../settings/presentation/providers/notification_provider.dart';
+import '../../../gamification/presentation/providers/gamification_provider.dart';
+
+class StreakScreen extends StatelessWidget {
+  const StreakScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final learning = context.watch<LearningProvider>();
     final notify = context.watch<NotificationProvider>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final gamification = context.watch<GamificationProvider>();
+
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Tiến độ học tập")),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: Text(
+          "Bảng điều khiển",
+          style: Theme.of(context).textTheme.displaySmall,
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         children: [
-          // STREAK BENTO
-          _buildStreakBento(learning.currentStreak),
-          const SizedBox(height: 16),
-
-          // CALENDAR BENTO
-          _buildCalendarBento(context, learning.studyDates, isDark),
-          const SizedBox(height: 16),
-
-          // NOTIFICATION BENTO
-          _buildNotifyBento(context, notify, isDark),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStreakBento(int streak) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Colors.orange, Colors.redAccent],
-        ),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        children: [
-          const Text('🔥', style: TextStyle(fontSize: 50)),
-          const SizedBox(height: 8),
-          Text(
-            '$streak Ngày liên tiếp',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Text(
-            'Đừng để lửa tắt nhé!',
-            style: TextStyle(color: Colors.white70),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCalendarBento(
-    BuildContext context,
-    Set<DateTime> dates,
-    bool isDark,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: TableCalendar(
-        focusedDay: DateTime.now(),
-        firstDay: DateTime.utc(2023),
-        lastDay: DateTime.now().add(const Duration(days: 30)),
-        headerStyle: const HeaderStyle(
-          formatButtonVisible: false,
-          titleCentered: true,
-        ),
-        calendarBuilders: CalendarBuilders(
-          markerBuilder: (context, date, _) {
-            if (dates.contains(DateTime(date.year, date.month, date.day))) {
-              return Container(
-                margin: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
-                  color: Colors.green,
-                  shape: BoxShape.circle,
+          // 1. TOP ROW: HERO (2/3) & STREAK (1/3)
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                 child: _buildHeroBento(
+                  context,
+                  learning.masteredWords,
+                  learning.totalWords,
                 ),
-              );
-            }
-            return null;
-          },
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 1,
+                child: _buildStreakBento(context, learning.currentStreak),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // 2. ACTIVITY HEATMAP (GITHUB STYLE)
+          _buildHeatmapBento(context, learning.studyDates),
+          const SizedBox(height: 16),
+
+          // 3. GAMIFICATION BENTO
+          _buildGamificationBento(context, gamification),
+          const SizedBox(height: 16),
+
+          // 4. UTILITY BENTO (NOTIFICATION)
+          _buildNotifyBento(context, notify),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  // --- 1A. HERO BENTO (VIBRANT BLUE) ---
+  Widget _buildHeroBento(BuildContext context, int mastered, int total) {
+    final double progress = total > 0 ? mastered / total : 0;
+
+    return BentoCard(
+      bentoColor: AppColors.bentoBlue,
+      padding: const EdgeInsets.all(20),
+      child: SizedBox(
+        height: 130, // Fixed height to match streak bento
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.centerRight,
+              child: SizedBox(
+                width: 80,
+                height: 80,
+                child: CircularProgressIndicator(
+                  value: progress,
+                  strokeWidth: 8,
+                  strokeCap: StrokeCap.round,
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "Từ vựng\nđã thuộc",
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    "$mastered",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      height: 1.0,
+                    ),
+                  ),
+                ),
+                Text(
+                  "/ $total từ",
+                  style: const TextStyle(color: Colors.white54, fontSize: 12),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // lib/features/home/presentation/screens/stats_screen.dart
+  // --- 1B. STREAK BENTO (VIBRANT ORANGE) ---
+  Widget _buildStreakBento(BuildContext context, int streak) {
+    String message = "Bắt đầu nào!";
+    if (streak >= 7) {
+      message = "Bạn đang\nrực cháy!";
+    } else if (streak >= 3) {
+      message = "Giữ vững\nphong độ!";
+    } else if (streak > 0) {
+      message = "Lửa đang\nnhen nhóm!";
+    }
 
-  Widget _buildNotifyBento(
-    BuildContext context,
-    NotificationProvider notify,
-    bool isDark,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24),
+    return BentoCard(
+      bentoColor: AppColors.warning,
+      padding: const EdgeInsets.all(16),
+      child: SizedBox(
+        height: 138, // Match Hero height
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('🔥', style: TextStyle(fontSize: 32)),
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                '$streak',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  height: 1.0,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  height: 1.2,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  // --- 2. ACTIVITY HEATMAP BENTO (GITHUB STYLE) ---
+  Widget _buildHeatmapBento(BuildContext context, Set<DateTime> dates) {
+    // STRICTLY PRESERVED LOGIC: Generate 70 days
+    final today = DateTime.now();
+    final List<DateTime> last70Days = List.generate(
+      70,
+      (index) => today.subtract(Duration(days: 69 - index)),
+    );
+
+    return BentoCard(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SwitchListTile(
-            secondary: Icon(
-              notify.isEnabled
-                  ? CupertinoIcons.bell_fill
-                  : CupertinoIcons.bell_slash,
-              color: notify.isEnabled ? Colors.orange : Colors.grey,
+          Text(
+            "Nhịp đập học tập",
+            style: Theme.of(
+              context,
+            ).textTheme.displaySmall?.copyWith(fontSize: 16),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 100,
+            child: GridView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                mainAxisSpacing: 4,
+                crossAxisSpacing: 4,
+              ),
+              itemCount: last70Days.length,
+              itemBuilder: (context, index) {
+                final date = last70Days[index];
+                final normalizedDate = DateTime(
+                  date.year,
+                  date.month,
+                  date.day,
+                );
+                final isActive = dates.contains(normalizedDate);
+
+                return Container(
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? AppColors.bentoMint
+                        : Theme.of(context).dividerColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                );
+              },
             ),
-            title: const Text(
-              "Thông báo",
-              style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- 3. GAMIFICATION BENTO ---
+  Widget _buildGamificationBento(
+    BuildContext context,
+    GamificationProvider gamification,
+  ) {
+    return BentoCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Bộ sưu tập",
+                style: Theme.of(
+                  context,
+                ).textTheme.displaySmall?.copyWith(fontSize: 16),
+              ),
+              Text(
+                "${gamification.badges.where((b) => b.isUnlocked).length} / ${gamification.badges.length}",
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.bentoYellow,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: gamification.badges.map((badge) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: badge.isUnlocked
+                              ? AppColors.bentoYellow.withValues(alpha: 0.15)
+                              : Theme.of(
+                                  context,
+                                ).dividerColor.withValues(alpha: 0.05),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          badge.icon,
+                          color: badge.isUnlocked
+                              ? AppColors.bentoYellow
+                              : Theme.of(
+                                  context,
+                                ).dividerColor.withValues(alpha: 0.3),
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        badge.title,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: badge.isUnlocked
+                              ? null
+                              : Theme.of(context).textTheme.bodySmall?.color
+                                    ?.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
-            subtitle: const Text("Nhắc nhở ôn tập hằng ngày"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- 4. UTILITIES BENTO (NOTIFICATION) ---
+  Widget _buildNotifyBento(BuildContext context, NotificationProvider notify) {
+    return BentoCard(
+      onTap: notify.isEnabled
+          ? () async {
+              final time = await showTimePicker(
+                context: context,
+                initialTime:
+                    notify.reminderTime ?? const TimeOfDay(hour: 20, minute: 0),
+              );
+              if (time != null) notify.updateReminderTime(time);
+            }
+          : null,
+      bentoColor: AppColors.bentoMint.withValues(alpha: 0.1),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+              color: AppColors.bentoMint,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              CupertinoIcons.bell_fill,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Nhắc nhở học tập",
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.bentoMint,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  notify.isEnabled
+                      ? (notify.reminderTime?.format(context) ?? "20:00")
+                      : "Đang tắt",
+                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    color: notify.isEnabled
+                        ? AppColors.bentoMint
+                        : Theme.of(context).textTheme.bodySmall?.color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          CupertinoSwitch(
+            activeColor: AppColors.bentoMint,
             value: notify.isEnabled,
             onChanged: (v) => notify.toggleNotification(v),
           ),
-          if (notify.isEnabled) ...[
-            const Divider(indent: 16, endIndent: 16),
-            ListTile(
-              leading: const Icon(CupertinoIcons.clock, color: Colors.blue),
-              title: const Text("Thời gian nhắc"),
-              trailing: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  notify.reminderTime?.format(context) ?? "20:00",
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              onTap: () async {
-                final time = await showTimePicker(
-                  context: context,
-                  initialTime:
-                      notify.reminderTime ??
-                      const TimeOfDay(hour: 20, minute: 0),
-                );
-                if (time != null) notify.updateReminderTime(time);
-              },
-            ),
-          ],
         ],
       ),
     );

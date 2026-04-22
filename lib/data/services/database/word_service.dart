@@ -460,4 +460,14 @@ class WordService {
       }
     }
   }
+   int getTotalMasteredWords() {
+    return _progressBox.values.where((v) {
+      if (v is! Map) return false;
+      return (v['s'] ?? 0) == 4; // Step 4 = Mastered
+    }).length;
+  }
+
+  int getTotalWordsCount() {
+    return _wordBox.length; // Tổng số từ trong DB (Thường là 1562)
+  }
 }
