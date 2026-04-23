@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
@@ -136,7 +137,7 @@ class DetailStatisticalScreen extends StatelessWidget {
         ),
       ),
       title: Text(
-        "Thống kê chi tiết",
+        'stats.header_detail'.tr(),
         style: Theme.of(context).textTheme.displaySmall,
       ),
     );
@@ -154,7 +155,7 @@ class DetailStatisticalScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Tiến độ tổng thể",
+                'stats.overall_progress'.tr(),
                 style: Theme.of(
                   context,
                 ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -176,7 +177,9 @@ class DetailStatisticalScreen extends StatelessWidget {
           const SizedBox(height: 12),
           FittedBox(
             child: Text(
-              "$master / $total từ",
+              'stats.word_count'.tr(
+                args: [master.toString(), total.toString()],
+              ),
               style: Theme.of(
                 context,
               ).textTheme.displayLarge?.copyWith(fontSize: 36),
@@ -196,7 +199,7 @@ class DetailStatisticalScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            "Bạn đã hoàn thành $percent% lộ trình học tập.",
+            'stats.completion_summary'.tr(args: [percent.toString()]),
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],
@@ -215,7 +218,7 @@ class DetailStatisticalScreen extends StatelessWidget {
         Expanded(
           child: _buildMetricCard(
             context,
-            "Đã thuộc",
+            'stats.mastered'.tr(),
             master.toString(),
             AppColors.success,
             CupertinoIcons.checkmark_seal_fill,
@@ -225,7 +228,7 @@ class DetailStatisticalScreen extends StatelessWidget {
         Expanded(
           child: _buildMetricCard(
             context,
-            "Cần ôn",
+            'stats.to_review'.tr(),
             review.toString(),
             AppColors.bentoBlue,
             CupertinoIcons.book_fill,
@@ -235,7 +238,7 @@ class DetailStatisticalScreen extends StatelessWidget {
         Expanded(
           child: _buildMetricCard(
             context,
-            "Lỗi sai",
+            'stats.mistakes'.tr(),
             errors.toString(),
             AppColors.error,
             CupertinoIcons.exclamationmark_circle_fill,
@@ -287,10 +290,10 @@ class DetailStatisticalScreen extends StatelessWidget {
   }
 
   Widget _buildAchievementCard(BuildContext context, int masterCount) {
-    String levelName = "Người mới";
-    if (masterCount >= 200) levelName = "Sơ cấp";
-    if (masterCount >= 500) levelName = "Trung cấp";
-    if (masterCount >= 900) levelName = "Cao cấp";
+    String levelName = 'stats.level_newbie'.tr();
+    if (masterCount >= 200) levelName = 'stats.level_beginner'.tr();
+    if (masterCount >= 500) levelName = 'stats.level_intermediate'.tr();
+    if (masterCount >= 900) levelName = 'stats.level_advanced'.tr();
 
     return BentoCard(
       child: Column(
@@ -309,7 +312,10 @@ class DetailStatisticalScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Text("Achievement", style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            'stats.achievements'.tr(),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           FittedBox(
             child: Text(
               levelName,
@@ -335,7 +341,7 @@ class DetailStatisticalScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Status",
+            'stats.status'.tr(),
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
@@ -343,7 +349,7 @@ class DetailStatisticalScreen extends StatelessWidget {
           const SizedBox(height: 16),
           _buildStatusBar(
             context,
-            "Mastered",
+            'stats.mastered_title'.tr(),
             mastered,
             total,
             AppColors.success,
@@ -351,7 +357,7 @@ class DetailStatisticalScreen extends StatelessWidget {
           const SizedBox(height: 12),
           _buildStatusBar(
             context,
-            "Learning",
+            'stats.learning_title'.tr(),
             learning,
             total,
             AppColors.bentoBlue,
@@ -359,7 +365,7 @@ class DetailStatisticalScreen extends StatelessWidget {
           const SizedBox(height: 12),
           _buildStatusBar(
             context,
-            "Unstarted",
+            'stats.unstarted_title'.tr(),
             unstarted,
             total,
             Theme.of(context).dividerColor,
@@ -413,6 +419,7 @@ class DetailStatisticalScreen extends StatelessWidget {
   }
 
   Widget _buildActivityBarChart(BuildContext context, Box progressBox) {
+    // 🚨 ABSOLUTE LOGIC PRESERVED
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final List<int> counts = List.filled(7, 0);
@@ -440,51 +447,79 @@ class DetailStatisticalScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // LOCALIZATION PRESERVED
           Text(
-            "Hoạt động 7 ngày qua",
-            style: Theme.of(context).textTheme.displaySmall,
+            'stats.last_7_days'.tr(),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           SizedBox(
-            height: 120,
+            height: 140,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.end,
               children: List.generate(7, (index) {
-                final double heightFactor = counts[index] / (maxVal * 1.2);
-                final dayName = [
-                  'T2',
-                  'T3',
-                  'T4',
-                  'T5',
-                  'T6',
-                  'T7',
-                  'CN',
-                ][(now.subtract(Duration(days: 6 - index)).weekday - 1) % 7];
+                final double heightFactor = counts[index] / (maxVal * 1.1);
+                final targetDate = now.subtract(Duration(days: 6 - index));
+                String formatday = 'stats.format'.tr();
+                // GIẢI PHÁP AN TOÀN TUYỆT ĐỐI: Dùng DateFormat
+                // Nó sẽ tự động ra "Mon", "Tue"... dựa theo ngôn ngữ máy mà không bị crash
+                final String dayLabel = DateFormat.E(
+                  formatday,
+                ).format(targetDate);
 
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: FractionallySizedBox(
-                        heightFactor: heightFactor.clamp(0.05, 1.0),
-                        child: Container(
-                          width: 16,
-                          decoration: BoxDecoration(
-                            color: AppColors.bentoBlue,
-                            borderRadius: BorderRadius.circular(4),
+                return Expanded(
+                  child: Column(
+                    children: [
+                      // CỘT BIỂU ĐỒ - GHIM SÁT XUỐNG ĐÁY
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment
+                              .bottomCenter, // Đảm bảo mọc ngược từ dưới lên
+                          child: FractionallySizedBox(
+                            heightFactor: heightFactor.clamp(0.08, 1.0),
+                            child: Container(
+                              width: 18,
+                              decoration: BoxDecoration(
+                                // Gradient nhẹ cho chuẩn Vibrant Bento
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    const Color(0xFF60A5FA), // Light Blue
+                                    const Color(0xFF3B82F6), // Vibrant Blue
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF3B82F6,
+                                    ).withValues(alpha: 0.15),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      dayName,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(fontSize: 10),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      // TÊN NGÀY - NGAY SÁT DƯỚI CHÂN CỘT
+                      Text(
+                        dayLabel,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).hintColor,
+                        ),
+                        maxLines: 1,
+                      ),
+                    ],
+                  ),
                 );
               }),
             ),

@@ -1,187 +1,414 @@
 {
     "welcome": {
-        "title": "FM Dictionary",
+        "title": "Chào mừng",
         "subtitle": "Chào mừng bạn đến với hành trình chinh phục 1500 từ vựng chuyên ngành.",
-        "name_hint": "Tên của bạn là gì?",
+        "name_hint": "Tên bạn là gì?",
+        "name_input": "Nhập tên của bạn tại đây...",
         "start_btn": "Bắt đầu",
+        "theme": "Giao diện",
         "light_mode": "Chế độ sáng",
-        "dark_mode": "Chế độ tối"
+        "dark_mode": "Chế độ tối",
+        "language": "Ngôn ngữ",
+        "start_journey": "Bắt đầu hành trình",
+        "name_required": "Vui lòng nhập tên của bạn"
+    },
+    "sync": {
+        "error_network": "Lỗi kết nối. Ứng dụng sẽ đồng bộ khi có Internet.",
+        "error_cancelled": "Đã hủy thao tác.",
+        "error_login_required": "Bạn cần đăng nhập để đồng bộ dữ liệu.",
+        "error_unknown": "Lỗi hệ thống ({})",
+        "dialog_title": "Đang đồng bộ dữ liệu...",
+        "dialog_subtitle": "Vui lòng không đóng ứng dụng"
     },
     "dashboard": {
-        "good_morning": "Chào buổi sáng,",
-        "quick_action": "HÀNH ĐỘNG NHANH",
+        "hello": "Xin chào,",
+        "daily_goal": "Mục tiêu ngày: ",
+        "quick_action": "THAO TÁC NHANH",
         "continue_title": "Tiếp tục học",
-        "continue_subtitle": "Học tiếp những gì bạn còn dang dở",
-        "review_mistakes": "Ôn tập câu sai",
+        "current_streak": "Ngày",
+        "quiz": "Thử thách",
+        "word_of_day": "TỪ VỰNG HÔM NAY",
+        "vocabulary": "TỪ VỰNG CỦA TÔI",
+        "continue_subtitle": "Tiếp tục từ nơi bạn tạm dừng",
+        "review_mistakes": "Ôn tập lỗi sai",
         "review_mistakes_subtitle": "Xem lại những từ bạn hay nhầm lẫn",
-        "review_mistakes_anouncement": "Không có từ nào cần ôn tập",
-        "review_mistakes_message": "Hiện tại bạn không có từ nào cần ôn tập. Hãy tiếp tục học từ mới nhé!",
+        "review_mistakes_anouncement": "Không có từ cần ôn",
+        "review_mistakes_message": "Bạn hiện không có từ nào cần ôn tập. Hãy tiếp tục học thêm từ mới nhé!",
         "btn_close": "Đóng",
         "daily_test": "Kiểm tra hàng ngày",
         "daily_test_subtitle": "Bài kiểm tra nhanh mỗi ngày",
         "daily_test_message": "Không đủ từ vựng để tạo bài kiểm tra!",
-        "search_hint": "Tìm kiếm trong 1.500 từ..."
+        "search_hint": "Tìm kiếm trong 1.500 từ...",
+        "explore_topics": "Khám phá chủ đề",
+        "explore_desc": "Bắt đầu với các từ vựng cốt lõi theo chủ đề.",
+        "saveword": "Từ đã lưu",
+        "history": "Gần đây",
+        "search": "TÌM NHANH",
+        "search_subtitle": "Tìm kiếm...",
+        "start_learning": "Bắt đầu hành trình",
+        "reminder": "Nhắc nhở học tập",
+        "reminder_desc": "Thông báo hàng ngày",
+        "reminder_time": "Giờ nhắc nhở",
+        "title": "Bảng điều khiển",
+        "mastered_words": "Từ vựng\nđã thuộc",
+        "words_unit": "/ {} từ"
     },
     "navigation": {
         "nav_home": "Trang chủ",
-        "nav_categories": "Danh mục",
-        "nav_review": "Ôn tập",
-        "nav_settings": "Cài đặt"
+        "road_map": "Lộ trình",
+        "dictionary": "Từ điển",
+        "stats": "Thống kê",
+        "profile": "Cá nhân"
     },
-    "quiz": {
-        "title": "Kiểm tra",
-        "no_words": "Không đủ từ vựng để bắt đầu bài kiểm tra.",
-        "question": "Câu hỏi",
-        "instruction": "Từ nào có nghĩa là:",
-        "completed": "Hoàn thành bài kiểm tra!",
-        "score": "Điểm của bạn:",
-        "excellent": "Làm tốt lắm!",
-        "keepPracticing": "Hãy tiếp tục luyện tập nhé!",
-        "backToHome": "QUAY VỀ TRANG CHỦ",
-        "translation_instruction": "Chọn bản dịch đúng cho từ:",
-        "listen_instruction": "Nghe âm thanh và chọn đáp án đúng:"
+    "roadmap": {
+        "roadmap_header": "Lộ trình học tập",
+        "roadmap_title": "Hơn 1500 từ vựng qua từng bước nhỏ",
+        "stage": "Giai đoạn {}",
+        "stage_desc": "{} Từ ({} Bài học)",
+        "lesson_number": "Bài {}",
+        "lesson_topic": "Chủ đề: {}",
+        "skip_test": "Bỏ qua bài học",
+        "study_flashcards": "Học Flashcard",
+        "words_count": "{}/{} từ"
+    },
+    "dictionary": {
+        "title": "Từ điển",
+        "search_placeholder": "Tìm kiếm trong 1.500 từ...",
+        "master_title": "Mức độ thành thạo",
+        "learning_title": "Đã xong {}/{} chủ đề",
+        "word_count": "{}/{} từ",
+        "no_words_found": "Không tìm thấy từ nào.",
+        "study_progress": "Tiến độ học",
+        "progress_unit": "{}/{}",
+        "study_btn": "Học ngay",
+        "quiz_btn": "Kiểm tra",
+        "search_hint": "Tìm kiếm từ vựng..."
     },
     "review": {
-        "title": "ÔN TẬP CÂU SAI",
-        "no_words": "Không có từ nào để ôn tập",
-        "no_words_desc": "Bạn hiện không có từ nào cần ôn tập. Hãy tiếp tục học thêm từ mới!",
-        "quiz_test": "Làm bài kiểm tra",
-        "start_review": "Bắt đầu ôn tập",
-        "empty_state_title": "Đã hoàn thành hết!",
-        "empty_state_message": "Không có từ nào cần chú ý lúc này."
+        "title": "Ôn tập từ vựng",
+        "wrong_count": "{} lỗi",
+        "do_quiz": "Làm kiểm tra",
+        "restudy": "Học lại",
+        "empty_title": "Tuyệt vời!",
+        "empty_desc": "Bạn đã hoàn thành tất cả các từ cần ôn tập hôm nay. Phát huy nhé!",
+        "back_home": "Về trang chủ"
+    },
+    "stats": {
+        "header_detail": "Thống kê chi tiết",
+        "overall_progress": "Tiến độ tổng thể",
+        "word_count": "{}/{} từ",
+        "completion_summary": "Bạn đã hoàn thành {} lộ trình học tập.",
+        "mastered": "Đã thuộc",
+        "to_review": "Cần ôn",
+        "mistakes": "Lỗi sai",
+        "achievements": "Thành tựu",
+        "level_newbie": "Mới bắt đầu",
+        "level_beginner": "Sơ cấp",
+        "level_intermediate": "Trung cấp",
+        "level_advanced": "Cao cấp",
+        "status": "Trạng thái",
+        "mastered_title": "Đã thuộc",
+        "learning_title": "Đang học",
+        "unstarted_title": "Chưa học",
+        "last_7_days": "Hoạt động (7 ngày qua)",
+        "format": "vi_VN",
+        "day_names": [
+            "T2",
+            "T3",
+            "T4",
+            "T5",
+            "T6",
+            "T7",
+            "CN"
+        ]
+    },
+    "quiz": {
+        "config": {
+            "title": "Thiết lập kiểm tra",
+            "topic_section": "Chủ đề từ vựng",
+            "selecting": "Đang chọn",
+            "all_topics": "Tất cả chủ đề",
+            "count_section": "Số lượng câu hỏi",
+            "question_unit": "{}",
+            "mode_section": "Chế độ kiểm tra",
+            "error_min_words": "Cần ít nhất 4 từ vựng để tạo bài kiểm tra!",
+            "choose_topic": "Chọn chủ đề",
+            "start_journey": "Bắt đầu"
+        },
+        "modes": {
+            "en_vi": {
+                "title": "Anh -> Việt",
+                "subtitle": "Đoán nghĩa tiếng Việt"
+            },
+            "vi_en": {
+                "title": "Việt -> Anh",
+                "subtitle": "Dịch sang tiếng Anh"
+            },
+            "listening": {
+                "title": "Nghe",
+                "subtitle": "Nghe và chọn từ đúng"
+            }
+        },
+        "screen": {
+            "question_progress": "Câu {}/{}",
+            "continue_btn": "Tiếp tục",
+            "check_btn": "Kiểm tra"
+        },
+        "results": {
+            "success_title": "Hoàn thành xuất sắc!",
+            "fail_title": "Chưa đạt yêu cầu!",
+            "score_display": "Điểm số: {} / {}",
+            "exit_roadmap": "Quay lại lộ trình",
+            "retry_btn": "Thử lại"
+        }
+    },
+    "gamification": {
+        "new_badge": "Huy hiệu mới: {}"
+    },
+    "streak": {
+        "messages": {
+            "start": "Bắt đầu thôi!",
+            "fire": "Bạn đang\nrực cháy!",
+            "keep": "Giữ vững\nphong độ!",
+            "spark": "Lửa đã\nnhen nhóm!"
+        }
+    },
+    "heatmap": {
+        "title": "Nhịp điệu học tập"
+    },
+    "notifications": {
+        "reminder_title": "Nhắc nhở học tập",
+        "disabled": "Đã tắt"
     },
     "study": {
         "title": "Học tập",
         "known_btn": "Tôi đã biết",
         "unknown_btn": "Tôi chưa biết",
-        "notification_known": "Đã nhớ! +1",
+        "notification_known": "Đã hiểu! +1",
         "notification_unknown": "Cần ôn tập!",
         "meaning": "NGHĨA",
         "example": "VÍ DỤ",
         "listening": "Đang nghe...",
         "analyzing": "AI đang phân tích phát âm của bạn...",
-        "tap_to_speak": "Chạm để nói",
+        "tap_to_speak": "Nhấn để nói",
         "you_said": "Bạn đã nói: ",
         "try_again": "Thử lại",
-        "excellent": "Làm tốt lắm!",
-        "keepPracticing": "Hãy tiếp tục luyện tập nhé!",
-        "again": "Lại",
+        "excellent": "Xuất sắc!",
+        "keepPracticing": "Hãy tiếp tục luyện tập!",
+        "again": "Làm lại",
         "good": "Tốt",
-        "easy": "Dễ"
+        "easy": "Dễ",
+        "action_forgot": "Quên",
+        "action_remembered": "Nhớ",
+        "action_easy": "Dễ"
     },
     "categories": {
-        "title": "Danh mục",
+        "title": "Chủ đề",
         "explore_title": "KHÁM PHÁ CHỦ ĐỀ FM",
         "words_learned": "từ đã học"
     },
     "topic": {
         "words_learned": "từ đã học",
-        "search_words": "Tìm kiếm từ trong chủ đề này...",
-        "study": "HỌC",
+        "search_words": "Tìm từ trong chủ đề này...",
+        "study": "HỌC TẬP",
         "take_quiz": "KIỂM TRA",
-        "not_enough_words": "Không đủ từ vựng để bắt đầu kiểm tra. Bạn mới có ${0} từ trong chủ đề này."
+        "not_enough_words": "Không đủ từ để bắt đầu kiểm tra. Bạn mới có ${0} từ trong chủ đề này."
     },
     "search": {
         "search_placeholder": "Tìm kiếm trong 1.500 từ...",
-        "no_results": "Không tìm thấy kết quả.",
-        "history": "Lịch sử tìm kiếm",
-        "clear_history": "Xóa",
-        "clear_history_confirm": "Bạn có chắc chắn muốn xóa lịch sử tìm kiếm không? Hành động này không thể hoàn tác.",
+        "clear_history_confirm": "Bạn có chắc muốn xóa lịch sử tìm kiếm? Hành động này không thể hoàn tác.",
         "clear_history_success": "Đã xóa lịch sử tìm kiếm!",
         "clear_history_cancelled": "Đã hủy xóa lịch sử.",
-        "no_history": "Không có lịch sử tìm kiếm."
-    },
-    "word_detail": {
-        "meaning": "NGHĨA",
-        "example": "VÍ DỤ"
+        "no_history": "Không có lịch sử tìm kiếm.",
+        "title": "Tìm kiếm",
+        "hint": "Tìm từ vựng...",
+        "history": "Lịch sử & Gợi ý",
+        "clear_history": "Xóa lịch sử",
+        "initial_prompt": "Nhập từ vựng để tìm kiếm...",
+        "no_results": "Không tìm thấy kết quả cho \"{}\"",
+        "no_results_simple": "Không tìm thấy kết quả",
+        "recent": "Tìm kiếm gần đây"
     },
     "settings": {
-        "title": "CÀI ĐẶT",
-        "profile": "HỒ SƠ",
-        "appearance": "GIAO DIỆN",
-        "audio": "ÂM THANH",
-        "profile_name": "Tên người dùng",
-        "edit_name": "Chỉnh sửa tên",
+        "title": "Cài đặt",
+        "daily_goal": "Mục tiêu ngày",
+        "daily_goal_label": "Mục tiêu học tập",
+        "words_unit": "{} từ",
+        "appearance": "Giao diện",
+        "audio": "Âm thanh",
         "language": "Ngôn ngữ",
-        "title_theme": "GIAO DIỆN",
         "dark_mode": "Chế độ tối",
-        "reset": "LÀM MỚI TIẾN TRÌNH",
-        "reset_desc": "Xóa toàn bộ lịch sử học tập",
-        "reset_btn": "Xóa tất cả tiến trình?",
-        "reset_confirm": "Hành động này sẽ xóa toàn bộ lịch sử học tập của bạn và không thể hoàn tác. Bạn có chắc chắn muốn tiếp tục?",
-        "reset_btn_cancel": "HỦY",
-        "reset_btn_confirm": "XÓA",
-        "reset_success": "Đã xóa toàn bộ tiến trình thành công!",
-        "reset_cancelled": "Đã hủy yêu cầu xóa tiến trình.",
-        "cancel": "Hủy",
-        "confirm": "Xác nhận",
-        "save": "Lưu",
-        "tts_speed": "Tốc độ đọc"
+        "hard_mode": "Chế độ khó",
+        "tts_speed": "Tốc độ đọc",
+        "reset_btn": "Xóa dữ liệu",
+        "reset_warning_desc": "Tất cả tiến độ học tập sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác.",
+        "reset_confirm_btn": "Có, xóa tất cả",
+        "reset_success_msg": "Đã xóa tiến độ học tập thành công.",
+        "edit_name": "Sửa tên",
+        "name_hint": "Nhập tên",
+        "profile_desc": "Học viên xuất sắc",
+        "danger_zone": "Vùng nguy hiểm",
+        "version": "Phiên bản {}"
+    },
+    "saved": {
+        "title": "Từ đã lưu",
+        "study_banner": "Bạn có {} từ cần ôn tập",
+        "study_btn": "Học ngay",
+        "search_hint": "Tìm trong từ đã lưu...",
+        "empty_title": "Chưa có từ đã lưu",
+        "empty_desc": "Lưu lại những từ quan trọng để ôn tập sau nhé!",
+        "explore_btn": "Khám phá từ mới",
+        "no_results": "Không tìm thấy kết quả cho '{}'"
     },
     "widget": {
         "search_placeholder": "Tìm kiếm trong 1.500 từ...",
         "progress_title": "Tiến độ tổng thể",
         "words": "từ",
-        "words_available": "từ có sẵn"
+        "words_available": "từ hiện có"
+    },
+    "word_detail": {
+        "title": "Chi tiết từ vựng",
+        "context_title": "Giải thích & Ngữ cảnh",
+        "us_accent": "🇺🇸 Mỹ",
+        "uk_accent": "🇬🇧 Anh"
     },
     "sidebar": {
+        "edit": "Sửa hồ sơ",
         "guest": "Khách",
         "login_desc": "Đăng nhập để đồng bộ dữ liệu",
         "no_name": "Người dùng",
         "profile": "Hồ sơ",
-        "sync": "Đồng bộ tiến trình (Sao lưu)",
-        "sync_success": "Đã đồng bộ lên đám mây thành công!",
+        "sync": "Đồng bộ tiến độ (Sao lưu)",
+        "sync_success": "Đồng bộ đám mây thành công!",
         "sync_fail": "Đồng bộ thất bại: ",
-        "feedback": "Phản hồi & Hỗ trợ",
+        "feedback": "Góp ý & Hỗ trợ",
         "share": "Chia sẻ ứng dụng",
         "privacy": "Chính sách bảo mật",
         "terms": "Điều khoản dịch vụ",
-        "login": "Đăng nhập với Google",
+        "login": "Đăng nhập bằng Email",
         "logout": "Đăng xuất",
         "about": "Về chúng tôi",
-        "settings": "Cài đặt"
+        "settings": "Cài đặt",
+        "history": "Lịch sử",
+        "saved": "Từ đã lưu",
+        "smart_review": "Ôn tập thông minh",
+        "login_required_title": "Yêu cầu đăng nhập",
+        "sync_description": "Vui lòng đăng nhập để sử dụng tính năng đồng bộ đám mây.",
+        "btn_later": "Để sau",
+        "btn_login": "Đăng nhập ngay"
     },
     "calendar": {
         "title": "Thông báo học tập",
-        "notification_1": "Đã đến giờ ôn tập rồi!",
-        "notification_2": "Đừng quên dành thời gian ôn lại từ vựng nhé!",
+        "notification_1": "Đến giờ học rồi!",
+        "notification_2": "Đừng quên dành thời gian ôn tập từ vựng nhé!",
         "notifications": "Nhận thông báo học tập",
-        "turn_on_notify": "Hãy bật thông báo để được nhắc nhở việc luyện tập từ vựng hàng ngày!",
-        "permission_denied": "Bạn đã chặn quyền thông báo. Vui lòng mở Cài đặt để cấp quyền.",
+        "turn_on_notify": "Bật thông báo để được nhắc nhở luyện tập từ vựng mỗi ngày!",
+        "permission_denied": "Bạn đã chặn thông báo. Vui lòng vào Cài đặt để cấp quyền.",
         "reminder_time": "Giờ nhắc nhở hàng ngày",
         "system_active": "Theo giờ hệ thống",
-        "system_active_desc": "Nhận thông báo dựa trên cài đặt thời gian trên thiết bị của bạn.",
-        "custom_time": "Tùy chỉnh giờ"
+        "system_active_desc": "Nhận thông báo dựa trên cài đặt thời gian của thiết bị.",
+        "custom_time": "Giờ tùy chỉnh"
     },
-   
-    "quiz_config": {
-        "config_title": "Cài đặt bài kiểm tra",
-        "select_topic": "Chọn chủ đề",
-        "select_count": "Số lượng câu hỏi",
-        "listening_mode": "Chế độ luyện nghe",
-        "listening_mode_desc": "Nghe âm thanh và chọn đáp án đúng, ẩn từ tiếng Anh.",
-        "start_btn": "Bắt đầu kiểm tra",
-        "listen_hint": "Nhấn vào loa để nghe lại",
-        "select_mode": "Chọn chế độ",
-        "mode_en_vi": "Anh -> Việt",
-        "mode_vi_en": "Việt -> Anh",
-        "mode_listening": "Chỉ nghe",
-        "not_enough_words": "Chủ đề này không đủ từ vựng (yêu cầu ít nhất 4 từ)",
-        "topic_all": "Tất cả từ vựng",
-        "topic_review": "Từ cần ôn tập",
-        "count_suffix": "Câu hỏi",
-        "all": "Tất cả"
+    "auth": {
+        "profile": {
+            "login_welcome_title": "Chào mừng trở lại!",
+            "login_welcome_desc": "Đăng nhập để tiếp tục hành trình chinh phục từ vựng.",
+            "benefit_sync_title": "Đồng bộ đám mây",
+            "benefit_sync_desc": "Lưu trữ dữ liệu và học tập liền mạch trên mọi thiết bị.",
+            "benefit_track_title": "Theo dõi tiến độ",
+            "benefit_track_desc": "Xem lộ trình học tập và thống kê chi tiết.",
+            "benefit_award_title": "Thành tựu & Huy hiệu",
+            "benefit_award_desc": "Nhận phần thưởng cho sự chăm chỉ và nỗ lực hàng ngày.",
+            "go_back": "Quay lại"
+        },
+        "validation": {
+            "fill_all": "Vui lòng điền đầy đủ các trường",
+            "pass_length": "Mật khẩu mới phải có ít nhất 6 ký tự",
+            "pass_mismatch": "Mật khẩu xác nhận không khớp"
+        },
+        "change_password": {
+            "title": "Đổi mật khẩu",
+            "header": "Thay đổi mật khẩu mới",
+            "current_hint": "Mật khẩu hiện tại",
+            "new_hint": "Mật khẩu mới",
+            "confirm_hint": "Xác nhận mật khẩu mới",
+            "update_btn": "Cập nhật mật khẩu",
+            "success_title": "Thành công!",
+            "success_msg": "Mật khẩu của bạn đã được thay đổi an toàn."
+        },
+        "forgot_password": {
+            "title": "Đặt lại mật khẩu",
+            "description": "Nhập email để nhận liên kết đặt lại mật khẩu.",
+            "email_hint": "Email đã đăng ký",
+            "send_btn": "Gửi yêu cầu",
+            "email_sent_title": "Đã gửi Email",
+            "email_sent_msg": "Vui lòng kiểm tra hộp thư để tiến hành khôi phục mật khẩu."
+        },
+        "register": {
+            "title": "Tạo tài khoản mới",
+            "header": "Đăng ký",
+            "description": "Bắt đầu hành trình học tập cùng hàng ngàn học viên khác.",
+            "name_hint": "Họ và tên",
+            "email_hint": "Email",
+            "pass_hint": "Mật khẩu",
+            "btn": "Đăng ký",
+            "already_have_acc": "Đã có tài khoản?",
+            "login_now": "Đăng nhập"
+        }
     },
     "profile": {
         "title": "Hồ sơ",
-        "not_logged_in": "Vui lòng đăng nhập để xem hồ sơ",
-        "learned": "Đã học",
-        "review": "Cần ôn tập",
-        "join_date": "Ngày tham gia",
-        "delete_account": "Xóa tài khoản vĩnh viễn",
-        "delete_confirm_title": "Xác nhận xóa tài khoản",
-        "delete_confirm_desc": "Hành động này sẽ xóa toàn bộ tiến trình học tập của bạn trên đám mây. Bạn có chắc chắn muốn tiếp tục?",
-        "delete_error": "Vui lòng đăng xuất và đăng nhập lại trước khi xóa tài khoản.",
-        "delete_success": "Tài khoản của bạn đã được xóa thành công!"
+        "logout": "Đăng xuất",
+        "logout_confirm": "Bạn có chắc chắn muốn đăng xuất?",
+        "badges": "Huy hiệu",
+        "edit_info": "Sửa thông tin",
+        "settings": "Cài đặt",
+        "change_password": "Đổi mật khẩu",
+        "update_avatar": "Cập nhật ảnh đại diện",
+        "choose_gallery": "Chọn từ thư viện",
+        "remove_avatar": "Xóa ảnh",
+        "edit_name": "Sửa tên",
+        "enter_name_hint": "Nhập tên của bạn",
+        "stats": {
+            "streak": "Chuỗi ngày",
+            "saved_words": "Từ đã lưu"
+        }
+    },
+    "common": {
+        "cancel": "Hủy",
+        "save": "Lưu",
+        "all": "Tất cả",
+        "exit": "Thoát",
+        "continue": "Tiếp tục"
+    },
+    "streak_celebration": {
+        "title": "Tuyệt vời!",
+        "reached_prefix": "Bạn đã đạt chuỗi ",
+        "day_count": "{} ngày",
+        "reached_suffix": " học liên tiếp!",
+        "subtitle": "Hãy giữ vững phong độ nhé 🔥"
+    },
+    "logout": {
+        "title": "Đăng xuất",
+        "logout_confirm": "Bạn có chắc chắn muốn đăng xuất?",
+        "confirm": "Đăng xuất",
+        "cancel": "Hủy"
+    },
+    "login": {
+        "welcome_back": "Chào mừng trở lại!",
+        "journey_desc": "Tiếp tục hành trình chinh phục tiếng Anh của bạn thôi nào.",
+        "login_button": "Đăng nhập",
+        "forgot_password": "Quên mật khẩu?",
+        "no_account": "Chưa có tài khoản?",
+        "register_now": "Đăng ký ngay",
+        "email_hint": "Email",
+        "password_hint": "Mật khẩu",
+        "validation_error": "Vui lòng nhập email và mật khẩu."
+    },
+    "history": {
+        "title": "Lịch sử học tập",
+        "empty_title": "Chưa có hoạt động",
+        "empty_desc": "Bắt đầu hành trình chinh phục từ vựng ngay hôm nay!",
+        "explore_btn": "Khám phá ngay"
     }
 }

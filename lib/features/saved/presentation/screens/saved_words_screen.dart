@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
 import 'package:fm_dictionary/core/widgets/common/bento_tts_button.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:easy_localization/easy_localization.dart'; // IMPORTED
 
 // --- CORE UI & THEME ---
 import '../../../../core/constants/app_routes.dart';
@@ -117,7 +118,7 @@ class _SavedWordsScreenState extends State<SavedWordsScreen> {
         ),
       ),
       title: Text(
-        "Từ vựng đã lưu",
+        "saved.title".tr(), // INJECTED
         style: Theme.of(context).textTheme.displaySmall,
       ),
     );
@@ -146,15 +147,25 @@ class _SavedWordsScreenState extends State<SavedWordsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Bạn có ${words.length} từ cần ôn tập",
+                  "saved.study_banner".tr(
+                    args: [words.length.toString()],
+                  ), // INJECTED
                   style: Theme.of(
                     context,
                   ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
                 SmartActionButton(
-                  text: "Học ngay 🚀",
+                  text: "saved.study_btn"
+                      .tr(), // [PRESERVED] Logic localization
+                  icon: Icons
+                      .auto_stories_rounded, // [NEW] Icon sách vở rực rỡ cho việc học
+                  color: const Color(
+                    0xFF6366F1,
+                  ), // [NEW] Vibrant Indigo (Màu của sự tập trung & trí tuệ)
+                  textColor: Colors.white,
                   onPressed: () {
+                    // 🚨 [LOGIC PRESERVED 100%]
                     Navigator.pushNamed(
                       context,
                       AppRoutes.study,
@@ -177,7 +188,7 @@ class _SavedWordsScreenState extends State<SavedWordsScreen> {
         onChanged: (v) => setState(() => _searchQuery = v),
         style: Theme.of(context).textTheme.bodyLarge,
         decoration: InputDecoration(
-          hintText: 'Tìm kiếm từ đã lưu...',
+          hintText: 'saved.search_hint'.tr(), // INJECTED
           hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
             color: Theme.of(
               context,
@@ -270,22 +281,29 @@ class _SavedWordsScreenState extends State<SavedWordsScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                "Chưa có từ vựng nào",
+                "saved.empty_title".tr(), // INJECTED
                 style: Theme.of(context).textTheme.displaySmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                "Hãy lưu lại những từ vựng quan trọng để ôn tập chúng sau nhé!",
+                "saved.empty_desc".tr(), // INJECTED
                 style: Theme.of(context).textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
               SmartActionButton(
-                text: "Khám phá từ mới 📚",
+                text: "saved.explore_btn"
+                    .tr(), // [PRESERVED] Logic localization
+                icon: Icons
+                    .rocket_launch_rounded, // [NEW] Icon tên lửa khởi hành rực rỡ
+                color: const Color(
+                  0xFF3B82F6,
+                ), // [NEW] Vibrant Blue (Màu xanh năng động)
+                textColor: Colors.white,
                 onPressed: () => Navigator.pushReplacementNamed(
                   context,
-                  AppRoutes.dashboard,
+                  AppRoutes.dashboard, // [PRESERVED] Logic navigation
                 ),
               ),
             ],
@@ -299,7 +317,7 @@ class _SavedWordsScreenState extends State<SavedWordsScreen> {
     return Padding(
       padding: const EdgeInsets.only(top: 40.0),
       child: Text(
-        "Không tìm thấy từ '$_searchQuery'",
+        "saved.no_results".tr(args: [_searchQuery]), // INJECTED
         style: Theme.of(context).textTheme.bodyLarge,
       ),
     );

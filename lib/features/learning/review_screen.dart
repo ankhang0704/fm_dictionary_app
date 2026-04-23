@@ -4,6 +4,7 @@ import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
 import 'package:fm_dictionary/features/home/presentation/providers/home_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart'; // IMPORTED
 
 // --- CORE / THEMES ---
 import '../../../../core/constants/app_routes.dart';
@@ -81,7 +82,7 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
         ),
       ),
       title: Text(
-        'Ôn tập từ vựng',
+        'review.title'.tr(), // INJECTED
         style: Theme.of(context).textTheme.displaySmall,
       ),
     );
@@ -157,7 +158,7 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        '$wrongCount lỗi',
+                        'review.wrong_count'.tr(args: [wrongCount.toString()]), // INJECTED
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.error,
                           fontWeight: FontWeight.bold,
@@ -188,31 +189,40 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
       left: 0,
       right: 0,
       child: Container(
+        // [ANTI-OVERFLOW] Padding được tính toán để tránh dính sát vào Home Indicator của iPhone
         padding: EdgeInsets.fromLTRB(
-          AppLayout.defaultPadding,
           24,
-          AppLayout.defaultPadding,
-          MediaQuery.of(context).padding.bottom + 24,
+          24,
+          24,
+          MediaQuery.of(context).padding.bottom + 20,
         ),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: Theme.of(
+            context,
+          ).cardColor, // Sử dụng màu card để đồng bộ với Bento UI
           borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppLayout.bentoBorderRadius),
+            top: Radius.circular(32.0), // Bo góc lớn chuẩn Bento
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -4),
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 20,
+              offset: const Offset(
+                0,
+                -10,
+              ), // Đổ bóng ngược lên trên tạo chiều sâu mượt mà
             ),
           ],
         ),
         child: Row(
           children: [
+            // Nút LÀM QUIZ (Vibrant Blue)
             Expanded(
               child: SmartActionButton(
-                text: "Làm Quiz",
-                // Passing a specific color can make it look like the "glass" variant but flat
+                text: 'review.do_quiz'.tr(), // [LOCALIZATION PRESERVED]
+                icon: Icons.quiz_rounded,
+                color: const Color(0xFF3B82F6), // Vibrant Blue
+                textColor: Colors.white,
                 onPressed: () => Navigator.pushNamed(
                   context,
                   AppRoutes.quizConfig,
@@ -221,10 +231,16 @@ class _SmartReviewScreenState extends State<SmartReviewScreen> {
               ),
             ),
             const SizedBox(width: 16),
+
+            // Nút ÔN TẬP (Vibrant Indigo)
             Expanded(
               child: SmartActionButton(
-                text: "Học Lại",
+                text: 'review.restudy'.tr(), // [LOCALIZATION PRESERVED]
+                icon: Icons.auto_stories_rounded,
+                color: const Color(0xFF6366F1), // Vibrant Indigo
+                textColor: Colors.white,
                 onPressed: () {
+                  // 🚨 [LOGIC PRESERVED 100%]
                   final words = context
                       .read<HomeProvider>()
                       .getWordsByTopicName('Review');
@@ -268,19 +284,19 @@ class _EmptyReviewState extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             Text(
-              "Tuyệt vời!",
+              'review.empty_title'.tr(), // INJECTED
               style: Theme.of(context).textTheme.displayMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
-              "Bạn đã hoàn thành tất cả các từ cần ôn tập cho hôm nay. Hãy tiếp tục duy trì phong độ này nhé!",
+              'review.empty_desc'.tr(), // INJECTED
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 40),
             SmartActionButton(
-              text: "Quay về Trang chủ",
+              text: 'review.back_home'.tr(), // INJECTED
               onPressed: () =>
                   Navigator.pushReplacementNamed(context, AppRoutes.dashboard),
             ),

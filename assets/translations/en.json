@@ -37,55 +37,140 @@
         "history": "Recent",
         "search": "QUICK SEARCH",
         "search_subtitle": "Search...",
-        "ai_features": "Powerful AI Features",
-        "whisper_title": "Whisper AI - Listening",
-        "whisper_desc": "Speech to text with high accuracy using AI.",
-        "tts_title": "Natural TTS - Pronunciation",
-        "tts_desc": "Native-like pronunciation for all words.",
-        "continue_study": "Continue Learning",
-        "recent_history": "Recent History",
-        "quick_actions": "Quick Actions",
-        "no_history": "No history yet",
-        "start_learning": "Start your journey"
+        "start_learning": "Start your journey",
+        "reminder": "Study Reminders",
+        "reminder_desc": "Daily Notifications",
+        "reminder_time": "Reminder Time",
+        "title": "Dashboard",
+        "mastered_words": "Mastered\nVocabulary",
+        "words_unit": "/ {} words"
     },
     "navigation": {
         "nav_home": "Home",
-        "road_map":"Roadmap",
+        "road_map": "Roadmap",
         "dictionary": "Dictionary",
         "stats": "Stats",
         "profile": "Profile"
     },
-    "roadmap":
-    {
+    "roadmap": {
         "roadmap_header": "Learning Roadmap",
-        "roadmap_title":"1500+ vocabulary words in bite-sized steps",
-        "stage":"Stage",
-        "lesson_number":"Lesson {}",
-        "lesson_topic":"Topic: {}",
-        "skip_test":"Skip Lesson",
-        "study_flashcards":"Study Flashcards"
+        "roadmap_title": "1500+ vocabulary words in bite-sized steps",
+        "stage": "Stage {}",
+        "stage_desc": "{} Words ({} Lessons)",
+        "lesson_number": "Lesson {}",
+        "lesson_topic": "Topic: {}",
+        "skip_test": "Skip Lesson",
+        "study_flashcards": "Study Flashcards",
+        "words_count": "{}/{} words"
     },
-    "quiz": {
-        "title": "Quiz",
-        "no_words": "Not enough words to start a quiz.",
-        "question": "Question",
-        "instruction": "Which word means:",
-        "completed": "Quiz Completed!",
-        "score": "Your Score:",
-        "excellent": "Excellent work!",
-        "keepPracticing": "Keep practicing!",
-        "backToHome": "BACK TO HOME",
-        "translation_instruction": "Select the correct translation for the word:",
-        "listen_instruction": "Listen to the audio and select the correct answer:"
+    "dictionary": {
+        "title": "Dictionary",
+        "search_placeholder": "Search 1,500 words...",
+        "master_title": "Mastery Level",
+        "learning_title": "Completed {}/{} Topics",
+        "word_count": "{}/{} words",
+        "no_words_found": "No words found.",
+        "study_progress": "Study Progress",
+        "progress_unit": "{}/{}",
+        "study_btn": "Study",
+        "quiz_btn": "Quiz",
+        "search_hint": "Search vocabulary..."
     },
     "review": {
-        "title": "REVIEW MISTAKES",
-        "no_words": "No Words to Review",
-        "no_words_desc": "You don't have any words that need review right now. Keep learning new words!",
-        "quiz_test": "Quiz Test",
-        "start_review": "Start Review",
-        "empty_state_title": "All caught up!",
-        "empty_state_message": "No words need attention right now."
+        "title": "Vocabulary Review",
+        "wrong_count": "{} errors",
+        "do_quiz": "Take Quiz",
+        "restudy": "Re-study",
+        "empty_title": "Fantastic!",
+        "empty_desc": "You have finished all the words that needed reviewing for today. Keep up the great work!",
+        "back_home": "Back to Home"
+    },
+    "stats": {
+        "header_detail": "Detailed Statistics",
+        "overall_progress": "Overall Progress",
+        "word_count": "{}/{} words",
+        "completion_summary": "You have completed {} of your learning path.",
+        "mastered": "Mastered",
+        "to_review": "To Review",
+        "mistakes": "Mistakes",
+        "achievements": "Achievements",
+        "level_newbie": "Newbie",
+        "level_beginner": "Beginner",
+        "level_intermediate": "Intermediate",
+        "level_advanced": "Advanced",
+        "status": "Status",
+        "mastered_title": "Mastered",
+        "learning_title": "Learning",
+        "unstarted_title": "Unstarted",
+        "last_7_days": "Activity (Last 7 Days)",
+        "format": "en_US",
+        "day_names": [
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat",
+            "Sun"
+        ]
+    },
+    "quiz": {
+        "config": {
+            "title": "Quiz Configuration",
+            "topic_section": "Vocabulary Topics",
+            "selecting": "Selecting",
+            "all_topics": "All Topics",
+            "count_section": "Number of Questions",
+            "question_unit": "{}",
+            "mode_section": "Quiz Mode",
+            "error_min_words": "Need at least 4 words to create a quiz!",
+            "choose_topic": "Select Topic",
+            "start_journey": "Start Journey"
+        },
+        "modes": {
+            "en_vi": {
+                "title": "English -> Vietnamese",
+                "subtitle": "Guess the Vietnamese meaning"
+            },
+            "vi_en": {
+                "title": "Vietnamese -> English",
+                "subtitle": "Translate from Vietnamese"
+            },
+            "listening": {
+                "title": "Listening",
+                "subtitle": "Listen and pick the correct word"
+            }
+        },
+        "screen": {
+            "question_progress": "Question {}/{}",
+            "continue_btn": "Continue",
+            "check_btn": "Check"
+        },
+        "results": {
+            "success_title": "Excellent Completion!",
+            "fail_title": "Not passed yet!",
+            "score_display": "Score: {} / {}",
+            "exit_roadmap": "Back to Roadmap",
+            "retry_btn": "Retry Quiz"
+        }
+    },
+    "gamification": {
+        "new_badge": "New Badge: {}"
+    },
+    "streak": {
+        "messages": {
+            "start": "Let's start!",
+            "fire": "You are on\nfire!",
+            "keep": "Keep it\nup!",
+            "spark": "Spark is\nignited!"
+        }
+    },
+    "heatmap": {
+        "title": "Learning Rhythm"
+    },
+    "notifications": {
+        "reminder_title": "Study Reminder",
+        "disabled": "Disabled"
     },
     "study": {
         "title": "Study",
@@ -123,40 +208,49 @@
     },
     "search": {
         "search_placeholder": "Search 1,500 words...",
-        "no_results": "No results found.",
-        "history": "Search History",
-        "clear_history": "Clear",
         "clear_history_confirm": "Are you sure you want to clear your search history? This action cannot be undone.",
         "clear_history_success": "Search history cleared successfully!",
         "clear_history_cancelled": "Search history clear cancelled.",
-        "no_history": "No search history available."
-    },
-    "word_detail": {
-        "meaning": "MEANING",
-        "example": "EXAMPLE"
+        "no_history": "No search history available.",
+        "title": "Search",
+        "hint": "Search words...",
+        "history": "History & Suggestions",
+        "clear_history": "Clear History",
+        "initial_prompt": "Enter vocabulary to search...",
+        "no_results": "No results found for \"{}\"",
+        "no_results_simple": "No results found",
+        "recent": "Recent Searches"
     },
     "settings": {
-        "title": "SETTINGS",
-        "profile": "PROFILE",
-        "appearance": "APPEARANCE",
-        "audio": "AUDIO",
-        "profile_name": "User Name",
-        "edit_name": "Edit Name",
+        "title": "Settings",
+        "daily_goal": "Daily Goal",
+        "daily_goal_label": "Learning Goal",
+        "words_unit": "{} words",
+        "appearance": "Appearance",
+        "audio": "Audio",
         "language": "Language",
-        "title_theme": "APPEARANCE",
         "dark_mode": "Dark Mode",
-        "reset": "RESET PROGRESS",
-        "reset_desc": "Clear all learning history",
-        "reset_btn": "Reset All Progress?",
-        "reset_confirm": "This will clear all your learning history and cannot be undone. Are you sure you want to proceed?",
-        "reset_btn_cancel": "CANCEL",
-        "reset_btn_confirm": "RESET",
-        "reset_success": "All progress has been reset successfully!",
-        "reset_cancelled": "Progress reset cancelled.",
-        "cancel": "Cancel",
-        "confirm": "Confirm",
-        "save": "Save",
-        "tts_speed": "Reading Speed"
+        "hard_mode": "Hard Mode",
+        "tts_speed": "TTS Speed",
+        "reset_btn": "Reset Data",
+        "reset_warning_desc": "All your learning progress will be permanently deleted. This action cannot be undone.",
+        "reset_confirm_btn": "Yes, Reset Everything",
+        "reset_success_msg": "Progress has been reset successfully.",
+        "edit_name": "Edit Name",
+        "name_hint": "Enter name",
+        "profile_desc": "Excellent Learner",
+        "danger_zone": "Danger Zone",
+        "version": "Version {}"
+    },
+    "saved": {
+        "title": "Saved Words",
+        "study_banner": "You have {} words to review",
+        "study_btn": "Study Now",
+        "search_hint": "Search saved words...",
+        "empty_title": "No Saved Words Yet",
+        "empty_desc": "Save important words to review them later!",
+        "explore_btn": "Explore New Words",
+        "no_results": "No results found for '{}'"
     },
     "widget": {
         "search_placeholder": "Search 1,500 words...",
@@ -164,7 +258,14 @@
         "words": "words",
         "words_available": "words available"
     },
+    "word_detail": {
+        "title": "Word Detail",
+        "context_title": "Explanation & Context",
+        "us_accent": "🇺🇸 US",
+        "uk_accent": "🇬🇧 UK"
+    },
     "sidebar": {
+        "edit": "Edit Profile",
         "guest": "Guest",
         "login_desc": "Log in to sync your data",
         "no_name": "User",
@@ -179,7 +280,14 @@
         "login": "Login with Email",
         "logout": "Logout",
         "about": "About Us",
-        "settings": "Settings"
+        "settings": "Settings",
+        "history": "History",
+        "saved": "Saved Words",
+        "smart_review": "Smart Review",
+        "login_required_title": "Login Required",
+        "sync_description": "Please log in to use the cloud synchronization feature.",
+        "btn_later": "Maybe Later",
+        "btn_login": "Login Now"
     },
     "calendar": {
         "title": "Study Notifications",
@@ -193,35 +301,114 @@
         "system_active_desc": "Receive notifications based on your device's current time settings.",
         "custom_time": "Custom Time"
     },
-    "quiz_config": {
-        "config_title": "Quiz Settings",
-        "select_topic": "Select Topic",
-        "select_count": "Number of Questions",
-        "listening_mode": "Listening Practice Mode",
-        "listening_mode_desc": "Listen to the audio and select the correct answer, hiding the English word.",
-        "start_btn": "Start Quiz",
-        "listen_hint": "Press the speaker to listen again",
-        "select_mode": "Select Mode",
-        "mode_en_vi": "English -> Vietnamese",
-        "mode_vi_en": "Vietnamese -> English",
-        "mode_listening": "Listening Only",
-        "not_enough_words": "This topic does not have enough vocabulary (at least 4 words required)",
-        "topic_all": "All Vocabulary",
-        "topic_review": "Words to Review",
-        "count_suffix": "Questions",
-        "all": "All"
+    "auth": {
+        "profile": {
+            "login_welcome_title": "Welcome Back!",
+            "login_welcome_desc": "Log in to continue your vocabulary mastery journey.",
+            "benefit_sync_title": "Cloud Sync",
+            "benefit_sync_desc": "Save your data and study seamlessly across all devices.",
+            "benefit_track_title": "Track Progress",
+            "benefit_track_desc": "View your learning path and detailed mastery statistics.",
+            "benefit_award_title": "Achievements & Badges",
+            "benefit_award_desc": "Earn rewards for your hard work and daily efforts.",
+            "go_back": "Go Back"
+        },
+        "validation": {
+            "fill_all": "Please fill in all fields",
+            "pass_length": "New password must be at least 6 characters",
+            "pass_mismatch": "Passwords do not match"
+        },
+        "change_password": {
+            "title": "Change Password",
+            "header": "Change to a New Password",
+            "current_hint": "Current Password",
+            "new_hint": "New Password",
+            "confirm_hint": "Confirm New Password",
+            "update_btn": "Update Password",
+            "success_title": "Success!",
+            "success_msg": "Your password has been changed securely."
+        },
+        "forgot_password": {
+            "title": "Reset Password",
+            "description": "Enter your email to receive a password reset link.",
+            "email_hint": "Registered Email",
+            "send_btn": "Send Request",
+            "email_sent_title": "Email Sent",
+            "email_sent_msg": "Please check your inbox to proceed with password recovery."
+        },
+        "register": {
+            "title": "Create New Account",
+            "header": "Sign Up",
+            "description": "Start your learning journey with thousands of other students.",
+            "name_hint": "Full Name",
+            "email_hint": "Email",
+            "pass_hint": "Password",
+            "btn": "Register",
+            "already_have_acc": "Already have an account?",
+            "login_now": "Login"
+        }
     },
     "profile": {
         "title": "Profile",
-        "not_logged_in": "Please log in to view your profile",
-        "learned": "Learned",
-        "review": "To Review",
-        "join_date": "Join Date",
-        "delete_account": "Delete Account Permanently",
-        "delete_confirm_title": "Confirm Account Deletion",
-        "delete_confirm_desc": "This action will delete all your learning progress on the cloud. Are you sure you want to proceed?",
-        "delete_error": "Please log out and log back in before deleting your account.",
-        "delete_success": "Your account has been deleted successfully!"
+        "logout": "Logout",
+        "logout_confirm": "Are you sure you want to log out?",
+        "badges": "Badges",
+        "edit_info": "Edit Information",
+        "settings": "Settings",
+        "change_password": "Change Password",
+        "update_avatar": "Update Avatar",
+        "choose_gallery": "Choose from Gallery",
+        "remove_avatar": "Remove Avatar",
+        "edit_name": "Edit Name",
+        "enter_name_hint": "Enter your name",
+        "stats": {
+            "streak": "Streak",
+            "saved_words": "Saved Words"
+        }
+    },
+    "common": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "all": "All",
+        "exit": "Exit",
+        "continue": "Continue"
+    },
+    "streak_celebration": {
+        "title": "Amazing!",
+        "reached_prefix": "You have reached a ",
+        "day_count": "{} day",
+        "reached_suffix": " study streak!",
+        "subtitle": "Keep it up 🔥"
+    },
+    "logout": {
+        "title": "Logout",
+        "logout_confirm": "Are you sure you want to log out?",
+        "confirm": "Logout",
+        "cancel": "Cancel"
+    },
+    "login": {
+        "welcome_back": "Welcome Back!",
+        "journey_desc": "Let's continue your journey to mastering English.",
+        "login_button": "Login",
+        "forgot_password": "Forgot Password?",
+        "no_account": "Don't have an account?",
+        "register_now": "Sign up now",
+        "email_hint": "Email",
+        "password_hint": "Password",
+        "validation_error": "Please enter your email and password."
+    },
+    "history": {
+        "title": "Learning History",
+        "empty_title": "No Activity Yet",
+        "empty_desc": "Start your vocabulary mastery journey today!",
+        "explore_btn": "Explore Now"
+    },
+    "sync": {
+        "error_network": "Network error. App will sync when Internet is available.",
+        "error_cancelled": "Operation cancelled.",
+        "error_login_required": "You need to login to sync data.",
+        "error_unknown": "System error ({})",
+        "dialog_title": "Syncing data...",
+        "dialog_subtitle": "Please do not close the app"
     }
-
 }

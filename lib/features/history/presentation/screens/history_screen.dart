@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:easy_localization/easy_localization.dart'; // IMPORTED
 
 // --- CORE UI & THEME ---
 import '../../../../core/constants/app_routes.dart';
@@ -82,7 +83,7 @@ class HistoryScreen extends StatelessWidget {
         ),
       ),
       title: Text(
-        "Lịch sử học",
+        "history.title".tr(), // INJECTED
         style: Theme.of(context).textTheme.displaySmall,
       ),
     );
@@ -110,22 +111,29 @@ class HistoryScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                "Chưa có hoạt động nào",
+                "history.empty_title".tr(), // INJECTED
                 style: Theme.of(context).textTheme.displaySmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                "Hãy bắt đầu hành trình chinh phục từ vựng ngay hôm nay!",
+                "history.empty_desc".tr(), // INJECTED
                 style: Theme.of(context).textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              SmartActionButton(
-                text: "Khám phá ngay",
+   SmartActionButton(
+                text: "history.explore_btn"
+                    .tr(), // [PRESERVED] Logic localization
+                icon:
+                    Icons.explore_rounded, // [NEW] Icon la bàn khám phá rực rỡ
+                color: const Color(
+                  0xFF3B82F6,
+                ), // [NEW] Vibrant Blue (Màu xanh năng động)
+                textColor: Colors.white,
                 onPressed: () => Navigator.pushReplacementNamed(
                   context,
-                  AppRoutes.dashboard,
+                  AppRoutes.dashboard, // [PRESERVED] Logic navigation
                 ),
               ),
             ],

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
+import 'package:fm_dictionary/core/widgets/common/show_login_required.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -64,6 +65,15 @@ class MenuScreen extends StatelessWidget {
                         'sidebar.saved'.tr(),
                         () => Navigator.pushNamed(context, AppRoutes.saved),
                         iconColor: AppColors.bentoYellow,
+                      ),
+                      _buildNavItem(
+                        context,
+                        Icons.psychology_rounded,
+                        'sidebar.smart_review'.tr(),
+                        () {
+                          Navigator.pushNamed(context, AppRoutes.review);
+                        },
+                        iconColor: const Color(0xFF8B5CF6), // Vibrant Purple
                       ),
                     ]),
                     const SizedBox(height: 16),
@@ -188,7 +198,7 @@ class MenuScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "Edit Profile",
+                    'sidebar.edit'.tr(),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.bold,
@@ -288,7 +298,7 @@ class MenuScreen extends StatelessWidget {
   Future<void> _handleSync(BuildContext context) async {
     final authProvider = context.read<AuthProvider>();
     if (authProvider.currentUser == null) {
-      _showLoginRequiredDialog(context);
+      showLoginRequiredDialog(context);
       return;
     }
 
@@ -306,31 +316,5 @@ class MenuScreen extends StatelessWidget {
         SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
       );
     }
-  }
-
-  void _showLoginRequiredDialog(BuildContext context) {
-    showCupertinoDialog(
-      context: context,
-      builder: (ctx) => CupertinoAlertDialog(
-        title: const Text("Yêu cầu đăng nhập"),
-        content: const Text(
-          "Bạn cần đăng nhập để sử dụng tính năng đồng bộ đám mây.",
-        ),
-        actions: [
-          CupertinoDialogAction(
-            child: const Text("Để sau"),
-            onPressed: () => Navigator.pop(ctx),
-          ),
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            child: const Text("Đăng nhập"),
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.pushNamed(context, AppRoutes.login);
-            },
-          ),
-        ],
-      ),
-    );
   }
 }

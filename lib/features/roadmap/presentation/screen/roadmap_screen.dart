@@ -129,7 +129,7 @@ class RoadmapScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-               'roadmap.roadmap_title'.tr(),
+            'roadmap.roadmap_title'.tr(),
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],
@@ -209,7 +209,12 @@ class RoadmapScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '$totalWords từ vựng (${chapter.lessons.length} Bài học)',
+                    'roadmap.stage_desc'.tr(
+                      args: [
+                        totalWords.toString(),
+                        chapter.lessons.length.toString(),
+                      ],
+                    ),
                     style: Theme.of(
                       context,
                     ).textTheme.bodySmall?.copyWith(fontSize: 12),

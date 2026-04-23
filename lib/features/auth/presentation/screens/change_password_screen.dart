@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart'; // IMPORTED
 
 // --- CORE UI & THEME ---
 import '../../../../core/theme/app_colors.dart';
@@ -38,12 +39,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final confP = _confirmPass.text.trim();
 
     if (oldP.isEmpty || newP.isEmpty || confP.isEmpty) {
-      return _showMsg("Vui lòng nhập đầy đủ");
+      return _showMsg('auth.validation.fill_all'.tr()); // INJECTED
     }
     if (newP.length < 6) {
-      return _showMsg("Mật khẩu mới phải từ 6 ký tự trở lên");
+      return _showMsg('auth.validation.pass_length'.tr()); // INJECTED
     }
-    if (newP != confP) return _showMsg("Xác nhận mật khẩu không khớp");
+    if (newP != confP) {
+      return _showMsg('auth.validation.pass_mismatch'.tr()); // INJECTED
+    }
 
     final provider = context.read<AuthProvider>();
     try {
@@ -52,8 +55,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
       StatusNavigator.showSuccess(
         context: context,
-        title: "Thành công!",
-        message: "Mật khẩu của bạn đã được thay đổi an toàn.",
+        title: 'auth.change_password.success_title'.tr(), // INJECTED
+        message: 'auth.change_password.success_msg'.tr(), // INJECTED
       );
     } catch (e) {
       _showMsg(e.toString());
@@ -87,7 +90,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             children: [
               const SizedBox(height: 24),
               Text(
-                "Đổi mật khẩu mới",
+                'auth.change_password.header'.tr(), // INJECTED
                 style: Theme.of(context).textTheme.displayLarge,
               ),
               const SizedBox(height: 40),
@@ -96,7 +99,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               _buildBentoInput(
                 context: context,
                 controller: _oldPass,
-                hint: "Mật khẩu hiện tại",
+                hint: 'auth.change_password.current_hint'.tr(), // INJECTED
                 icon: CupertinoIcons.lock,
                 iconTint: AppColors.bentoBlue,
               ),
@@ -104,7 +107,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               _buildBentoInput(
                 context: context,
                 controller: _newPass,
-                hint: "Mật khẩu mới",
+                hint: 'auth.change_password.new_hint'.tr(), // INJECTED
                 icon: CupertinoIcons.lock_shield,
                 iconTint: AppColors.bentoPurple,
               ),
@@ -112,7 +115,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               _buildBentoInput(
                 context: context,
                 controller: _confirmPass,
-                hint: "Xác nhận mật khẩu mới",
+                hint: 'auth.change_password.confirm_hint'.tr(), // INJECTED
                 icon: CupertinoIcons.lock_shield_fill,
                 iconTint: AppColors.bentoMint,
               ),
@@ -120,9 +123,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               const SizedBox(height: 40),
 
               SmartActionButton(
-                text: "Cập nhật mật khẩu",
-                isLoading: auth.isLoading,
-                onPressed: () => _handleUpdate(context),
+                text: 'auth.change_password.update_btn'
+                    .tr(), // [PRESERVED] Logic localization
+                icon: Icons
+                    .published_with_changes_rounded, // [NEW] Icon cập nhật thành công rực rỡ
+                color: const Color(
+                  0xFF6366F1,
+                ), // [NEW] Vibrant Indigo (Màu Indigo bảo mật)
+                textColor: Colors.white,
+                isLoading: auth.isLoading, // [PRESERVED] Logic loading state
+                onPressed: () =>
+                    _handleUpdate(context), // [PRESERVED] Logic action
               ),
               const SizedBox(height: 24),
             ],

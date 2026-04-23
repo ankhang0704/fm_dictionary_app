@@ -9,43 +9,139 @@ import 'package:fm_dictionary/features/learning/presentation/providers/learning_
 import 'package:fm_dictionary/features/settings/presentation/providers/settings_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-
 // --- CORE UI & THEME ---
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_layout.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/widgets/common/smart_action_button.dart';
 import '../../../../core/widgets/common/app_avatar.dart';
-
 // --- PROVIDERS & SERVICES ---
 import '../providers/auth_provider.dart';
 import '../../../../data/services/database/database_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final gamification = context.watch<GamificationProvider>();
     final user = authProvider.currentUser;
     final settings = DatabaseService.getSettings();
-
     if (user == null) {
       return Scaffold(
-        body: Center(
-          child: Text(
-            "Vui lòng đăng nhập",
-            style: Theme.of(context).textTheme.bodyLarge,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            // [ANTI-OVERFLOW] Đảm bảo cuộn mượt trên máy nhỏ
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 60),
+                  // 1. HERO SECTION: Biểu tượng chính rực rỡ
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.account_circle_rounded,
+                      size: 80,
+                      color: Color(0xFF6366F1), // Vibrant Indigo
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // TIÊU ĐỀ & MÔ TẢ (Localization Preserved)
+                  Text(
+                    "auth.profile.login_welcome_title".tr(), // UPDATED PATH
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -1,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "auth.profile.login_welcome_desc".tr(), // UPDATED PATH
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).hintColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 40),
+                  // 2. BENTO BENEFITS GRID (Các khối tính năng)
+                  // Khối 1: Đồng bộ đám mây (Vibrant Blue)
+                  _buildBenefitCard(
+                    context,
+                    icon: Icons.cloud_sync_rounded,
+                    color: const Color(0xFF3B82F6),
+                    title: "auth.profile.benefit_sync_title"
+                        .tr(), // UPDATED PATH
+                    subtitle: "auth.profile.benefit_sync_desc"
+                        .tr(), // UPDATED PATH
+                  ),
+                  const SizedBox(height: 16),
+                  // Khối 2: Theo dõi tiến độ (Vibrant Emerald)
+                  _buildBenefitCard(
+                    context,
+                    icon: Icons.auto_graph_rounded,
+                    color: const Color(0xFF10B981),
+                    title: "auth.profile.benefit_track_title"
+                        .tr(), // UPDATED PATH
+                    subtitle: "auth.profile.benefit_track_desc"
+                        .tr(), // UPDATED PATH
+                  ),
+                  const SizedBox(height: 16),
+                  // Khối 3: Huy hiệu & Phần thưởng (Vibrant Amber)
+                  _buildBenefitCard(
+                    context,
+                    icon: Icons.emoji_events_rounded,
+                    color: const Color(0xFFF59E0B),
+                    title: "auth.profile.benefit_award_title"
+                        .tr(), // UPDATED PATH
+                    subtitle: "auth.profile.benefit_award_desc"
+                        .tr(), // UPDATED PATH
+                  ),
+                  const SizedBox(height: 60),
+                  // 3. CALL TO ACTION BUTTONS
+                  SmartActionButton(
+                    text: "sidebar.login".tr(),
+                    icon: Icons.login_rounded,
+                    color: const Color(0xFF6366F1),
+                    textColor: Colors.white,
+                    onPressed: () =>
+                        Navigator.pushNamed(context, AppRoutes.login),
+                  ),
+                  const SizedBox(height: 16),
+                  // Nút phụ (Trở về hoặc Đăng ký)
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      "auth.profile.go_back".tr(), // UPDATED PATH
+                      style: TextStyle(
+                        color: Theme.of(context).hintColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
           ),
         ),
       );
     }
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text("Cá nhân", style: Theme.of(context).textTheme.displaySmall),
+        title: Text(
+          'profile.title'.tr(),
+          style: Theme.of(context).textTheme.displaySmall,
+        ), // INJECTED
         centerTitle: true,
         backgroundColor: Colors.transparent,
       ),
@@ -68,7 +164,7 @@ class ProfileScreen extends StatelessWidget {
               icon: Icons.logout_rounded,
               color: const Color(0xFFFF4757), // Vibrant Coral Red (Danger)
               textColor: Colors.white,
-              onPressed: () => _handleLogout(context, authProvider),
+              onPressed: () => handleLogout(context, authProvider),
             ),
             const SizedBox(height: 40),
           ],
@@ -84,10 +180,6 @@ class ProfileScreen extends StatelessWidget {
     dynamic settings,
   ) {
     final user = auth.currentUser!;
-    // final masteredCount = gami.badges.where((b) => b.isUnlocked).length * 100;
-    // final levelName = _calculateLevelName(masteredCount);
-    // final double expProgress = ((masteredCount % 50) / 50.0).clamp(0.0, 1.0);
-
     return BentoCard(
       child: Column(
         children: [
@@ -131,25 +223,12 @@ class ProfileScreen extends StatelessWidget {
                       user.displayName ?? settings.userName,
                       style: Theme.of(context).textTheme.displaySmall,
                     ),
-                    // Text(
-                    //   "Hạng: $levelName",
-                    //   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    //     color: AppColors.warning,
-                    //     fontWeight: FontWeight.bold,
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 24),
-          // LinearProgressIndicator(
-          //   value: expProgress,
-          //   minHeight: 10,
-          //   backgroundColor: Colors.grey.withValues(alpha: 0.1),
-          //   valueColor: AlwaysStoppedAnimation(AppColors.bentoMint),
-          // ),
         ],
       ),
     );
@@ -173,7 +252,7 @@ class ProfileScreen extends StatelessWidget {
                   "${learning.currentStreak}",
                   style: Theme.of(context).textTheme.displaySmall,
                 ),
-                Text("Chuỗi Streak"),
+                Text('profile.stats.streak'.tr()), // INJECTED
               ],
             ),
           ),
@@ -192,7 +271,7 @@ class ProfileScreen extends StatelessWidget {
                   "$savedCount",
                   style: Theme.of(context).textTheme.displaySmall,
                 ),
-                Text("Từ đã lưu"),
+                Text('profile.stats.saved_words'.tr()), // INJECTED
               ],
             ),
           ),
@@ -201,7 +280,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
- Widget _buildBadgesSection(BuildContext context, GamificationProvider gami) {
+  Widget _buildBadgesSection(BuildContext context, GamificationProvider gami) {
     return BentoCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,7 +298,6 @@ class ProfileScreen extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 16),
-
           // ANTI-OVERFLOW WRAPPER
           SizedBox(
             height:
@@ -236,7 +314,6 @@ class ProfileScreen extends StatelessWidget {
               ), // Tăng khoảng cách ra một chút cho thoáng
               itemBuilder: (ctx, i) {
                 final badge = gami.badges[i]; // Gọn gàng và tối ưu
-
                 return SizedBox(
                   width:
                       100, // Tăng từ 90 lên 100 để text của huy hiệu có không gian
@@ -270,13 +347,11 @@ class ProfileScreen extends StatelessWidget {
                   .tr(), // Cần thêm "Chỉnh sửa thông tin" vào file lang
               onTap: () => _showEditNameDialog(context),
             ),
-
             // Đường phân cách mờ tinh tế
             Divider(
-              color: Theme.of(context).dividerColor.withOpacity(0.1),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
               height: 16,
             ),
-
             // Menu Item 2: Cài đặt (Vibrant Purple - Đã đổi tên và icon theo yêu cầu)
             _buildBentoMenuItem(
               context: context,
@@ -285,12 +360,10 @@ class ProfileScreen extends StatelessWidget {
               title: 'profile.settings'.tr(), // Thay cho "Cài đặt"
               onTap: () => Navigator.pushNamed(context, AppRoutes.settings),
             ),
-
             Divider(
-              color: Theme.of(context).dividerColor.withOpacity(0.1),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
               height: 16,
             ),
-
             // Menu Item 3: Đổi mật khẩu (Vibrant Amber/Orange)
             _buildBentoMenuItem(
               context: context,
@@ -327,12 +400,13 @@ class ProfileScreen extends StatelessWidget {
                   width: 48,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).dividerColor.withOpacity(0.2),
+                    color: Theme.of(
+                      context,
+                    ).dividerColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 const SizedBox(height: 24),
-
                 Text(
                   'profile.update_avatar'
                       .tr(), // Thay cho text tĩnh (Cập nhật ảnh đại diện)
@@ -341,7 +415,6 @@ class ProfileScreen extends StatelessWidget {
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 24),
-
                 // Nút chọn từ thư viện (Vibrant Blue)
                 SmartActionButton(
                   text: 'profile.choose_gallery'
@@ -350,8 +423,7 @@ class ProfileScreen extends StatelessWidget {
                   color: const Color(0xFF3B82F6),
                   textColor: Colors.white,
                   onPressed: () async {
-                    Navigator.pop(ctx);
-                    // LOGIC GIỮ NGUYÊN 100%
+                    Navigator.pop(ctx); // LOGIC GIỮ NGUYÊN 100%
                     final image = await ImagePicker().pickImage(
                       source: ImageSource.gallery,
                     );
@@ -359,7 +431,6 @@ class ProfileScreen extends StatelessWidget {
                   },
                 ),
                 const SizedBox(height: 12),
-
                 // Nút xóa ảnh (Vibrant Danger)
                 SmartActionButton(
                   text: 'profile.remove_avatar'.tr(), // Thay cho "Xóa ảnh"
@@ -367,13 +438,11 @@ class ProfileScreen extends StatelessWidget {
                   color: const Color(0xFFFF4757),
                   textColor: Colors.white,
                   onPressed: () async {
-                    Navigator.pop(ctx);
-                    // LOGIC GIỮ NGUYÊN 100%
+                    Navigator.pop(ctx); // LOGIC GIỮ NGUYÊN 100%
                     await provider.removeAvatar();
                   },
                 ),
                 const SizedBox(height: 12),
-
                 // Nút Hủy (Bento Secondary/Glass)
                 SmartActionButton(
                   text: 'common.cancel'.tr(), // Thay cho "Hủy"
@@ -393,7 +462,6 @@ class ProfileScreen extends StatelessWidget {
     final controller = TextEditingController(
       text: DatabaseService.getSettings().userName, // LOGIC GIỮ NGUYÊN 100%
     );
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Cho phép đẩy lên khi hiện bàn phím
@@ -418,19 +486,20 @@ class ProfileScreen extends StatelessWidget {
                     width: 48,
                     height: 6,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).dividerColor.withOpacity(0.2),
+                      color: Theme.of(
+                        context,
+                      ).dividerColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   const SizedBox(height: 24),
-
                   // Bento Header Icon
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: const Color(
                         0xFF10B981,
-                      ).withOpacity(0.15), // Vibrant Emerald Mờ
+                      ).withValues(alpha: 0.15), // Vibrant Emerald Mờ
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -440,7 +509,6 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-
                   Text(
                     'profile.edit_name'.tr(), // Thay cho "Chỉnh sửa tên"
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -448,12 +516,11 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-
                   // Bento Style TextField (Flat, no border, solid background)
                   Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).dividerColor.withOpacity(
-                        0.05,
+                      color: Theme.of(context).dividerColor.withValues(
+                        alpha: 0.05,
                       ), // Tự ứng biến theo Theme (Sáng/Tối)
                       borderRadius: BorderRadius.circular(16.0),
                     ),
@@ -478,7 +545,6 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 32),
-
                   // Action Buttons
                   Row(
                     children: [
@@ -521,15 +587,61 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // String _calculateLevelName(int count) => count >= 1000
-  //     ? "Thần thoại"
-  //     : count >= 500
-  //     ? "Kim cương"
-  //     : count >= 200
-  //     ? "Vàng"
-  //     : "Đồng";
+  Widget _buildBenefitCard(
+    BuildContext context, {
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor, // Thích ứng Dark/Light Mode
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: color.withValues(alpha: 0.1), width: 2),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(icon, color: color, size: 28),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).hintColor,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-  void _handleLogout(BuildContext context, AuthProvider auth) {
+  void handleLogout(BuildContext context, AuthProvider auth) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Theme.of(
@@ -553,19 +665,18 @@ class ProfileScreen extends StatelessWidget {
                   width: 48,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).dividerColor.withOpacity(
-                      0.2,
+                    color: Theme.of(context).dividerColor.withValues(
+                      alpha: 0.2,
                     ), // Màu mờ tự động theo Theme
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 const SizedBox(height: 24),
-
                 // Bento Alert Icon (Vibrant Red)
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF4757).withOpacity(0.15),
+                    color: const Color(0xFFFF4757).withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -575,7 +686,6 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-
                 // Tiêu đề (Localization Protected)
                 Text(
                   'profile.logout'.tr(),
@@ -585,7 +695,6 @@ class ProfileScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-
                 // Nội dung xác nhận (Localization Protected)
                 Text(
                   'profile.logout_confirm'.tr(),
@@ -598,7 +707,6 @@ class ProfileScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
-
                 // Bento Action Buttons
                 Row(
                   children: [
@@ -615,7 +723,6 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 16),
-
                     // Nút Đăng xuất (Vibrant Danger)
                     Expanded(
                       child: SmartActionButton(
@@ -644,7 +751,8 @@ class ProfileScreen extends StatelessWidget {
       },
     );
   }
-   Widget _buildBentoMenuItem({
+
+  Widget _buildBentoMenuItem({
     required BuildContext context,
     required IconData icon,
     required Color iconColor,
@@ -664,15 +772,14 @@ class ProfileScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(
-                    0.15,
+                  color: iconColor.withValues(
+                    alpha: 0.15,
                   ), // Nền mờ cùng tông màu icon
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: iconColor, size: 22),
               ),
               const SizedBox(width: 16),
-
               // Tiêu đề
               Expanded(
                 child: Text(
@@ -683,13 +790,12 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
               ),
-
               // Mũi tên điều hướng
               Icon(
                 Icons.chevron_right_rounded,
-                color: Theme.of(
-                  context,
-                ).dividerColor.withOpacity(0.5), // Tự động thích ứng Sáng/Tối
+                color: Theme.of(context).dividerColor.withValues(
+                  alpha: 0.5,
+                ), // Tự động thích ứng Sáng/Tối
                 size: 24,
               ),
             ],

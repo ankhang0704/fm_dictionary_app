@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
 import 'package:fm_dictionary/core/widgets/common/bento_tts_button.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:easy_localization/easy_localization.dart'; // IMPORTED
 
 // --- CORE / THEMES ---
 import '../../../../core/constants/app_routes.dart';
@@ -98,7 +99,7 @@ class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
                   hasScrollBody: false,
                   child: Center(
                     child: Text(
-                      'Không tìm thấy từ vựng nào.',
+                      'dictionary.no_words_found'.tr(), // INJECTED
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ),
@@ -187,7 +188,7 @@ class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Tiến độ học",
+                  "dictionary.study_progress".tr(), // INJECTED
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 4),
@@ -228,7 +229,12 @@ class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        "$learnedCount/$totalCount",
+                        "dictionary.progress_unit".tr(
+                          args: [
+                            learnedCount.toString(),
+                            totalCount.toString(),
+                          ],
+                        ), // INJECTED
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: progress == 1.0 ? AppColors.success : null,
@@ -247,13 +253,13 @@ class _DictionaryDetailScreenState extends State<DictionaryDetailScreen> {
 
   // New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
 
-Widget _buildActionRow(BuildContext context, List<Word> allWords) {
+  Widget _buildActionRow(BuildContext context, List<Word> allWords) {
     return Row(
-      children:[
+      children: [
         // Button 1: Study (Primary Bento Color - Vibrant Blue)
         Expanded(
           child: SmartActionButton(
-            text: "Học",
+            text: "dictionary.study_btn".tr(), // INJECTED
             icon: Icons.school_rounded,
             color: const Color(0xFF3B82F6), // Vibrant Bento Blue
             onPressed: () {
@@ -270,14 +276,15 @@ Widget _buildActionRow(BuildContext context, List<Word> allWords) {
         // Button 2: Quiz (Secondary Bento Color - Playful Orange)
         Expanded(
           child: SmartActionButton(
-            text: "Kiểm tra",
+            text: "dictionary.quiz_btn".tr(), // INJECTED
             icon: Icons.videogame_asset_rounded,
             color: const Color(0xFFF97316), // Vibrant Bento Orange
             onPressed: () {
               if (allWords.length < 4) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Cần ít nhất 4 từ để tạo bài kiểm tra!'),
+                  SnackBar(
+                    // Removed const
+                    content: Text('quiz.config.error_min_words'.tr()),
                     backgroundColor: AppColors.error,
                   ),
                 );
@@ -302,7 +309,7 @@ Widget _buildActionRow(BuildContext context, List<Word> allWords) {
         onChanged: (v) => setState(() => _searchQuery = v),
         style: Theme.of(context).textTheme.bodyLarge,
         decoration: InputDecoration(
-          hintText: 'Tìm kiếm từ vựng...',
+          hintText: 'dictionary.search_hint'.tr(), // INJECTED
           hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
             color: Theme.of(
               context,

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart'; // IMPORTED
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../learning/presentation/providers/learning_provider.dart';
@@ -17,12 +18,11 @@ class StreakScreen extends StatelessWidget {
     final notify = context.watch<NotificationProvider>();
     final gamification = context.watch<GamificationProvider>();
 
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          "Bảng điều khiển",
+          "dashboard.title".tr(), // INJECTED
           style: Theme.of(context).textTheme.displaySmall,
         ),
         centerTitle: true,
@@ -38,7 +38,7 @@ class StreakScreen extends StatelessWidget {
             children: [
               Expanded(
                 flex: 2,
-                 child: _buildHeroBento(
+                child: _buildHeroBento(
                   context,
                   learning.masteredWords,
                   learning.totalWords,
@@ -98,9 +98,10 @@ class StreakScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  "Từ vựng\nđã thuộc",
-                  style: TextStyle(
+                Text(
+                  // const REMOVED
+                  "dashboard.mastered_words".tr(), // INJECTED
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -121,7 +122,9 @@ class StreakScreen extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "/ $total từ",
+                  "dashboard.words_unit".tr(
+                    args: [total.toString()],
+                  ), // INJECTED WITH ARGS
                   style: const TextStyle(color: Colors.white54, fontSize: 12),
                 ),
               ],
@@ -134,13 +137,13 @@ class StreakScreen extends StatelessWidget {
 
   // --- 1B. STREAK BENTO (VIBRANT ORANGE) ---
   Widget _buildStreakBento(BuildContext context, int streak) {
-    String message = "Bắt đầu nào!";
+    String message = "streak.messages.start".tr(); // INJECTED
     if (streak >= 7) {
-      message = "Bạn đang\nrực cháy!";
+      message = "streak.messages.fire".tr(); // INJECTED
     } else if (streak >= 3) {
-      message = "Giữ vững\nphong độ!";
+      message = "streak.messages.keep".tr(); // INJECTED
     } else if (streak > 0) {
-      message = "Lửa đang\nnhen nhóm!";
+      message = "streak.messages.spark".tr(); // INJECTED
     }
 
     return BentoCard(
@@ -199,7 +202,7 @@ class StreakScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Nhịp đập học tập",
+            "heatmap.title".tr(), // INJECTED
             style: Theme.of(
               context,
             ).textTheme.displaySmall?.copyWith(fontSize: 16),
@@ -254,7 +257,7 @@ class StreakScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Bộ sưu tập",
+                "profile.badges".tr(), // REUSED PROFILE KEY
                 style: Theme.of(
                   context,
                 ).textTheme.displaySmall?.copyWith(fontSize: 16),
@@ -355,7 +358,7 @@ class StreakScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Nhắc nhở học tập",
+                  "notifications.reminder_title".tr(), // INJECTED
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.bentoMint,
@@ -365,7 +368,7 @@ class StreakScreen extends StatelessWidget {
                 Text(
                   notify.isEnabled
                       ? (notify.reminderTime?.format(context) ?? "20:00")
-                      : "Đang tắt",
+                      : "notifications.disabled".tr(), // INJECTED
                   style: Theme.of(context).textTheme.displayMedium?.copyWith(
                     color: notify.isEnabled
                         ? AppColors.bentoMint
@@ -376,7 +379,7 @@ class StreakScreen extends StatelessWidget {
             ),
           ),
           CupertinoSwitch(
-            activeColor: AppColors.bentoMint,
+            activeTrackColor: AppColors.bentoMint,
             value: notify.isEnabled,
             onChanged: (v) => notify.toggleNotification(v),
           ),

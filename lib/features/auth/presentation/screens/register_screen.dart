@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart'; // IMPORTED
 
 // --- CORE UI & THEME ---
 import '../../../../core/theme/app_colors.dart';
@@ -42,7 +43,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Vui lòng điền đầy đủ thông tin")),
+        SnackBar(content: Text('auth.validation.fill_all'.tr())), // INJECTED
       );
       return;
     }
@@ -99,7 +100,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _buildBentoInput(
                       context: context,
                       controller: _nameController,
-                      hint: "Họ và Tên",
+                      hint: 'auth.register.name_hint'.tr(), // INJECTED
                       icon: CupertinoIcons.person,
                       iconTint: AppColors.bentoBlue,
                     ),
@@ -107,7 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _buildBentoInput(
                       context: context,
                       controller: _emailController,
-                      hint: "Email",
+                      hint: 'auth.register.email_hint'.tr(), // INJECTED
                       icon: CupertinoIcons.mail,
                       iconTint: AppColors.bentoPurple,
                       keyboardType: TextInputType.emailAddress,
@@ -116,7 +117,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _buildBentoInput(
                       context: context,
                       controller: _passController,
-                      hint: "Mật khẩu",
+                      hint: 'auth.register.pass_hint'.tr(), // INJECTED
                       icon: CupertinoIcons.lock,
                       iconTint: AppColors.bentoMint,
                       obscureText: true,
@@ -126,9 +127,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // --- ACTION SECTION ---
                     SmartActionButton(
-                      text: "Đăng ký",
-                      isLoading: auth.isLoading,
-                      onPressed: () => _handleRegister(context),
+                      text: 'auth.register.btn'
+                          .tr(), // [PRESERVED] Logic localization
+                      icon: Icons
+                          .person_add_alt_1_rounded, // [NEW] Icon người dùng mới rực rỡ
+                      color: const Color(
+                        0xFF10B981,
+                      ), // [NEW] Vibrant Emerald (Màu xanh khởi tạo)
+                      textColor: Colors.white,
+                      isLoading:
+                          auth.isLoading, // [PRESERVED] Logic loading state
+                      onPressed: () =>
+                          _handleRegister(context), // [PRESERVED] Logic action
                     ),
 
                     const SizedBox(height: 24),
@@ -138,7 +148,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Đã có tài khoản?",
+                          'auth.register.already_have_acc'.tr(), // INJECTED
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         TextButton(
@@ -147,7 +157,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             AppRoutes.login,
                           ),
                           child: Text(
-                            "Đăng nhập",
+                            'auth.register.login_now'.tr(), // INJECTED
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   fontWeight: FontWeight.bold,
@@ -174,14 +184,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Tạo tài khoản mới 🚀",
+          'auth.register.title'.tr(), // INJECTED
           style: Theme.of(
             context,
           ).textTheme.displayLarge?.copyWith(fontSize: 34),
         ),
         const SizedBox(height: 8),
         Text(
-          "Bắt đầu hành trình học tập cùng hàng ngàn học viên khác.",
+          'auth.register.description'.tr(), // INJECTED
           style: Theme.of(context).textTheme.bodyLarge,
         ),
       ],

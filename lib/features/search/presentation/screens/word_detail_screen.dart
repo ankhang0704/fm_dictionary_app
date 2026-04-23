@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
 import 'package:fm_dictionary/data/services/database/word_service.dart';
+import 'package:easy_localization/easy_localization.dart'; // IMPORTED
 
 // --- CORE / THEMES ---
 import '../../../../core/theme/app_colors.dart';
@@ -88,7 +89,7 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
         ),
       ),
       title: Text(
-        "Chi tiết từ",
+        "word_detail.title".tr(), // INJECTED
         style: Theme.of(context).textTheme.displaySmall,
       ),
       actions: [
@@ -199,7 +200,7 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
           Expanded(
             child: _buildPronunciationCard(
               context,
-              title: "🇺🇸 US",
+              title: "word_detail.us_accent".tr(), // INJECTED
               ipa: widget.word.phoneticUS,
               accentColor: AppColors.bentoBlue,
               onSpeak: () =>
@@ -211,7 +212,7 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
           Expanded(
             child: _buildPronunciationCard(
               context,
-              title: "🇬🇧 UK",
+              title: "word_detail.uk_accent".tr(), // INJECTED
               ipa: widget.word.phoneticUK,
               accentColor: AppColors.bentoPurple,
               onSpeak: () =>
@@ -290,7 +291,7 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
               ),
               const SizedBox(width: 12),
               Text(
-                "Giải thích & Ngữ cảnh",
+                "word_detail.context_title".tr(), // INJECTED
                 style: Theme.of(
                   context,
                 ).textTheme.displaySmall?.copyWith(fontSize: 18),

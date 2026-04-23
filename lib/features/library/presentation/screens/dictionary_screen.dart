@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/constants/progress_keys.dart';
@@ -130,7 +131,10 @@ class DictionaryScreen extends StatelessWidget {
   // ===========================================================================
 
   Widget _buildHeader(BuildContext context) {
-    return Text('Kho Từ Điển', style: Theme.of(context).textTheme.displayLarge);
+    return Text(
+      'dictionary.title'.tr(),
+      style: Theme.of(context).textTheme.displayLarge,
+    );
   }
 
   Widget _buildSearchBar(BuildContext context) {
@@ -145,7 +149,7 @@ class DictionaryScreen extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Text(
-            "Tìm kiếm từ vựng...",
+            "dictionary.search_placeholder".tr(),
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Theme.of(
                 context,
@@ -187,12 +191,14 @@ class DictionaryScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Mức độ thông thạo",
+                      "dictionary.master_title".tr(),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Hoàn thành $mastered/$total Chủ đề",
+                      'dictionary.learning_title'.tr(
+                        args: [mastered.toString(), total.toString()],
+                      ),
                       style: Theme.of(context).textTheme.displaySmall,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -244,7 +250,7 @@ class DictionaryScreen extends StatelessWidget {
               color: AppColors.bentoBlue.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child:  Icon(
+            child: Icon(
               AppConstants.topicIcons[topic] ?? CupertinoIcons.book_fill,
               color: AppColors.bentoBlue,
               size: 28,
@@ -272,7 +278,9 @@ class DictionaryScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "$learnedWords/$totalWords từ",
+                    'dictionary.word_count'.tr(
+                      args: [learnedWords.toString(), totalWords.toString()],
+                    ),
                     style: Theme.of(
                       context,
                     ).textTheme.bodySmall?.copyWith(fontSize: 10),

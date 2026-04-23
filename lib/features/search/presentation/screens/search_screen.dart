@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart'; // IMPORTED
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
@@ -92,7 +93,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 onChanged: (val) => context.read<SearchProvider>().search(val),
                 style: Theme.of(context).textTheme.bodyLarge,
                 decoration: InputDecoration(
-                  hintText: 'Tìm kiếm từ vựng...',
+                  hintText: 'search.hint'.tr(), // INJECTED
                   hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(
                       context,
@@ -137,7 +138,7 @@ class _SearchScreenState extends State<SearchScreen> {
     if (provider.history.isEmpty) {
       return Center(
         child: Text(
-          "Nhập từ vựng để tìm kiếm...",
+          'search.initial_prompt'.tr(), // INJECTED
           style: Theme.of(context).textTheme.bodyLarge,
         ),
       );
@@ -153,13 +154,13 @@ class _SearchScreenState extends State<SearchScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Gợi ý & Lịch sử',
+                'search.history'.tr(), // INJECTED
                 style: Theme.of(context).textTheme.displaySmall,
               ),
               GestureDetector(
                 onTap: provider.clearHistory,
                 child: Text(
-                  'Xóa lịch sử',
+                  'search.clear_history'.tr(), // INJECTED
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.error,
                     fontWeight: FontWeight.bold,
@@ -297,7 +298,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            "Không tìm thấy kết quả",
+            'search.no_results_simple'.tr(), // INJECTED
             style: Theme.of(context).textTheme.bodyLarge,
           ),
         ],

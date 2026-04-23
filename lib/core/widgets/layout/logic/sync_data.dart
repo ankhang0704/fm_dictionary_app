@@ -78,14 +78,16 @@ class SyncDataDialog extends StatefulWidget {
     if (errorString.contains('network') ||
         errorString.contains('socket') ||
         errorString.contains('unavailable')) {
-      return "Lỗi kết nối mạng. Ứng dụng sẽ đồng bộ khi có Internet.";
+      return 'sync.error_network'.tr(); // INJECTED
     } else if (errorString.contains('canceled') ||
         errorString.contains('cancelled')) {
-      return "Đã hủy thao tác.";
+      return 'sync.error_cancelled'.tr(); // INJECTED
     } else if (errorString.contains('not_logged_in')) {
-      return "Bạn cần đăng nhập để đồng bộ dữ liệu.";
+      return 'sync.error_login_required'.tr(); // INJECTED
     }
-    return "Lỗi hệ thống (${error.toString()})";
+    return 'sync.error_unknown'.tr(
+      args: [error.toString()],
+    ); // INJECTED WITH ARGS
   }
 
   @override
@@ -145,7 +147,7 @@ class _SyncDataDialogState extends State<SyncDataDialog>
                 // Zero Pixel Overflow Strategy + Adaptive Theme Text
                 Flexible(
                   child: Text(
-                    "Đang đồng bộ dữ liệu...",
+                    'sync.dialog_title'.tr(), // INJECTED
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.displaySmall,
                     maxLines: 2,
@@ -175,7 +177,7 @@ class _SyncDataDialogState extends State<SyncDataDialog>
                 // Subtext
                 Flexible(
                   child: Text(
-                    "Vui lòng không đóng ứng dụng",
+                    'sync.dialog_subtitle'.tr(), // INJECTED
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyMedium,
                     maxLines: 2,

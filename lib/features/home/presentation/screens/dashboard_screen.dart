@@ -199,7 +199,6 @@ class DashboardScreen extends StatelessWidget {
     final progress = home.dailyProgressPercent;
     final clampedProgress = progress.clamp(0.0, 1.0);
     final percentage = (clampedProgress * 100).toInt();
-    final goal = studied / target;
     // New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
 
     return BentoCard(
@@ -579,7 +578,7 @@ class DashboardScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "Nhắc nhở học tập",
+                     'dashboard.reminder'.tr(),
                   style: Theme.of(context).textTheme.displaySmall,
                 ),
                 const SizedBox(height: 24),
@@ -589,7 +588,7 @@ class DashboardScreen extends StatelessWidget {
                     children: [
                       SwitchListTile(
                         title: Text(
-                          "Bật thông báo hàng ngày",
+                          'dashboard.reminder_desc'.tr(),
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                         value: provider.isEnabled,
@@ -604,7 +603,7 @@ class DashboardScreen extends StatelessWidget {
                             color: AppColors.bentoBlue,
                           ),
                           title: Text(
-                            "Giờ nhắc nhở",
+                            'dashboard.reminder_time'.tr(),
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           trailing: Text(

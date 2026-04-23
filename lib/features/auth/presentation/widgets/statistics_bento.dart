@@ -73,9 +73,9 @@ class StatisticsSectionBento extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(isDark ? 0.15 : 0.1),
+        color: color.withValues( alpha:isDark ? 0.15 : 0.1),
         borderRadius: BorderRadius.circular(20), // Góc bo tròn to chuẩn Bento
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues( alpha:0.2)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -94,7 +94,7 @@ class StatisticsSectionBento extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: color.withOpacity(0.8),
+              color: color.withValues( alpha:0.8),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

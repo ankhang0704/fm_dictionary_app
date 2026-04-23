@@ -1,8 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fm_dictionary/core/constants/app_routes.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
+import 'package:fm_dictionary/core/widgets/common/smart_action_button.dart';
+import 'package:fm_dictionary/data/services/database/database_service.dart';
 import 'package:fm_dictionary/features/auth/presentation/providers/auth_provider.dart';
+import 'package:fm_dictionary/features/roadmap/presentation/providers/roadmap_provider.dart';
+import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -21,7 +26,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SettingsProvider>();
-
+    final authProvider = context.watch<AuthProvider>();
     if (provider.isLoading) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -30,7 +35,6 @@ class SettingsScreen extends StatelessWidget {
     }
 
     final settings = provider.settings;
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildBentoHeader(context),
@@ -47,9 +51,7 @@ class SettingsScreen extends StatelessWidget {
             // SECTION 2: DAILY GOAL
             _buildSectionTitle(
               context,
-              'settings.daily_goal'.tr().isEmpty
-                  ? "Mục tiêu học tập"
-                  : 'settings.daily_goal'.tr(),
+              'settings.daily_goal_label'.tr(), // SIMPLIFIED
             ),
             const SizedBox(height: 12),
             _buildDailyGoalCard(context, provider),
@@ -68,9 +70,12 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // SECTION 5: DANGER ZONE
-            _buildSectionTitle(context, 'DANGER ZONE'),
+            _buildSectionTitle(
+              context,
+              'settings.danger_zone'.tr(),
+            ), // INJECTED
             const SizedBox(height: 12),
-            _buildDangerZoneCard(context),
+            _buildDangerZoneCard(context, authProvider),
             const SizedBox(height: 40),
 
             // FOOTER: VERSION INFO
@@ -150,9 +155,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'settings.profile_desc'.tr().isEmpty
-                      ? "Học viên xuất sắc"
-                      : 'settings.profile_desc'.tr(),
+                  'settings.profile_desc'.tr(), // SIMPLIFIED
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
@@ -169,7 +172,7 @@ class SettingsScreen extends StatelessWidget {
                 color: AppColors.bentoBlue,
                 size: 24,
               ),
-              onPressed: () => _showNameDialog(context),
+              onPressed: () => _showEditNameDialog(context),
             ),
           ),
         ],
@@ -198,14 +201,16 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Mục tiêu hàng ngày',
+                  'settings.daily_goal'.tr(), // INJECTED
                   style: Theme.of(
                     context,
                   ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               Text(
-                '${provider.settings.dailyGoal} từ',
+                'settings.words_unit'.tr(
+                  args: [provider.settings.dailyGoal.toString()],
+                ), // ARGS HANDLING
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w900,
                   color: AppColors.bentoBlue,
@@ -275,7 +280,7 @@ class SettingsScreen extends StatelessWidget {
             title: 'settings.dark_mode'.tr(),
             trailing: CupertinoSwitch(
               value: provider.settings.themeMode == 'dark',
-              activeColor: AppColors.bentoPurple,
+              activeTrackColor: AppColors.bentoPurple,
               onChanged: (bool value) => provider.toggleTheme(value),
             ),
           ),
@@ -296,7 +301,7 @@ class SettingsScreen extends StatelessWidget {
             title: 'settings.hard_mode'.tr(),
             trailing: CupertinoSwitch(
               value: provider.settings.isHardMode,
-              activeColor: AppColors.bentoPink,
+              activeTrackColor: AppColors.bentoPink,
               onChanged: (bool value) => provider.toggleHardMode(value),
             ),
           ),
@@ -351,7 +356,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDangerZoneCard(BuildContext context) {
+  Widget _buildDangerZoneCard(BuildContext context, AuthProvider provider) {
     return BentoCard(
       padding: EdgeInsets.zero,
       child: Column(
@@ -362,28 +367,273 @@ class SettingsScreen extends StatelessWidget {
             iconColor: AppColors.error,
             title: 'settings.reset_btn'.tr(),
             titleColor: AppColors.error,
-            onTap: () {}, // Logic preserved but hidden as per rules
+            onTap: () => _handleResetProgress(context), // Logic preserved
           ),
           const Divider(height: 1, indent: 56),
           _buildSettingsTile(
             context,
             icon: CupertinoIcons.square_arrow_right,
             iconColor: AppColors.error,
-            title: "Đăng xuất",
+            title: "profile.logout".tr(), // INJECTED FROM PROFILE KEYS
             titleColor: AppColors.error,
-            onTap: () {}, // Logout confirmation logic can be added here
+           onTap: () => handleLogout(context,
+              provider,
+            ),  // Logout confirmation logic
           ),
         ],
       ),
     );
   }
+ void _handleResetProgress(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32.0)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Drag Indicator
+                  Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).dividerColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
 
+                  // VIBRANT DANGER ICON: Cảnh báo xóa vĩnh viễn
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(
+                        0xFFFF4757,
+                      ).withValues(alpha: 0.12), // Vibrant Red tint
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.delete_forever_rounded,
+                      color: Color(0xFFFF4757),
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // TIÊU ĐỀ (Localization Preserved)
+                  Text(
+                    'settings.reset_btn'.tr(),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: const Color(
+                        0xFFFF4757,
+                      ), // Nhấn mạnh màu đỏ nguy hiểm
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+
+                  // MÔ TẢ CẢNH BÁO (Localization Preserved/Converted)
+                  Text(
+                    "settings.reset_warning_desc".tr(), // INJECTED
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).hintColor,
+                      fontSize: 16,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 40),
+
+                  // ACTION BUTTONS (Column for better thumb reach)
+                  Column(
+                    children: [
+                      // NÚT XÁC NHẬN XÓA (Vibrant Red)
+                      SmartActionButton(
+                        text: 'settings.reset_confirm_btn'.tr(), // INJECTED
+                        icon: Icons.check_circle_rounded,
+                        color: const Color(0xFFFF4757),
+                        textColor: Colors.white,
+                        onPressed: () async {
+                          // 🚨 [LOGIC PRESERVED 100%]
+                          Navigator.pop(ctx); // Đóng Sheet
+
+                          // 1. Xóa Database Local
+                          final progressBox = Hive.box(
+                            DatabaseService.progressBoxName,
+                          );
+                          await progressBox.clear();
+
+                          if (!context.mounted) return;
+
+                          // 2. Refresh lại Lộ trình
+                          context.read<RoadmapProvider>().refresh();
+
+                          // 3. Báo thành công (Localization Preserved)
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'settings.reset_success_msg'.tr(),
+                              ), // INJECTED
+                              backgroundColor: const Color(
+                                0xFF10B981,
+                              ), // Vibrant Emerald
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      // NÚT HỦY (Flat Bento)
+                      SmartActionButton(
+                        text: 'common.cancel'.tr(), // RE-ROUTED TO COMMON
+                        isGlass: true, // Phong cách nhạt màu Bento
+                        textColor: Theme.of(context).textTheme.bodyLarge?.color,
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+  // --- LOGIC 2: ĐĂNG XUẤT ---
+    void handleLogout(BuildContext context, AuthProvider auth) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(
+        context,
+      ).scaffoldBackgroundColor, // Tự động thích ứng Light/Dark Mode
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(28.0),
+        ), // Bo góc to chuẩn Bento
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 24.0),
+            child: Column(
+              mainAxisSize:
+                  MainAxisSize.min, // Thu gọn kích thước theo nội dung
+              children: [
+                // Drag Indicator (Thanh kéo ngang)
+                Container(
+                  width: 48,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).dividerColor.withValues(
+                      alpha: 0.2,
+                    ), // Màu mờ tự động theo Theme
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Bento Alert Icon (Vibrant Red)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF4757).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.logout_rounded,
+                    color: Color(0xFFFF4757),
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Tiêu đề (Localization Protected)
+                Text(
+                  'profile.logout'.tr(),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                // Nội dung xác nhận (Localization Protected)
+                Text(
+                  'profile.logout_confirm'.tr(),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.color, // Màu Secondary nhẹ nhàng
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                // Bento Action Buttons
+                Row(
+                  children: [
+                    // Nút Hủy (Secondary Flat Button)
+                    Expanded(
+                      child: SmartActionButton(
+                        text: 'common.cancel'.tr(),
+                        isGlass:
+                            true, // Tận dụng thiết kế nền nhạt của SmartActionButton mới
+                        textColor: Theme.of(
+                          context,
+                        ).textTheme.bodyLarge?.color, // Chữ tự đổi theo Theme
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Nút Đăng xuất (Vibrant Danger)
+                    Expanded(
+                      child: SmartActionButton(
+                        text: 'profile.logout'.tr(),
+                        color: const Color(
+                          0xFFFF4757,
+                        ), // Màu Đỏ Cảnh báo (Danger)
+                        textColor: Colors.white,
+                        onPressed: () {
+                          // LOGIC PRESERVED 100%
+                          auth.logout();
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            AppRoutes.login,
+                            (r) => false,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
   Widget _buildFooter(BuildContext context) {
     return FutureBuilder<PackageInfo>(
       future: PackageInfo.fromPlatform(),
       builder: (context, snapshot) {
+        final version = snapshot.data?.version ?? '1.0.0';
         return Text(
-          'Phiên bản ${snapshot.data?.version ?? '1.0.0'}',
+          'settings.version'.tr(args: [version]), // ARGS HANDLING
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
         );
@@ -425,42 +675,132 @@ class SettingsScreen extends StatelessWidget {
   // ABSOLUTE ZERO-TOUCH LOGIC: NAME DIALOG
   // ===========================================================================
 
-  void _showNameDialog(BuildContext context) {
-    final provider = context.read<SettingsProvider>();
-    final controller = TextEditingController(text: provider.settings.userName);
-
-    showCupertinoDialog(
+  void _showEditNameDialog(BuildContext context) {
+    final controller = TextEditingController(
+      text: DatabaseService.getSettings().userName, // LOGIC GIỮ NGUYÊN 100%
+    );
+    showModalBottomSheet(
       context: context,
-      builder: (dialogContext) => CupertinoAlertDialog(
-        title: Text('settings.edit_name'.tr()),
-        content: Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: CupertinoTextField(
-            controller: controller,
-            autofocus: true,
-            placeholder: 'settings.name_hint'.tr(),
-          ),
-        ),
-        actions: [
-          CupertinoDialogAction(
-            child: Text('settings.cancel'.tr()),
-            onPressed: () => Navigator.pop(dialogContext),
-          ),
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            child: Text('settings.save'.tr()),
-            onPressed: () async {
-              final newName = controller.text.trim();
-              provider.updateName(newName);
-              final auth = context.read<AuthProvider>();
-              if (auth.currentUser != null) {
-                await auth.updateDisplayName(newName);
-              }
-              if (dialogContext.mounted) Navigator.pop(dialogContext);
-            },
-          ),
-        ],
+      isScrollControlled: true, // Cho phép đẩy lên khi hiện bàn phím
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.0)),
       ),
+      builder: (ctx) {
+        return Padding(
+          // Padding viewInsets để không bị bàn phím che mất
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Drag Indicator
+                  Container(
+                    width: 48,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).dividerColor.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Bento Header Icon
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(
+                        0xFF10B981,
+                      ).withValues(alpha: 0.15), // Vibrant Emerald Mờ
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.badge_rounded,
+                      color: Color(0xFF10B981),
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'profile.edit_name'.tr(), // Thay cho "Chỉnh sửa tên"
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Bento Style TextField (Flat, no border, solid background)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).dividerColor.withValues(
+                        alpha: 0.05,
+                      ), // Tự ứng biến theo Theme (Sáng/Tối)
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 4.0,
+                    ),
+                    child: TextField(
+                      controller: controller,
+                      autofocus: true, // Tự động mở bàn phím
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                      ),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'profile.enter_name_hint'
+                            .tr(), // Cần có trong file lang
+                        hintStyle: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(color: Theme.of(context).hintColor),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  // Action Buttons
+                  Row(
+                    children: [
+                      // Nút Hủy
+                      Expanded(
+                        child: SmartActionButton(
+                          text: 'common.cancel'.tr(), // Thay cho "Hủy"
+                          isGlass: true,
+                          textColor: Theme.of(
+                            context,
+                          ).textTheme.bodyLarge?.color,
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // Nút Lưu
+                      Expanded(
+                        child: SmartActionButton(
+                          text: 'common.save'.tr(), // Thay cho "Lưu"
+                          icon: Icons.check_rounded,
+                          color: const Color(0xFF10B981), // Vibrant Emerald
+                          textColor: Colors.white,
+                          onPressed: () async {
+                            // LOGIC GIỮ NGUYÊN 100%
+                            await context.read<SettingsProvider>().updateName(
+                              controller.text.trim(),
+                            );
+                            if (ctx.mounted) Navigator.pop(ctx);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

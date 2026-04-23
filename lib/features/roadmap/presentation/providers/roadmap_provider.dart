@@ -1,5 +1,5 @@
 // lib/features/learning/presentation/providers/roadmap_provider.dart
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../data/models/word_model.dart';
@@ -70,7 +70,7 @@ class RoadmapProvider extends ChangeNotifier {
         
         _chapters.add(RoadmapChapter(
           chapterIndex: chapterCounter++,
-          title: "Chặng ${chapterCounter}",
+          title: 'roadmap.stage'.tr(args: [chapterCounter.toString()]),
           lessons: lessonChunk,
         ));
       }
@@ -78,7 +78,7 @@ class RoadmapProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     } catch (e) {
-      debugPrint('Lỗi khởi tạo Roadmap: $e');
+      debugPrint('Error initializing Roadmap: $e');
       _isLoading = false;
       notifyListeners();
     }

@@ -1,4 +1,4 @@
-import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart'; // IMPORTED
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/data/services/features/quiz_service.dart';
@@ -143,23 +143,20 @@ class LearningRoadmapScreen extends StatelessWidget {
     );
   }
 
-// New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
-
   Widget _buildTopicDivider(BuildContext context, String topicName) {
     final dividerColor = Theme.of(context).dividerColor.withValues(alpha: 0.1);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 30),
       child: Row(
-        children:[
+        children: [
           Expanded(child: Container(height: 2, color: dividerColor)),
-          // Wrapped in Flexible to allow wrapping, preventing overflow pixels
           Flexible(
-            flex: 4, // Gives the text generous room to wrap before shrinking the dividers too much
+            flex: 4,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                "Chủ đề: $topicName",
-                textAlign: TextAlign.center, // Ensures nicely centered text when it wraps to a new line
+                'roadmap.lesson_topic'.tr(args: [topicName]), // INJECTED
+                textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,
@@ -173,7 +170,7 @@ class LearningRoadmapScreen extends StatelessWidget {
     );
   }
 
-   Widget _buildBentoNode({
+  Widget _buildBentoNode({
     required BuildContext context,
     required dynamic lesson,
     required bool isCompleted,
@@ -182,7 +179,6 @@ class LearningRoadmapScreen extends StatelessWidget {
     required double progress,
   }) {
     int wordsLearned = (progress * lesson.words.length).toInt();
-    // 🛡️ Giảm nhẹ size node để tạo không gian an toàn tránh overflow
     double nodeSize = isCurrent ? 80.0 : 68.0;
 
     Widget nodeIcon;
@@ -214,8 +210,7 @@ class LearningRoadmapScreen extends StatelessWidget {
     return GestureDetector(
       onTap: isLocked ? null : () => _showBentoBottomSheet(context, lesson),
       child: Column(
-        mainAxisSize:
-            MainAxisSize.min, // 🛡️ Bắt buộc phải có để tránh giãn max height
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
@@ -237,24 +232,22 @@ class LearningRoadmapScreen extends StatelessWidget {
                         color: nodeColor.withValues(alpha: 0.4),
                         blurRadius: 12,
                         spreadRadius: 1,
-                        offset: const Offset(
-                          0,
-                          6,
-                        ), // Giảm bóng để không chạm viền
+                        offset: const Offset(0, 6),
                       ),
                     ],
             ),
             child: nodeIcon,
           ),
-          const SizedBox(height: 8), // 🛡️ Giảm khoảng cách để tối ưu height
+          const SizedBox(height: 8),
           SizedBox(
             width: 115,
             child: Column(
-              mainAxisSize: MainAxisSize
-                  .min, // 🛡️ CRITICAL FIX: Lỗi bottom overflow thường nằm ở đây
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "Bài ${lesson.globalIndex + 1}",
+                  'roadmap.lesson_number'.tr(
+                    args: [(lesson.globalIndex + 1).toString()],
+                  ), // INJECTED
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: isLocked
@@ -262,17 +255,22 @@ class LearningRoadmapScreen extends StatelessWidget {
                         : null,
                   ),
                   textAlign: TextAlign.center,
-                  maxLines: 1, // 🛡️ Bắt buộc 1 dòng
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  "$wordsLearned/${lesson.words.length} từ",
+                  'roadmap.words_count'.tr(
+                    args: [
+                      wordsLearned.toString(),
+                      lesson.words.length.toString(),
+                    ],
+                  ), // INJECTED
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.center,
-                  maxLines: 1, // 🛡️ Bắt buộc 1 dòng
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -282,11 +280,6 @@ class LearningRoadmapScreen extends StatelessWidget {
       ),
     );
   }
-
-
-  // ===========================================================================
-  // INTERACTION / BOTTOM SHEET
-  // ===========================================================================
 
   void _showBentoBottomSheet(BuildContext context, dynamic lesson) {
     showModalBottomSheet(
@@ -299,79 +292,62 @@ class LearningRoadmapScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(
-              AppLayout.bentoBorderRadius,
-            ), // Giữ nguyên bo góc của bạn
+            top: Radius.circular(AppLayout.bentoBorderRadius),
           ),
         ),
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Drag Indicator
               Container(
-                width: 48, // Chỉnh lại một chút cho cân đối
+                width: 48,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).dividerColor.withValues(
-                    alpha: 0.2,
-                  ), // Giữ nguyên code Flutter mới của bạn
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
               const SizedBox(height: 24),
-
-              // NEW: Bento Header Icon (Vibrant Emerald)
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.15),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.auto_stories_rounded, // Icon Sách vở/Học tập
+                  Icons.auto_stories_rounded,
                   color: Color(0xFF10B981),
                   size: 36,
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Tiêu đề Bài học (Có truyền tham số index qua Localization)
               Text(
                 'roadmap.lesson_number'.tr(
                   args: [(lesson.globalIndex + 1).toString()],
-                ), // Thay cho "Bài X"
+                ), // INJECTED
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-
-              // Subtitle: Chủ đề (Truyền tham số topic)
               Text(
                 'roadmap.lesson_topic'.tr(
                   args: [lesson.dominantTopic.toString()],
-                ), // Thay cho "Chủ đề: X"
+                ), // INJECTED
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.color, // Màu nhạt hơn (Secondary Text)
+                  color: Theme.of(context).textTheme.bodySmall?.color,
                   fontSize: 16,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
-
-              // Action 1: Học Flashcard (Vibrant Blue)
               SmartActionButton(
-                text: 'roadmap.study_flashcards'
-                    .tr(), // Thay cho "Học Flashcard"
-                icon: Icons.style_rounded, // Icon dạng thẻ Flashcard
-                color: const Color(0xFF3B82F6), // Vibrant Blue
+                text: 'roadmap.study_flashcards'.tr(), // INJECTED
+                icon: Icons.style_rounded,
+                color: const Color(0xFF3B82F6),
                 textColor: Colors.white,
                 onPressed: () {
-                  // LƯU Ý: LOGIC ĐƯỢC GIỮ NGUYÊN 100%
                   Navigator.pop(context);
                   Navigator.pushNamed(
                     context,
@@ -381,17 +357,12 @@ class LearningRoadmapScreen extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 16),
-
-              // Action 2: Thi vượt cấp (Vibrant Amber)
               SmartActionButton(
-                text: 'roadmap.skip_test'.tr(), // Thay cho "Thi vượt cấp (80%)"
-                icon: Icons.bolt_rounded, // Icon tia sét (nhanh/vượt cấp)
-                color: const Color(
-                  0xFFF59E0B,
-                ), // Vibrant Amber (Màu vàng cam nổi bật)
+                text: 'roadmap.skip_test'.tr(), // INJECTED
+                icon: Icons.bolt_rounded,
+                color: const Color(0xFFF59E0B),
                 textColor: Colors.white,
                 onPressed: () {
-                  // LƯU Ý: LOGIC ĐƯỢC GIỮ NGUYÊN 100%
                   Navigator.pop(context);
                   context.read<QuizProvider>().initQuiz(
                     lesson.words,
@@ -410,10 +381,6 @@ class LearningRoadmapScreen extends StatelessWidget {
   }
 }
 
-// ===========================================================================
-// BENTO ZIG-ZAG PATH PAINTER
-// ===========================================================================
-
 class _BentoPathPainter extends CustomPainter {
   final BuildContext context;
   final bool isLeftToRight;
@@ -427,13 +394,11 @@ class _BentoPathPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Bento Upgrade: Dual-stroke technique (shadow track + main track) for depth
     final Paint trackBackgroundPaint = Paint()
       ..color = isCompleted
           ? AppColors.success.withValues(alpha: 0.2)
           : Theme.of(context).dividerColor.withValues(alpha: 0.05)
-      ..strokeWidth =
-          16.0 // Wider background track
+      ..strokeWidth = 16.0
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
@@ -446,41 +411,23 @@ class _BentoPathPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final path = Path();
-
-    // Spread points out slightly more for elegant curves
     final double leftX = size.width * 0.20;
     final double rightX = size.width * 0.80;
-
     final double startX = isLeftToRight ? leftX : rightX;
-    // Offset Y slightly to ensure it tucks perfectly underneath the node circle
     final double startY = -size.height / 2 + 10;
-
     final double endX = isLeftToRight ? rightX : leftX;
     final double endY = size.height / 2 - 25;
 
     path.moveTo(startX, startY);
-
-    // PERFECT S-CURVE: Instead of an ugly straight zigzag (lineTo),
-    // we use a Cubic Bezier curve to create a beautiful sweeping path.
     final double controlPointY = startY + (endY - startY) * 0.5;
+    path.cubicTo(startX, controlPointY, endX, controlPointY, endX, endY);
 
-    path.cubicTo(
-      startX,
-      controlPointY, // Pulls the curve down straight from the top node
-      endX,
-      controlPointY, // Pushes the curve up straight from the bottom node
-      endX,
-      endY, // Final destination
-    );
-
-    // Draw background track first, then vibrant main line inside it
     canvas.drawPath(path, trackBackgroundPaint);
     canvas.drawPath(path, mainPaint);
   }
 
   @override
   bool shouldRepaint(covariant _BentoPathPainter oldDelegate) {
-    // Ensuring it dynamically repaints if state changes
     return oldDelegate.isLeftToRight != isLeftToRight ||
         oldDelegate.isCompleted != isCompleted;
   }

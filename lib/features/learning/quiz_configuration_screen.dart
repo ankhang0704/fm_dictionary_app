@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/constants/app_routes.dart';
@@ -37,22 +38,22 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
   final List<Map<String, dynamic>> _modes = [
     {
       'mode': QuizMode.enToVi,
-      'title': 'Anh -> Việt',
-      'subtitle': 'Đoán nghĩa tiếng Việt',
+      'title': 'quiz.modes.en_vi.title', // Key mapped
+      'subtitle': 'quiz.modes.en_vi.subtitle', // Key mapped
       'icon': CupertinoIcons.arrow_right_arrow_left_square,
       'color': AppColors.bentoBlue,
     },
     {
       'mode': QuizMode.viToEn,
-      'title': 'Việt -> Anh',
-      'subtitle': 'Dịch từ tiếng Việt',
+      'title': 'quiz.modes.vi_en.title', // Key mapped
+      'subtitle': 'quiz.modes.vi_en.subtitle', // Key mapped
       'icon': CupertinoIcons.arrow_left_right_square_fill,
       'color': AppColors.bentoPurple,
     },
     {
       'mode': QuizMode.listening,
-      'title': 'Nghe (Listening)',
-      'subtitle': 'Nghe và chọn từ đúng',
+      'title': 'quiz.modes.listening.title', // Key mapped
+      'subtitle': 'quiz.modes.listening.subtitle', // Key mapped
       'icon': CupertinoIcons.headphones,
       'color': AppColors.bentoMint,
     },
@@ -79,17 +80,26 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildSectionTitle(context, "Chủ đề từ vựng"),
+                    _buildSectionTitle(
+                      context,
+                      "quiz.config.topic_section".tr(),
+                    ),
                     const SizedBox(height: 12),
                     _buildTopicSelectionCard(),
                     const SizedBox(height: 24),
 
-                    _buildSectionTitle(context, "Số lượng câu hỏi"),
+                    _buildSectionTitle(
+                      context,
+                      "quiz.config.count_section".tr(),
+                    ),
                     const SizedBox(height: 12),
                     _buildQuestionCountSection(),
                     const SizedBox(height: 24),
 
-                    _buildSectionTitle(context, "Chế độ kiểm tra"),
+                    _buildSectionTitle(
+                      context,
+                      "quiz.config.mode_section".tr(),
+                    ),
                     const SizedBox(height: 12),
                     _buildModeSelectionSection(),
                     const SizedBox(height: 40),
@@ -127,7 +137,7 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
         ),
       ),
       title: Text(
-        "Cài đặt bài kiểm tra",
+        "quiz.config.title".tr(),
         style: Theme.of(context).textTheme.displaySmall,
       ),
     );
@@ -162,10 +172,15 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Đang chọn", style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  "quiz.config.selecting".tr(),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 const SizedBox(height: 4),
                 Text(
-                  _selectedTopic == 'All' ? "Tất cả từ vựng" : _selectedTopic,
+                  _selectedTopic == 'All'
+                      ? "quiz.config.all_topics".tr()
+                      : _selectedTopic,
                   style: Theme.of(
                     context,
                   ).textTheme.displaySmall?.copyWith(fontSize: 18),
@@ -187,7 +202,9 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
       runSpacing: 12,
       children: _questionCounts.map((count) {
         final bool isSelected = _selectedCount == count;
-        final String label = count == -1 ? "Tất cả" : "$count Câu";
+        final String label = count == -1
+            ? "common.all".tr()
+            : "quiz.config.question_unit".tr(args: [count.toString()]);
 
         return GestureDetector(
           onTap: () => setState(() => _selectedCount = count),
@@ -257,14 +274,14 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        modeData['title'] as String,
+                        (modeData['title'] as String).tr(),
                         style: Theme.of(
                           context,
                         ).textTheme.displaySmall?.copyWith(fontSize: 18),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        modeData['subtitle'] as String,
+                        (modeData['subtitle'] as String).tr(),
                         style: Theme.of(context).textTheme.bodyMedium,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -286,7 +303,10 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
     return Padding(
       padding: const EdgeInsets.all(AppLayout.defaultPadding),
       child: SmartActionButton(
-        text: "Bắt đầu kiểm tra 🚀",
+        text: 'quiz.config.start_journey'.tr(),
+        icon: Icons.rocket_launch_rounded,
+        color: const Color(0xFF6366F1),
+        textColor: Colors.white,
         onPressed: () {
           List words = _selectedTopic == 'All'
               ? _wordService.getAllWords()
@@ -294,8 +314,9 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
 
           if (words.length < 4) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Cần ít nhất 4 từ vựng để tạo bài kiểm tra!'),
+              SnackBar(
+                // Removed const
+                content: Text('quiz.config.error_min_words'.tr()),
                 backgroundColor: AppColors.error,
               ),
             );
@@ -352,7 +373,7 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              "Chọn chủ đề",
+              "quiz.config.choose_topic".tr(),
               style: Theme.of(context).textTheme.displaySmall,
             ),
             const SizedBox(height: 16),
@@ -360,7 +381,7 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
               child: ListView.separated(
                 physics: const BouncingScrollPhysics(),
                 itemCount: topics.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
                   final topic = topics[index];
                   final isSelected = _selectedTopic == topic;
@@ -387,7 +408,9 @@ class _QuizConfigurationScreenState extends State<QuizConfigurationScreen> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: Text(
-                            topic == 'All' ? 'Tất cả từ vựng' : topic,
+                            topic == 'All'
+                                ? 'quiz.config.all_topics'.tr()
+                                : topic,
                             style: Theme.of(context).textTheme.bodyLarge
                                 ?.copyWith(
                                   fontWeight: isSelected

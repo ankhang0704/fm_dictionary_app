@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart'; // IMPORTED
 
 // --- CORE UI & THEME ---
 import '../../../../core/theme/app_colors.dart';
@@ -39,9 +40,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
       StatusNavigator.showSuccess(
         context: context,
-        title: "Đã gửi Email",
-        message:
-            "Vui lòng kiểm tra hòm thư của bạn để tiến hành khôi phục mật khẩu.",
+        title: 'auth.forgot_password.email_sent_title'.tr(), // INJECTED
+        message: 'auth.forgot_password.email_sent_msg'.tr(), // INJECTED
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -68,12 +68,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               // HERO TEXT
               Text(
-                "Khôi phục mật khẩu",
+                'auth.forgot_password.title'.tr(), // INJECTED
                 style: Theme.of(context).textTheme.displayLarge,
               ),
               const SizedBox(height: 12),
               Text(
-                "Nhập email của bạn để nhận liên kết đặt lại mật khẩu.",
+                'auth.forgot_password.description'.tr(), // INJECTED
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
 
@@ -106,7 +106,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         keyboardType: TextInputType.emailAddress,
                         style: Theme.of(context).textTheme.bodyLarge,
                         decoration: InputDecoration(
-                          hintText: "Email đăng ký",
+                          hintText: 'auth.forgot_password.email_hint'
+                              .tr(), // INJECTED
                           hintStyle: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(
                                 color: Theme.of(context)
@@ -126,10 +127,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               const SizedBox(height: 32),
 
-              SmartActionButton(
-                text: "Gửi yêu cầu",
-                isLoading: auth.isLoading,
-                onPressed: () => _handleReset(context),
+      SmartActionButton(
+                text: 'auth.forgot_password.send_btn'
+                    .tr(), // [PRESERVED] Logic localization
+                icon: Icons.send_rounded, // [NEW] Icon gửi yêu cầu rực rỡ
+                color: const Color(
+                  0xFF8B5CF6,
+                ), // [NEW] Vibrant Violet (Màu tím bảo mật/trí tuệ)
+                textColor: Colors.white,
+                isLoading: auth.isLoading, // [PRESERVED] Logic loading state
+                onPressed: () =>
+                    _handleReset(context), // [PRESERVED] Logic action
               ),
             ],
           ),

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -37,8 +38,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final pass = _passController.text.trim();
     if (email.isEmpty || pass.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng nhập email và mật khẩu.'),
+        SnackBar(
+          content: Text('login.validation_error'.tr()),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
         ),
@@ -100,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     _buildBentoInput(
                       context: context,
                       controller: _emailController,
-                      hint: "Email",
+                      hint: 'login.email_hint'.tr(),
                       icon: CupertinoIcons.mail,
                       iconTint: AppColors.bentoBlue,
                       keyboardType: TextInputType.emailAddress,
@@ -109,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     _buildBentoInput(
                       context: context,
                       controller: _passController,
-                      hint: "Mật khẩu",
+                      hint: 'login.password_hint'.tr(),
                       icon: CupertinoIcons.lock,
                       iconTint: AppColors.bentoPurple,
                       obscureText: true,
@@ -124,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           AppRoutes.forgotPassword,
                         ),
                         child: Text(
-                          "Quên mật khẩu?",
+                          'login.forgot_password'.tr(),
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
                                 color: Theme.of(
@@ -140,7 +141,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // --- ACTION SECTION ---
                     SmartActionButton(
-                      text: "Đăng nhập",
+                      text: "login.login_button".tr(),
+                      icon: Icons.login_rounded,
+                      color: const Color(0xFF3B82F6), // Vibrant Blue
+                      textColor: Colors.white,
                       isLoading: auth.isLoading,
                       onPressed: () => _handleLogin(context),
                     ),
@@ -152,14 +156,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Chưa có tài khoản?",
+                          'login.no_account'.tr(),
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         TextButton(
                           onPressed: () =>
                               Navigator.pushNamed(context, AppRoutes.register),
                           child: Text(
-                            "Đăng ký ngay",
+                            'login.register_now'.tr(),
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   fontWeight: FontWeight.bold,
@@ -186,14 +190,14 @@ class _LoginScreenState extends State<LoginScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Chào mừng trở lại! 👋",
+          'login.welcome_back'.tr(),
           style: Theme.of(
             context,
           ).textTheme.displayLarge?.copyWith(fontSize: 34),
         ),
         const SizedBox(height: 8),
         Text(
-          "Cùng tiếp tục hành trình chinh phục tiếng Anh của bạn nhé.",
+          'login.journey_desc'.tr(),
           style: Theme.of(context).textTheme.bodyLarge,
         ),
       ],

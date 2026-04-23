@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart'; // IMPORTED
 
 // --- CORE UI & THEME ---
 import 'package:fm_dictionary/core/theme/app_colors.dart';
@@ -57,7 +58,7 @@ class StreakCelebrationDialog {
 
                         // --- TITLE ---
                         Text(
-                          "Tuyệt vời!",
+                          "streak_celebration.title".tr(), // INJECTED
                           style: Theme.of(
                             context,
                           ).textTheme.displayLarge?.copyWith(fontSize: 32),
@@ -78,16 +79,24 @@ class StreakCelebrationDialog {
                                     color: primaryTextColor,
                                   ),
                               children: [
-                                const TextSpan(text: "Bạn đã đạt chuỗi "),
                                 TextSpan(
-                                  text: "$streakDays ngày",
+                                  text: "streak_celebration.reached_prefix"
+                                      .tr(),
+                                ), // INJECTED
+                                TextSpan(
+                                  text: "streak_celebration.day_count".tr(
+                                    args: [streakDays.toString()],
+                                  ), // INJECTED
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: AppColors
                                         .warning, // Vibrant Bento Warning
                                   ),
                                 ),
-                                const TextSpan(text: " học liên tiếp!"),
+                                TextSpan(
+                                  text: "streak_celebration.reached_suffix"
+                                      .tr(),
+                                ), // INJECTED
                               ],
                             ),
                           ),
@@ -97,7 +106,7 @@ class StreakCelebrationDialog {
 
                         // --- SUBTITLE ---
                         Text(
-                          "Giữ vững phong độ này nhé 🔥",
+                          "streak_celebration.subtitle".tr(), // INJECTED
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(color: secondaryTextColor),
                           textAlign: TextAlign.center,
@@ -107,7 +116,7 @@ class StreakCelebrationDialog {
 
                         // --- ACTION BUTTON ---
                         SmartActionButton(
-                          text: "Tiếp tục",
+                          text: "common.continue".tr(), // INJECTED
                           onPressed: () => Navigator.pop(context),
                         ),
 

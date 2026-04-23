@@ -24,7 +24,7 @@ class AppAvatar extends StatelessWidget {
 
     return CircleAvatar(
       radius: radius,
-      backgroundColor: Colors.blue.withOpacity(0.1),
+      backgroundColor: Colors.blue.withValues( alpha:0.1),
       backgroundImage: image,
       child: image == null 
         ? Icon(CupertinoIcons.person, size: radius * 0.8, color: Colors.blue) 

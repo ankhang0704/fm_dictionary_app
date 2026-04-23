@@ -34,10 +34,10 @@ class GlassHeader extends StatelessWidget implements PreferredSizeWidget {
             filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.25),
+                color: Colors.white.withValues( alpha:0.25),
                 borderRadius: BorderRadius.circular(24.0),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues( alpha:0.5),
                   width: 1.0,
                 ),
               ),

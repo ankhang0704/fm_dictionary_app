@@ -7,6 +7,7 @@ import 'package:fm_dictionary/features/home/presentation/providers/home_provider
 import 'package:fm_dictionary/features/learning/presentation/providers/quiz_provider.dart';
 import 'package:fm_dictionary/features/roadmap/presentation/providers/roadmap_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart'; // IMPORTED
 
 // --- CORE / THEMES ---
 import '../../../../core/theme/app_colors.dart';
@@ -99,12 +100,111 @@ class _QuizScreenState extends State<QuizScreen> {
 
                   // BOTTOM ACTION BUTTON
                   _buildBottomAction(provider),
+                  // _buildFeedbackOverlay(provider),
                 ],
               ),
             ),
     );
   }
 
+  // ===========================================================================
+  // RESULT DIALOG (STRICTLY PRESERVED LOGIC)
+  // ===========================================================================
+  // --- BẮN TỈA: LOGIC HIỆU ỨNG PHẢN HỒI TINH TẾ ---
+//  Widget _buildFeedbackOverlay(QuizProvider provider) {
+//     // 🚨 [LOGIC PRESERVED 100%]
+//     if (provider.selectedAnswer == null || provider.currentQuestion == null) {
+//       return const SizedBox.shrink();
+//     }
+
+//     final isCorrect =
+//         provider.selectedAnswer == provider.currentQuestion!.correctAnswer;
+
+//     // Bento UI Palette & Icons
+//     final Color color = isCorrect
+//         ? const Color(0xFF10B981)
+//         : const Color(0xFFFF4757); // Emerald vs Red
+//     final IconData icon = isCorrect
+//         ? Icons.check_circle_rounded
+//         : Icons.error_rounded;
+
+//     // [LOCALIZATION ENFORCED] - Đổi text hardcode sang .tr()
+//     final String text = isCorrect
+//         ? "quiz.feedback.correct".tr()
+//         : "quiz.feedback.wrong".tr();
+
+//     return Positioned(
+//       top:
+//           MediaQuery.of(context).padding.top +
+//           20, // Đẩy lên trên cùng (dưới thanh trạng thái)
+//       left: 24,
+//       right: 24,
+//       child: TweenAnimationBuilder<double>(
+//         duration: const Duration(milliseconds: 400),
+//         tween: Tween(begin: 0.0, end: 1.0),
+//         builder: (context, value, child) {
+//           return Opacity(
+//             opacity: value,
+//             child: Transform.translate(
+//               offset: Offset(0, -20 * (1 - value)), // Bay nhẹ từ trên xuống
+//               child: Center(
+//                 child: ConstrainedBox(
+//                   // [ANTI-OVERFLOW]
+//                   constraints: const BoxConstraints(maxWidth: 400),
+//                   child: Container(
+//                     padding: const EdgeInsets.symmetric(
+//                       horizontal: 20,
+//                       vertical: 14,
+//                     ),
+//                     decoration: BoxDecoration(
+//                       color: color,
+//                       borderRadius: BorderRadius.circular(
+//                         24,
+//                       ), // Bo góc dạng Bento viên thuốc
+//                       boxShadow: [
+//                         BoxShadow(
+//                           color: color.withOpacity(0.3),
+//                           blurRadius: 15,
+//                           offset: const Offset(0, 8),
+//                         ),
+//                       ],
+//                     ),
+//                     child: Row(
+//                       mainAxisSize: MainAxisSize.min, // Thu gọn theo text
+//                       children: [
+//                         // Icon bọc trong vòng tròn trắng để nổi bật trên nền màu
+//                         Container(
+//                           padding: const EdgeInsets.all(4),
+//                           decoration: const BoxDecoration(
+//                             color: Colors.white24,
+//                             shape: BoxShape.circle,
+//                           ),
+//                           child: Icon(icon, color: Colors.white, size: 24),
+//                         ),
+//                         const SizedBox(width: 12),
+//                         Flexible(
+//                           // [ANTI-OVERFLOW] Cho phép text xuống dòng nếu quá dài
+//                           child: Text(
+//                             text,
+//                             style: const TextStyle(
+//                               color: Colors.white,
+//                               fontWeight: FontWeight.bold,
+//                               fontSize: 16,
+//                               fontFamily: 'Quicksand',
+//                             ),
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//             ),
+//           );
+//         },
+//       ),
+//     );
+//   }
   // ===========================================================================
   // WIDGET BUILDERS
   // ===========================================================================
@@ -144,7 +244,12 @@ class _QuizScreenState extends State<QuizScreen> {
       title: Text(
         provider.questions.isEmpty
             ? ""
-            : "Câu ${provider.currentIndex + 1}/${provider.questions.length}",
+            : "quiz.screen.question_progress".tr(
+                args: [
+                  (provider.currentIndex + 1).toString(),
+                  provider.questions.length.toString(),
+                ],
+              ), // INJECTED WITH ARGS
         style: Theme.of(context).textTheme.displaySmall,
       ),
       bottom: PreferredSize(
@@ -301,24 +406,48 @@ class _QuizScreenState extends State<QuizScreen> {
     final bool hasAnswered = provider.selectedAnswer != null;
     final bool canCheck = _tempSelectedOption != null;
 
-    return Padding(
-      padding: const EdgeInsets.all(AppLayout.defaultPadding),
-      child: SmartActionButton(
-        text: hasAnswered ? "Tiếp tục" : "Kiểm tra",
-        onPressed: () {
-          if (hasAnswered) {
-            setState(() => _tempSelectedOption = null);
-          } else if (canCheck) {
-            provider.checkAnswer(_tempSelectedOption!);
-          }
-        },
+    // Lựa chọn màu sắc và Icon theo trạng thái Quiz (Bento State UI)
+    final Color bentoColor = hasAnswered
+        ? const Color(0xFF10B981) // Vibrant Emerald (Thành công/Tiếp tục)
+        : (canCheck
+              ? const Color(0xFF3B82F6)
+              : const Color(
+                  0xFF94A3B8,
+                )); // Blue (Sẵn sàng) hoặc Slate (Chưa chọn)
+
+    final IconData bentoIcon = hasAnswered
+        ? Icons.arrow_forward_rounded
+        : Icons.fact_check_rounded;
+
+    return SafeArea(
+      // [ANTI-OVERFLOW] Bảo vệ nút khỏi dính sát home indicator của các máy màn hình dài
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.all(AppLayout.defaultPadding),
+        child: ConstrainedBox(
+          // [ANTI-OVERFLOW] Giới hạn chiều ngang tối đa trên Tablet để tránh nút quá dài
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: SmartActionButton(
+            // [LOCALIZATION PRESERVED]
+            text: hasAnswered
+                ? "quiz.screen.continue_btn".tr()
+                : "quiz.screen.check_btn".tr(),
+            icon: bentoIcon,
+            color: bentoColor,
+            textColor: Colors.white,
+            onPressed: () {
+              // 🚨 [LOGIC PRESERVED 100%] - Không thay đổi bất kỳ flow xử lý nào
+              if (hasAnswered) {
+                setState(() => _tempSelectedOption = null);
+              } else if (canCheck) {
+                provider.checkAnswer(_tempSelectedOption!);
+              }
+            },
+          ),
+        ),
       ),
     );
   }
-
-  // ===========================================================================
-  // RESULT DIALOG (STRICTLY PRESERVED LOGIC)
-  // ===========================================================================
 
   void _showResultDialog(BuildContext context, QuizProvider provider) {
     final isSuccess = provider.score >= provider.passThreshold;
@@ -369,13 +498,20 @@ class _QuizScreenState extends State<QuizScreen> {
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        isSuccess ? "Hoàn thành xuất sắc!" : "Chưa đạt rồi!",
+                        isSuccess
+                            ? "quiz.results.success_title".tr()
+                            : "quiz.results.fail_title".tr(), // INJECTED
                         style: Theme.of(context).textTheme.displayMedium,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        "Điểm: ${provider.score} / ${provider.questions.length}",
+                        "quiz.results.score_display".tr(
+                          args: [
+                            provider.score.toString(),
+                            provider.questions.length.toString(),
+                          ],
+                        ), // INJECTED WITH ARGS
                         style: Theme.of(context).textTheme.displayLarge
                             ?.copyWith(
                               color: isSuccess
@@ -385,7 +521,9 @@ class _QuizScreenState extends State<QuizScreen> {
                       ),
                       const SizedBox(height: 32),
                       SmartActionButton(
-                        text: isSuccess ? "Quay về Lộ trình" : "Làm lại Quiz",
+                        text: isSuccess
+                            ? "quiz.results.exit_roadmap".tr()
+                            : "quiz.results.retry_btn".tr(), // INJECTED
                         onPressed: () {
                           if (isSuccess) {
                             _handleSuccessExit(dialogContext, provider);
@@ -403,7 +541,7 @@ class _QuizScreenState extends State<QuizScreen> {
                             Navigator.of(context).pop();
                           },
                           child: Text(
-                            "Thoát",
+                            "common.exit".tr(), // INJECTED
                             style: Theme.of(context).textTheme.bodyLarge,
                           ),
                         ),
@@ -470,7 +608,9 @@ class _QuizScreenState extends State<QuizScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          "Huy hiệu mới: ${badge.title}",
+                          "gamification.new_badge".tr(
+                            args: [badge.title],
+                          ), // INJECTED
                           style: Theme.of(currentContext).textTheme.bodyLarge
                               ?.copyWith(
                                 fontWeight: FontWeight.bold,
