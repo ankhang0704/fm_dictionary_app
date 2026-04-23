@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
@@ -98,7 +99,7 @@ class DashboardScreen extends StatelessWidget {
 
   // New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
 
-Widget _buildHeroHeader(
+  Widget _buildHeroHeader(
     BuildContext context,
     HomeProvider home,
     AuthProvider auth,
@@ -116,18 +117,18 @@ Widget _buildHeroHeader(
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
-      children:[
+      children: [
         // LEFT SIDE (1/2 of the "2x2" feel): Hello + Name (Top) & Quote (Bottom)
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
-            children:[
+            children: [
               FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Hello, $displayName!",
+                  'dashboard.hello'.tr() + displayName,
                   style: Theme.of(context).textTheme.displayMedium,
                 ),
               ),
@@ -141,9 +142,9 @@ Widget _buildHeroHeader(
             ],
           ),
         ),
-        
+
         const SizedBox(width: 8),
-        
+
         // MIDDLE: Notification Bell in a solid Bento circle
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -153,9 +154,7 @@ Widget _buildHeroHeader(
           ),
           child: IconButton(
             icon: Icon(
-              notifyEnabled
-                  ? CupertinoIcons.bell_fill
-                  : CupertinoIcons.bell,
+              notifyEnabled ? CupertinoIcons.bell_fill : CupertinoIcons.bell,
               color: notifyEnabled
                   ? AppColors.warning
                   : Theme.of(context).textTheme.bodyMedium?.color,
@@ -166,13 +165,13 @@ Widget _buildHeroHeader(
             ),
           ),
         ),
-        
+
         // RIGHT SIDE (The biggest element): Enlarged Avatar
         GestureDetector(
           onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
           child:
               auth.currentUser?.photoURL?.isNotEmpty == true ||
-                      settings.userAvatarPath?.isNotEmpty == true
+                  settings.userAvatarPath?.isNotEmpty == true
               ? AppAvatar(
                   localPath: settings.userAvatarPath,
                   networkUrl: auth.currentUser?.photoURL,
@@ -180,14 +179,12 @@ Widget _buildHeroHeader(
                 )
               : CircleAvatar(
                   radius: 34, // ENLARGED AVATAR for prominence
-                  backgroundColor: AppColors.bentoBlue.withValues(
-                    alpha: 0.15,
-                  ),
+                  backgroundColor: AppColors.bentoBlue.withValues(alpha: 0.15),
                   child: Text(
-                    displayName.isNotEmpty
-                        ? displayName[0].toUpperCase()
-                        : '?',
-                    style: Theme.of(context).textTheme.displayMedium // Increased text size to match larger avatar
+                    displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+                    style: Theme.of(context)
+                        .textTheme
+                        .displayMedium // Increased text size to match larger avatar
                         ?.copyWith(color: AppColors.bentoBlue),
                   ),
                 ),
@@ -202,15 +199,15 @@ Widget _buildHeroHeader(
     final progress = home.dailyProgressPercent;
     final clampedProgress = progress.clamp(0.0, 1.0);
     final percentage = (clampedProgress * 100).toInt();
-
-// New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
+    final goal = studied / target;
+    // New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
 
     return BentoCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children:[
+        children: [
           Row(
-            children:[
+            children: [
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -226,7 +223,8 @@ Widget _buildHeroHeader(
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  "Mục tiêu hôm nay: $studied/$target",
+                  // Cách viết đúng và gọn nhất
+                  '${'dashboard.daily_goal'.tr()} $studied/$target',
                   // CHANGED: Reduced from displaySmall to titleMedium for better fit
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -239,7 +237,7 @@ Widget _buildHeroHeader(
           ),
           const SizedBox(height: 20),
           Row(
-            children:[
+            children: [
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(100),
@@ -265,7 +263,7 @@ Widget _buildHeroHeader(
           ),
           const SizedBox(height: 24),
           SmartActionButton(
-            text: "Tiếp tục", // CHANGED: Shortened text
+            text: 'dashboard.continue_title'.tr(), // CHANGED: Shortened text
             icon: CupertinoIcons.play_circle_fill, // CHANGED: Added icon
             color: AppColors.success, // CHANGED: Added vibrant color
             onPressed: () async {
@@ -335,7 +333,7 @@ Widget _buildHeroHeader(
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              "$currentStreak Ngày",
+              '$currentStreak ${'dashboard.current_streak'.tr()}',
               style: Theme.of(
                 context,
               ).textTheme.displaySmall?.copyWith(color: AppColors.warning),
@@ -375,7 +373,7 @@ Widget _buildHeroHeader(
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              "Thử thách",
+              'dashboard.quiz'.tr(),
               style: Theme.of(
                 context,
               ).textTheme.displaySmall?.copyWith(color: AppColors.bentoPurple),
@@ -400,7 +398,7 @@ Widget _buildHeroHeader(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "WORD OF THE DAY",
+                'dashboard.word_of_day'.tr(),
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
@@ -443,7 +441,7 @@ Widget _buildHeroHeader(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "KHO TÀNG",
+            'dashboard.vocabulary'.tr(),
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
@@ -453,7 +451,8 @@ Widget _buildHeroHeader(
             context,
             icon: CupertinoIcons.star_fill,
             color: AppColors.bentoMint,
-            label: "${WordService().getSavedWords().length} Từ đã lưu",
+            label:
+                "${WordService().getSavedWords().length} ${'dashboard.saveword'.tr()}",
             onTap: () => Navigator.pushNamed(context, AppRoutes.saved),
           ),
           const Padding(
@@ -464,7 +463,7 @@ Widget _buildHeroHeader(
             context,
             icon: CupertinoIcons.time_solid,
             color: AppColors.bentoBlue,
-            label: "Lịch sử học",
+            label:'dashboard.history'.tr(),
             onTap: () => Navigator.pushNamed(context, AppRoutes.history),
           ),
         ],
@@ -518,7 +517,7 @@ Widget _buildHeroHeader(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            "TÌM NHANH",
+            'dashboard.search'.tr(),
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
@@ -540,7 +539,7 @@ Widget _buildHeroHeader(
           ),
           const SizedBox(height: 12),
           Text(
-            "Tra từ...",
+            'dashboard.search_subtitle'.tr(),
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -556,7 +555,7 @@ Widget _buildHeroHeader(
 
   // New Vibrant Bento UI block (Logic, Theme, and Localization perfectly preserved!)
 
-void _showNotificationQuickSettings(
+  void _showNotificationQuickSettings(
     BuildContext context,
     NotificationProvider provider,
   ) {
@@ -564,9 +563,9 @@ void _showNotificationQuickSettings(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => ListenableBuilder(
-        // ListenableBuilder automatically listens to the provider and rebuilds the BottomSheet 
+        // ListenableBuilder automatically listens to the provider and rebuilds the BottomSheet
         // instantly when toggleNotification() triggers notifyListeners().
-        listenable: provider, 
+        listenable: provider,
         builder: (context, child) {
           return Container(
             decoration: BoxDecoration(
@@ -578,7 +577,7 @@ void _showNotificationQuickSettings(
             padding: const EdgeInsets.all(AppLayout.defaultPadding),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children:[
+              children: [
                 Text(
                   "Nhắc nhở học tập",
                   style: Theme.of(context).textTheme.displaySmall,
@@ -587,14 +586,14 @@ void _showNotificationQuickSettings(
                 BentoCard(
                   padding: EdgeInsets.zero,
                   child: Column(
-                    children:[
+                    children: [
                       SwitchListTile(
                         title: Text(
                           "Bật thông báo hàng ngày",
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                         value: provider.isEnabled,
-                        activeColor: AppColors.bentoBlue,
+                        activeThumbColor: AppColors.bentoBlue,
                         onChanged: (v) => provider.toggleNotification(v),
                       ),
                       if (provider.isEnabled) ...[

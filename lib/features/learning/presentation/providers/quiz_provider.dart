@@ -111,7 +111,6 @@ class QuizProvider extends ChangeNotifier {
             await _wordService.addWordsToDailyGoal(quizWordIds);
           }
           await _wordService.saveQuizProgress(wordsInQuiz, isPassedResult);
-
           notifyListeners();
         }
       }

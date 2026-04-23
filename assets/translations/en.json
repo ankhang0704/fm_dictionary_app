@@ -1,16 +1,26 @@
 {
     "welcome": {
-        "title": "FM Dictionary",
+        "title": "Welcome",
         "subtitle": "Welcome to the journey of conquering 1500 specialized vocabulary.",
         "name_hint": "What is your name?",
+        "name_input": "Input your name here...",
         "start_btn": "Get Started",
+        "theme": "Theme",
         "light_mode": "Light Mode",
-        "dark_mode": "Dark Mode"
+        "dark_mode": "Dark Mode",
+        "language": "Language",
+        "start_journey": "Start Journey",
+        "name_required": "Please input your name"
     },
     "dashboard": {
         "hello": "Hello,",
+        "daily_goal": "Daily Goal: ",
         "quick_action": "QUICK ACTIONS",
         "continue_title": "Continue Learning",
+        "current_streak": "Day",
+        "quiz": "Challenge",
+        "word_of_day": "WORD OF THE DAY",
+        "vocabulary": "MY VOCABULARY",
         "continue_subtitle": "Pick up where you left off",
         "review_mistakes": "Review Mistakes",
         "review_mistakes_subtitle": "Review words you've struggled with",
@@ -23,6 +33,10 @@
         "search_hint": "Search 1,500 words...",
         "explore_topics": "Explore Topics",
         "explore_desc": "Start with core vocabulary by topics.",
+        "saveword": "Saved Words",
+        "history": "Recent",
+        "search": "QUICK SEARCH",
+        "search_subtitle": "Search...",
         "ai_features": "Powerful AI Features",
         "whisper_title": "Whisper AI - Listening",
         "whisper_desc": "Speech to text with high accuracy using AI.",
@@ -36,9 +50,20 @@
     },
     "navigation": {
         "nav_home": "Home",
-        "nav_categories": "Categories",
-        "nav_review": "Review",
-        "nav_settings": "Settings"
+        "road_map":"Roadmap",
+        "dictionary": "Dictionary",
+        "stats": "Stats",
+        "profile": "Profile"
+    },
+    "roadmap":
+    {
+        "roadmap_header": "Learning Roadmap",
+        "roadmap_title":"1500+ vocabulary words in bite-sized steps",
+        "stage":"Stage",
+        "lesson_number":"Lesson {}",
+        "lesson_topic":"Topic: {}",
+        "skip_test":"Skip Lesson",
+        "study_flashcards":"Study Flashcards"
     },
     "quiz": {
         "title": "Quiz",
@@ -197,11 +222,6 @@
         "delete_confirm_desc": "This action will delete all your learning progress on the cloud. Are you sure you want to proceed?",
         "delete_error": "Please log out and log back in before deleting your account.",
         "delete_success": "Your account has been deleted successfully!"
-    },
-    "roadmap": {
-        "lesson_number": "Lesson {}",
-        "lesson_topic": "Topic: {}",
-        "study_flashcards": "Study Flashcards",
-        "skip_test": "Skip Lesson"
     }
+
 }

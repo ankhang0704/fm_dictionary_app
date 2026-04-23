@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fm_dictionary/core/widgets/bento_grid/bento_card.dart';
@@ -122,12 +123,13 @@ class RoadmapScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Lộ trình học tập',
+            'roadmap.roadmap_header'.tr(),
+
             style: Theme.of(context).textTheme.displayLarge,
           ),
           const SizedBox(height: 4),
           Text(
-            '1500+ từ vựng được chia thành các chặng nhỏ',
+               'roadmap.roadmap_title'.tr(),
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],

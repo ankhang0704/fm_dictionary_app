@@ -106,8 +106,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
               // PRIMARY ACTION
               SmartActionButton(
-                text: "Bắt đầu hành trình 🚀",
-                onPressed: _handleStart,
+                text: 'welcome.start_journey'
+                    .tr(), // Đã bọc localization thay cho "Bắt đầu hành trình"
+                icon: Icons
+                    .rocket_launch_rounded, // Icon khởi hành đầy năng lượng
+                color: const Color(
+                  0xFF6366F1,
+                ), // Màu Vibrant Indigo (Chuẩn Bento cao cấp)
+                textColor: Colors.white, // Chữ trắng nổi bật trên nền đậm
+                onPressed: _handleStart, // GIỮ NGUYÊN LOGIC 100%
               ),
 
               const SizedBox(height: 40),
@@ -126,7 +133,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     return Column(
       children: [
         Text(
-          "Chào mừng bạn! 👋",
+          'welcome.title'.tr(),
           style: Theme.of(
             context,
           ).textTheme.displayLarge?.copyWith(fontSize: 32),
@@ -134,7 +141,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          "Hãy thiết lập không gian học tập\ncủa riêng bạn.",
+          'welcome.subtitle'.tr(),
           style: Theme.of(context).textTheme.bodyLarge,
           textAlign: TextAlign.center,
         ),
@@ -148,7 +155,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Tên của bạn",
+            'welcome.name_hint'.tr(),
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
@@ -158,7 +165,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             controller: _nameController,
             style: Theme.of(context).textTheme.displaySmall,
             decoration: InputDecoration(
-              hintText: "Nhập tên tại đây...",
+              hintText: 'welcome.name_input'.tr(),
               hintStyle: Theme.of(context).textTheme.displaySmall?.copyWith(
                 color: Theme.of(
                   context,
@@ -196,7 +203,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            "Ngôn ngữ",
+            'welcome.language'.tr(),
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -240,14 +247,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            "Giao diện",
+            'welcome.theme'.tr(),
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
           Text(
-            _isDarkMode ? "Tối" : "Sáng",
+            _isDarkMode ? 'welcome.light_mode'.tr() : 'welcome.dark_mode'.tr(),
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],

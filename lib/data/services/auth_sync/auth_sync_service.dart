@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fm_dictionary/core/constants/progress_keys.dart';
+import 'package:fm_dictionary/data/services/database/word_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../database/database_service.dart';
@@ -71,6 +72,10 @@ class AuthSyncService {
       if (user != null && !user.emailVerified) {
         await _auth.signOut();
         throw Exception('Vui lòng xác minh Email trước khi đăng nhập.');
+      }
+       if (user != null) {
+        // Đồng bộ ngầm không block UI (Fire and forget)
+        syncDataWithMerge().catchError((e) => debugPrint('Lỗi Sync lúc Login: $e'));
       }
       return user;
     } catch (e) {
@@ -365,6 +370,37 @@ class AuthSyncService {
         return 'Đăng nhập sai quá nhiều lần. Vui lòng thử lại sau.';
       default:
         return 'Đã xảy ra lỗi: $errorCode';
+    }
+  }
+  // THÊM VÀO CUỐI FILE auth_sync_service.dart
+  Future<void> runAutoSyncIfNeeded() async {
+    if (_auth.currentUser == null) return; // Chỉ chạy nếu đã đăng nhập
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastTime = prefs.getInt('auto_sync_time') ?? 0;
+      final lastCount = prefs.getInt('auto_sync_count') ?? 0;
+
+      final now = DateTime.now().millisecondsSinceEpoch;
+      
+      // Dùng hàm getHistoryWords() đã tối ưu của bạn để đếm tổng số từ đã tương tác
+      final currentCount = WordService().getHistoryWords().length;
+
+      final daysPassed = (now - lastTime) / (1000 * 60 * 60 * 24);
+      final wordsStudied = currentCount - lastCount;
+
+      // ĐIỀU KIỆN: Hơn 7 ngày HOẶC học thêm được 100 từ mới/ôn tập
+      if (daysPassed >= 7 || wordsStudied >= 100) {
+        debugPrint("🔄 Auto-Backup kích hoạt: Đã qua ${daysPassed.toInt()} ngày, $wordsStudied từ mới.");
+        
+        await syncDataWithMerge(); // Kéo/Đẩy dữ liệu
+        
+        // Lưu lại mốc mới
+        await prefs.setInt('auto_sync_time', now);
+        await prefs.setInt('auto_sync_count', currentCount);
+      }
+    } catch (e) {
+      debugPrint("⚠️ Auto-Backup ngầm thất bại (Có thể do rớt mạng): $e");
     }
   }
 }

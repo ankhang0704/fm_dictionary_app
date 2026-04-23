@@ -1,5 +1,6 @@
 // lib/features/home/presentation/screens/main_navigation.dart
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fm_dictionary/features/home/presentation/screens/detail_statistical_screen.dart';
@@ -73,26 +74,26 @@ class _MainNavigationState extends State<MainNavigation> {
             fontWeight: FontWeight.w600,
             fontSize: 11,
           ),
-          items: const [
+          items: [
             BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.house_fill),
-              label: "Home",
+              label: 'navigation.nav_home'.tr(),
             ),
             BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.map_fill),
-              label: "Roadmap",
+              label: 'navigation.road_map'.tr(),
             ),
             BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.book_fill),
-              label: "Dictionary",
+              label: 'navigation.dictionary'.tr(),
             ),
             BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.chart_bar_fill),
-              label: "Stats",
+              label: 'navigation.stats'.tr(),
             ),
             BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.person_fill),
-              label: "Profile",
+              label: 'navigation.profile'.tr(),
             ),
           ],
         ),
