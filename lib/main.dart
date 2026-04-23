@@ -56,6 +56,10 @@ import 'features/learning/quiz_screen.dart';
 import 'features/info/presentation/screens/static_content_screen.dart';
 
 void main() async {
+  if (bool.fromEnvironment('dart.vm.product')) {
+    // Vô hiệu hóa tất cả lệnh debugPrint trên toàn bộ ứng dụng
+    debugPrint = (String? message, {int? wrapWidth}) {};
+  }
   WidgetsFlutterBinding.ensureInitialized();
   await init();
   // 1. Core Initializations

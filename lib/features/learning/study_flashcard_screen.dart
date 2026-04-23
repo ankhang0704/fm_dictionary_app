@@ -278,32 +278,120 @@ class _StudyFlashCardScreenState extends State<StudyFlashCardScreen> {
 
                 // MIC BUTTON & SCORE: Gom nhóm để quản lý không gian tốt hơn
                 _buildMicButton(context, provider),
+if (provider.pronunciationScore != null) ...[
+                  const SizedBox(height: 24),
 
-                if (provider.pronunciationScore != null) ...[
-                  const SizedBox(height: 12),
-                  // Điểm số gọn gàng theo chuẩn Bento
-                  Text(
-                    '${provider.pronunciationScore!.toStringAsFixed(0)}%',
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: provider.pronunciationScore! >= 70
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFFF4757),
+                  // BENTO CIRCULAR SCORE GAUGE
+                  Center(
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: 100, // Kích thước cố định để [ANTI-OVERFLOW]
+                          height: 100,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Vòng tròn nền mờ (Track)
+                              SizedBox(
+                                width: 100,
+                                height: 100,
+                                child: CircularProgressIndicator(
+                                  value: 1.0,
+                                  strokeWidth: 10,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    (provider.pronunciationScore! >= 70
+                                            ? const Color(0xFF10B981)
+                                            : const Color(0xFFFF4757))
+                                        .withValues(alpha:  0.1),
+                                  ),
+                                ),
+                              ),
+                              // Vòng tròn điểm số thực tế (Progress)
+                              SizedBox(
+                                width: 100,
+                                height: 100,
+                                child: CircularProgressIndicator(
+                                  value: provider.pronunciationScore! / 100,
+                                  strokeWidth: 10,
+                                  strokeCap: StrokeCap
+                                      .round, // Bo tròn đầu biểu đồ cực đẹp
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    provider.pronunciationScore! >= 70
+                                        ? const Color(
+                                            0xFF10B981,
+                                          ) // Vibrant Emerald
+                                        : const Color(
+                                            0xFFFF4757,
+                                          ), // Vibrant Red
+                                  ),
+                                ),
+                              ),
+                              // Text điểm số ở giữa
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    provider.pronunciationScore!.toStringAsFixed(0),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .displayMedium
+                                        ?.copyWith(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.bold,
+                                          color:
+                                              provider.pronunciationScore! >= 70
+                                              ? const Color(0xFF10B981)
+                                              : const Color(0xFFFF4757),
+                                        ),
+                                  ),
+                                  Text(
+                                    "%",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color:
+                                          (provider.pronunciationScore! >= 70
+                                                  ? const Color(0xFF10B981)
+                                                  : const Color(0xFFFF4757))
+                                              .withValues(alpha:  0.7),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // HIỂN THỊ VĂN BẢN ĐÃ ĐỌC (Localization/Logic Preserved)
+                        if (provider.spokenText.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).dividerColor.withValues(alpha:  0.05),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '"${provider.spokenText}"',
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    fontStyle: FontStyle.italic,
+                                    color: Theme.of(context).hintColor,
+                                  ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                  if (provider.spokenText.isNotEmpty)
-                    Text(
-                      '"${provider.spokenText}"',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 14,
-                        color: Theme.of(context).hintColor,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
                 ],
 
                 // Khoảng trống dưới cùng để Card trông cân đối (Bento Padding)
